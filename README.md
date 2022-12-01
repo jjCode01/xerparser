@@ -33,7 +33,7 @@
    >&nbsp;&nbsp;&nbsp;&nbsp; print(task["task_code"], task["task_name"])
 
 Example Code
->from P6XerParser import xer_to_dict  
+>from xerparser import xer_to_dict  
 >
 >xer = xer_to_dict("*path to file.xer*")  
 >xer["version"]  # -> *15.2*  
