@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xerparser"
-version = "0.1.2"
+version = "0.2.1"
 description = "Parse a P6 .xer file to a Python dictionary object."
 authors = ["Jesse <code@seqmanagement.com>"]
 license = "GPL-3.0-only"
@@ -9,7 +9,7 @@ keywords = ["primavera", "p6", "xer", "schedule", "scheduling", "planning", "pro
 repository = "https://github.com/jjCode01/xerparser"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.10"
 
 
 [build-system]

@@ -1,6 +1,5 @@
 # xerparser
 
-# import os
 from datetime import datetime
 
 __all__ = ("xer_to_dict",)
@@ -8,17 +7,15 @@ __all__ = ("xer_to_dict",)
 CODEC = "cp1252"
 
 
-def xer_to_dict(file: bytes) -> dict:
+def xer_to_dict(file: bytes | str) -> dict:
     """Reads a P6 .xer file and converts it into a Python dictionary object.
     Args:
-        file (bytes): .xer file
+        file (bytes | str): .xer file
     Returns:
         dict: Dictionary of the xer information and data tables
     """
     xer_data = {}
-    with open(file, encoding=CODEC, errors="ignore") as f:
-        # xer_data["file_name"] = os.path.basename(f.name)
-        table_list = f.read().split("%T\t")
+    table_list = _parse_file_to_list_of_tables(file)
 
     # The first row in the xer file includes information about the file
     version, export_date = table_list.pop(0).strip().split("\t")[1:3]
@@ -33,6 +30,23 @@ def xer_to_dict(file: bytes) -> dict:
     xer_data["errors"] = _find_xer_errors(tables)
 
     return xer_data
+
+
+def _parse_file_to_list_of_tables(file: bytes | str) -> list:
+    if not any([isinstance(file, bytes), isinstance(file, str)]):
+        raise TypeError(f"TypeError: expected type 'bytes' or 'str', got {type(file)}")
+
+    if isinstance(file, str):
+        with open(file, encoding=CODEC, errors="ignore") as f:
+            file_as_str = f.read()
+
+    elif isinstance(file, bytes):
+        file_as_str = file.decode(CODEC, errors="ignore")
+
+    if not file_as_str.startswith("ERMHDR"):
+        raise ValueError(f"ValueError: invalid XER file")
+
+    return file_as_str.split("%T\t")
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
