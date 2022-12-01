@@ -65,9 +65,11 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     return table
 
 
-def _row_to_dict(columns: list, values: list) -> dict[str, str]:
+def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
     """Convert row of values to dictionary objects"""
-    return {key: _empty_str_to_none(val) for key, val in tuple(zip(columns, values))}
+    return {
+        key.strip(): _empty_str_to_none(val) for key, val in tuple(zip(columns, values))
+    }
 
 
 def _empty_str_to_none(value: str) -> str | None:
