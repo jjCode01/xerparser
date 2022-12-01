@@ -6,7 +6,7 @@ authors = ["Jesse <code@seqmanagement.com>"]
 license = "GPL-3.0-only"
 readme = "README.md"
 keywords = ["primavera", "p6", "xer", "schedule", "scheduling", "planning", "project management", "project controls"]
-
+repository = "https://github.com/jjCode01/xerparser"
 
 [tool.poetry.dependencies]
 python = "^3.8"
