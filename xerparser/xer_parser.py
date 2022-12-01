@@ -67,7 +67,19 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
 
 def _row_to_dict(columns: list, values: list) -> dict[str, str]:
     """Convert row of values to dictionary objects"""
-    return {key: val for key, val in tuple(zip(columns, values))}
+    return {key: _empty_str_to_none(val) for key, val in tuple(zip(columns, values))}
+
+
+def _empty_str_to_none(value: str) -> str | None:
+    """
+    Convert empty strings to type None.
+    For projects using pydantic, which does not automatically convert
+    empty strings to None and causes an error when creating a BaseModel schema.
+    """
+    if value == "":
+        return None
+
+    return value
 
 
 def _find_xer_errors(tables: dict) -> list[str]:
