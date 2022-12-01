@@ -1,6 +1,6 @@
 # xerparser
 
-import os
+# import os
 from datetime import datetime
 
 __all__ = ("xer_to_dict",)
@@ -17,7 +17,7 @@ def xer_to_dict(file: bytes) -> dict:
     """
     xer_data = {}
     with open(file, encoding=CODEC, errors="ignore") as f:
-        xer_data["file_name"] = os.path.basename(f.name)
+        # xer_data["file_name"] = os.path.basename(f.name)
         table_list = f.read().split("%T\t")
 
     # The first row in the xer file includes information about the file
