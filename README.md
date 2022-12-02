@@ -48,7 +48,7 @@ The file and table data will be parsed and returned as a Python dictionary objec
 <br>  
   
 **\["tables"]**: Dictionay of each table included in the .xer file.  
-Examples: *PROJECT, PROJWBS, CALENDAR, TASK, TASKPRED*, etc... [See Oracle Documentation]( https://docs.oracle.com/cd/F25600_01/English/Mapping_and_Schema/xer_import_export_data_map_project/index.htm) for mapping and schema of P6 database tables.  
+Examples: *PROJECT, PROJWBS, CALENDAR, TASK, TASKPRED*, etc...  
 The table name (e.g *TASK*) is the key, and the value is a list of the table entries, which can be accessed the same as any Python dictionary object:  
     
 ```python
@@ -69,7 +69,8 @@ for task in xer["tables"].get["TASK", []]:
 ```python
 from xerparser import xer_to_dict  
 
-xer = xer_to_dict("*path to file.xer*")  
+file = r"/path/to/file.xer"
+xer = xer_to_dict(file)  
 xer["version"]  # -> 15.2  
 xer["export_date"]  # -> datetime.datetime(2022, 11, 30, 0, 0)  
 xer["errors"]  # -> []  

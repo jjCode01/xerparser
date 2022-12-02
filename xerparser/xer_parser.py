@@ -1,4 +1,5 @@
 # xerparser
+# xer_parser.py
 
 from datetime import datetime
 
@@ -10,7 +11,7 @@ CODEC = "cp1252"
 def xer_to_dict(file: bytes | str) -> dict:
     """Reads a P6 .xer file and converts it into a Python dictionary object.
     Args:
-        file (bytes | str): .xer file
+        file (bytes | str): .xer file exported from P6.
     Returns:
         dict: Dictionary of the xer information and data tables
     """
@@ -32,7 +33,13 @@ def xer_to_dict(file: bytes | str) -> dict:
     return xer_data
 
 
-def _parse_file_to_list_of_tables(file: bytes | str) -> list:
+def _parse_file_to_list_of_tables(file: bytes | str) -> list[str]:
+    """
+    Read file and verify it is a valid XER. Parse file into a list of tables.
+    """
+
+    # TODO: Add ability to read UploadFile from fastapi.
+
     if not any([isinstance(file, bytes), isinstance(file, str)]):
         raise TypeError(f"TypeError: expected type 'bytes' or 'str', got {type(file)}")
 
@@ -67,6 +74,7 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
 
 def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
     """Convert row of values to dictionary objects"""
+
     return {
         key.strip(): _empty_str_to_none(val) for key, val in tuple(zip(columns, values))
     }
