@@ -14,11 +14,14 @@ class Xer:
         _xer_dict = xer_to_dict(file)
         self.version = _xer_dict["version"]
         self.export_date = _xer_dict["export_date"]
-        self.projects = tuple(
+        self.project = tuple(
             Project(**proj)
             for proj in _xer_dict["tables"].get("PROJECT", [])
             if proj["export_flag"] == "Y"
         )
+
+        self.projwbs: list(dict) = _xer_dict["tables"].get("PROJWBS", [])
+        self.calendar: list(dict) = _xer_dict["tables"].get("CALENDAR", [])
 
 
 def xer_to_dict(file: bytes | str) -> dict:
