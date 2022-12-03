@@ -2,10 +2,23 @@
 # xer_parser.py
 
 from datetime import datetime
+from schemas.project import Project
 
 __all__ = ("xer_to_dict",)
 
 CODEC = "cp1252"
+
+
+class Xer:
+    def __init__(self, file: bytes | str) -> None:
+        _xer_dict = xer_to_dict(file)
+        self.version = _xer_dict["version"]
+        self.export_date = _xer_dict["export_date"]
+        self.projects = tuple(
+            Project(**proj)
+            for proj in _xer_dict["tables"].get("PROJECT", [])
+            if proj["export_flag"] == "Y"
+        )
 
 
 def xer_to_dict(file: bytes | str) -> dict:

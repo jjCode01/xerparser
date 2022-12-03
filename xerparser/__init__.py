@@ -1,4 +1,4 @@
 try:
-    from .xer_parser import *
+    from xerparser.xer_parser import *
 except ImportError:
     pass
