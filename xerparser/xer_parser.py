@@ -2,9 +2,13 @@
 # xer_parser.py
 
 from datetime import datetime
-from schemas.project import Project
+from xerparser.schemas import *
 
-__all__ = ("xer_to_dict",)
+
+__all__ = (
+    "xer_to_dict",
+    "Xer",
+)
 
 CODEC = "cp1252"
 
@@ -12,16 +16,15 @@ CODEC = "cp1252"
 class Xer:
     def __init__(self, file: bytes | str) -> None:
         _xer_dict = xer_to_dict(file)
-        self.version = _xer_dict["version"]
-        self.export_date = _xer_dict["export_date"]
-        self.project = tuple(
-            Project(**proj)
-            for proj in _xer_dict["tables"].get("PROJECT", [])
-            if proj["export_flag"] == "Y"
-        )
+        self.version: str = _xer_dict["version"]
+        self.export_date: datetime = _xer_dict["export_date"]
 
-        self.projwbs: list(dict) = _xer_dict["tables"].get("PROJWBS", [])
-        self.calendar: list(dict) = _xer_dict["tables"].get("CALENDAR", [])
+        _tables: dict[str, dict] = _xer_dict["tables"]
+        self.project: list[Project] = _tables.get("PROJECT", [])
+        self.projwbs: list[WbsNode] = _tables.get("PROJWBS", [])
+        self.calendar: list[SchedCalendar] = _tables.get("CALENDAR", [])
+        self.task: list[Task] = _tables.get("TASK", [])
+        self.taskpred: list[TaskPred] = _tables.get("TASKPRED", [])
 
 
 def xer_to_dict(file: bytes | str) -> dict:
@@ -39,12 +42,11 @@ def xer_to_dict(file: bytes | str) -> dict:
     xer_data["version"] = version
     xer_data["export_date"] = datetime.strptime(export_date, "%Y-%m-%d")
 
-    tables = {
+    xer_data["tables"] = {
         name: rows for table in table_list for name, rows in _parse_table(table).items()
     }
 
-    xer_data["tables"] = tables
-    xer_data["errors"] = _find_xer_errors(tables)
+    xer_data["errors"] = _find_xer_errors(xer_data["tables"])
 
     return xer_data
 
@@ -55,19 +57,17 @@ def _parse_file_to_list_of_tables(file: bytes | str) -> list[str]:
     """
 
     # TODO: Add ability to read UploadFile from fastapi.
-
-    if not any([isinstance(file, bytes), isinstance(file, str)]):
-        raise TypeError(f"TypeError: expected type 'bytes' or 'str', got {type(file)}")
-
-    if isinstance(file, str):
-        with open(file, encoding=CODEC, errors="ignore") as f:
-            file_as_str = f.read()
-
-    elif isinstance(file, bytes):
+    if isinstance(file, bytes):
         file_as_str = file.decode(CODEC, errors="ignore")
+    else:
+        try:
+            with open(file, encoding=CODEC, errors="ignore") as f:
+                file_as_str = f.read()
+        except:
+            raise TypeError("TypeError: invalid XER file")
 
     if not file_as_str.startswith("ERMHDR"):
-        raise ValueError(f"ValueError: invalid XER file")
+        raise TypeError("TypeError: invalid XER file")
 
     return file_as_str.split("%T\t")
 
@@ -78,22 +78,31 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     lines = table.split("\n")
     name = lines.pop(0).strip()  # First line is the table name
     cols = lines.pop(0).split("\t")[1:]  # Second line is the column labels
-    table = {
-        name: [
-            _row_to_dict(cols, line.split("\t")[1:])
-            for line in lines
-            if line and not line.startswith("%E")
-        ]
-    }
+    if name in TABLE_TO_CLASS:
+        table = {
+            name: [
+                TABLE_TO_CLASS[name](**_row_to_dict(cols, line.split("\t")[1:]))
+                for line in lines
+                if line and not line.startswith("%E")
+            ]
+        }
+    else:
+        table = {
+            name: [
+                _row_to_dict(cols, line.split("\t")[1:])
+                for line in lines
+                if line and not line.startswith("%E")
+            ]
+        }
     return table
 
 
 def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
     """Convert row of values to dictionary objects"""
-
-    return {
+    row = {
         key.strip(): _empty_str_to_none(val) for key, val in tuple(zip(columns, values))
     }
+    return row
 
 
 def _empty_str_to_none(value: str) -> str | None:
@@ -140,16 +149,36 @@ def _find_xer_errors(tables: dict) -> list[str]:
             errors.append(f"Missing Table {t2} Required for Table {t1}")
 
     # check for tasks assigned to an invalid calendar (not included in CALENDAR TABLE)
-    clndr_ids = [c["clndr_id"] for c in tables.get("CALENDAR", [])]
+    clndr_ids = [c.clndr_id for c in tables.get("CALENDAR", [])]
     tasks_with_invalid_calendar = [
-        task for task in tables.get("TASK", []) if not task["clndr_id"] in clndr_ids
+        task for task in tables.get("TASK", []) if not task.clndr_id in clndr_ids
     ]
     if tasks_with_invalid_calendar:
-        invalid_cal_count = len(
-            set([t["clndr_id"] for t in tasks_with_invalid_calendar])
-        )
+        invalid_cal_count = len(set([t.clndr_id for t in tasks_with_invalid_calendar]))
         errors.append(
             f"XER is Missing {invalid_cal_count} Calendars Assigned to {len(tasks_with_invalid_calendar)} Tasks"
         )
 
     return errors
+
+
+if __name__ == "__main__":
+    from pathlib import Path
+
+    directory = "/home/jesse/xer_files/"
+    # xer_directory = os.path.join(directory, "xer_files")
+    files = Path(directory).glob("*.xer")
+
+    for file in files:
+        print(file)
+        xer = Xer(file)
+        print(xer.version, xer.export_date)
+        for proj in xer.project:
+            print(
+                proj.proj_short_name,
+                f"Data Date: {proj.last_recalc_date: %d-%b-%Y}",
+                f"End Date: {proj.scd_end_date: %d-%b-%Y}",
+                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.task)):,}",
+                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.taskpred)):,}",
+            )
+            print("------------------------------\n")
