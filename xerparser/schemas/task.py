@@ -67,7 +67,7 @@ class TaskType(Enum):
         return self is self.TT_Task
 
 
-class Task(BaseModel):
+class TASK(BaseModel):
     task_id: str
     proj_id: str
     wbs_id: str
@@ -117,7 +117,7 @@ class Task(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    def __eq__(self, __o: "Task") -> bool:
+    def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
 
     def __hash__(self) -> int:

@@ -2,7 +2,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class Project(BaseModel):
+class PROJECT(BaseModel):
     proj_id: str
     project_flag: str
     proj_short_name: str

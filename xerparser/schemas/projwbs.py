@@ -2,7 +2,7 @@ from typing import Iterator
 from pydantic import BaseModel
 
 
-class WbsNode(BaseModel):
+class PROJWBS(BaseModel):
     """A class to represent a schedule WBS node."""
 
     wbs_id: str
@@ -14,12 +14,12 @@ class WbsNode(BaseModel):
     wbs_name: str
     parent_wbs_id: str
     assignments: int = 0
-    parent: "WbsNode" = None
+    parent: "PROJWBS" = None
 
     class Config:
         arbitrary_types_allowed = True
 
-    def __eq__(self, __o: "WbsNode") -> bool:
+    def __eq__(self, __o: "PROJWBS") -> bool:
         self_path = WbsLinkedList(self)
         other_path = WbsLinkedList(__o)
         return self_path.short_name_path(False) == other_path.short_name_path(False)
@@ -34,7 +34,7 @@ class WbsNode(BaseModel):
 
 
 class WbsLinkedList:
-    def __init__(self, tail: WbsNode = None) -> None:
+    def __init__(self, tail: PROJWBS = None) -> None:
         self.tail = tail
 
     def __eq__(self, __o: "WbsLinkedList") -> bool:
@@ -43,7 +43,7 @@ class WbsLinkedList:
     def __hash__(self) -> int:
         return hash(self.short_name_path())
 
-    def iter_path(self, include_proj_node=False) -> Iterator[WbsNode]:
+    def iter_path(self, include_proj_node=False) -> Iterator[PROJWBS]:
         node = self.tail
         if not include_proj_node and node.is_project_node:
             node = None

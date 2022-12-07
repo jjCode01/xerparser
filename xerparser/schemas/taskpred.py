@@ -1,10 +1,10 @@
 from datetime import datetime
 
 from pydantic import BaseModel
-from xerparser.schemas.task import Task
+from xerparser.schemas.task import TASK
 
 
-class TaskPred(BaseModel):
+class TASKPRED(BaseModel):
     task_pred_id: str
     task_id: str
     pred_task_id: str
@@ -15,13 +15,13 @@ class TaskPred(BaseModel):
     float_path: int | None
     aref: datetime | None
     arls: datetime | None
-    predecessor: Task = None
-    successor: Task = None
+    predecessor: TASK = None
+    successor: TASK = None
 
     class Config:
         arbitrary_types_allowed = True
 
-    def __eq__(self, __o: "TaskPred") -> bool:
+    def __eq__(self, __o: "TASKPRED") -> bool:
         return (
             self.predecessor == __o.predecessor
             and self.successor == __o.successor

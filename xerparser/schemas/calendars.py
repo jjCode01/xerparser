@@ -122,7 +122,7 @@ class WeekDay:
         return self.hours != 0
 
 
-class SchedCalendar(BaseModel):
+class CALENDAR(BaseModel):
     """A class to represent a schedule Calendar."""
 
     clndr_id: str
@@ -136,7 +136,7 @@ class SchedCalendar(BaseModel):
     clndr_data: str
     assignments: int = 0
 
-    def __eq__(self, __o: "SchedCalendar") -> bool:
+    def __eq__(self, __o: "CALENDAR") -> bool:
         """
         Compare two Calendar objects and return True if equal, False if not equal.
         """
@@ -225,7 +225,7 @@ class SchedCalendar(BaseModel):
 
 
 def _calc_work_hours(
-    clndr: SchedCalendar, date_to_calc: datetime, start_time: time, end_time: time
+    clndr: CALENDAR, date_to_calc: datetime, start_time: time, end_time: time
 ) -> float:
     """
     Calculate the work hours for a given day based on a start time, end time,
@@ -283,7 +283,7 @@ def _calc_work_hours(
     return round(day_work_hrs, 3)
 
 
-def _get_workday(cldnr: SchedCalendar, date: datetime) -> WeekDay:
+def _get_workday(cldnr: CALENDAR, date: datetime) -> WeekDay:
     """Get the WeekDay object associated with a date."""
     clean_date = date.replace(microsecond=0, second=0, minute=0, hour=0)
     if clean_date in cldnr.work_exceptions.keys():
@@ -314,7 +314,7 @@ def _parse_work_day(day: str) -> WeekDay:
     return WeekDay(weekday, shift_hours_tuple)
 
 
-def is_workday(clndr: SchedCalendar, date_to_check: datetime) -> bool:
+def is_workday(clndr: CALENDAR, date_to_check: datetime) -> bool:
     """Checks if a date is a workday in a Calendar object
 
     Args:
@@ -346,7 +346,7 @@ def is_workday(clndr: SchedCalendar, date_to_check: datetime) -> bool:
 
 
 def iter_nonwork_exceptions(
-    clndr: SchedCalendar, start: datetime, end: datetime
+    clndr: CALENDAR, start: datetime, end: datetime
 ) -> Iterator[datetime]:
     """Iterate through nonwork exceptions (i.e. holidays) between two dates.
 
@@ -378,7 +378,7 @@ def iter_nonwork_exceptions(
 
 
 def iter_workdays(
-    clndr: SchedCalendar, start_date: datetime, end_date: datetime
+    clndr: CALENDAR, start_date: datetime, end_date: datetime
 ) -> Iterator[datetime]:
     """Yields valid workdays between 2 dates
 
@@ -409,7 +409,7 @@ def iter_workdays(
 
 
 def rem_hours_per_day(
-    clndr: SchedCalendar, start_date: datetime, end_date: datetime
+    clndr: CALENDAR, start_date: datetime, end_date: datetime
 ) -> list[tuple[datetime, float]]:
     """
     Calculate the remaining workhours per day in a given date range.

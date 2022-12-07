@@ -2,6 +2,7 @@
 # xer_parser.py
 
 from datetime import datetime
+from pydantic import BaseModel
 from xerparser.schemas import *
 
 
@@ -18,13 +19,14 @@ class Xer:
         _xer_dict = xer_to_dict(file)
         self.version: str = _xer_dict["version"]
         self.export_date: datetime = _xer_dict["export_date"]
+        self.tables = Tables(**_xer_dict["tables"])
 
-        _tables: dict[str, dict] = _xer_dict["tables"]
-        self.project: list[Project] = _tables.get("PROJECT", [])
-        self.projwbs: list[WbsNode] = _tables.get("PROJWBS", [])
-        self.calendar: list[SchedCalendar] = _tables.get("CALENDAR", [])
-        self.task: list[Task] = _tables.get("TASK", [])
-        self.taskpred: list[TaskPred] = _tables.get("TASKPRED", [])
+        # _tables: dict[str, dict] = _xer_dict["tables"]
+        # self.project: list[PROJECT] = _tables.get("PROJECT", [])
+        # self.projwbs: list[PROJWBS] = _tables.get("PROJWBS", [])
+        # self.calendar: list[CALENDAR] = _tables.get("CALENDAR", [])
+        # self.task: list[TASK] = _tables.get("TASK", [])
+        # self.taskpred: list[TASKPRED] = _tables.get("TASKPRED", [])
 
 
 def xer_to_dict(file: bytes | str) -> dict:
@@ -173,12 +175,12 @@ if __name__ == "__main__":
         print(file)
         xer = Xer(file)
         print(xer.version, xer.export_date)
-        for proj in xer.project:
+        for proj in xer.tables.project:
             print(
                 proj.proj_short_name,
                 f"Data Date: {proj.last_recalc_date: %d-%b-%Y}",
                 f"End Date: {proj.scd_end_date: %d-%b-%Y}",
-                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.task)):,}",
-                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.taskpred)):,}",
+                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.tables.task)):,}",
+                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables.taskpred)):,}",
             )
             print("------------------------------\n")

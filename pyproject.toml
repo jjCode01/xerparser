@@ -11,6 +11,7 @@ repository = "https://github.com/jjCode01/xerparser"
 [tool.poetry.dependencies]
 python = "^3.10"
 pydantic = "^1.10.2"
+html-sanitizer = "^1.9.3"
 
 
 [build-system]
