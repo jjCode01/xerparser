@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from enum import Enum
 
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.project import PROJECT
@@ -17,6 +18,13 @@ TABLE_TO_CLASS = {
     "TASK": TASK,
     "TASKPRED": TASKPRED,
 }
+
+XER_TABLES = ("ACCOUNT", "CALENDAR", "PROJECT", "PROJWBS", "RSRC", "TASK", "TASKPRED")
+
+
+class Tbl(Enum):
+    ACCOUNT = ACCOUNT
+    CALENDAR = CALENDAR
 
 
 class Tables(BaseModel):

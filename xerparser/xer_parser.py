@@ -19,7 +19,7 @@ class Xer:
         _xer_dict = xer_to_dict(file)
         self.version: str = _xer_dict["version"]
         self.export_date: datetime = _xer_dict["export_date"]
-        self.tables = Tables(**_xer_dict["tables"])
+        self.tables = _xer_dict["tables"]
 
         # _tables: dict[str, dict] = _xer_dict["tables"]
         # self.project: list[PROJECT] = _tables.get("PROJECT", [])
@@ -53,25 +53,52 @@ def xer_to_dict(file: bytes | str) -> dict:
     return xer_data
 
 
-def _parse_file_to_list_of_tables(file: bytes | str) -> list[str]:
+def _parse_file_to_list_of_tables(file) -> list[str]:
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
 
     # TODO: Add ability to read UploadFile from fastapi.
-    if isinstance(file, bytes):
-        file_as_str = file.decode(CODEC, errors="ignore")
+    file_as_str = ""
+
+    try:
+        file_as_str = _read_file_path(file)
+    except:
+        pass
     else:
-        try:
-            with open(file, encoding=CODEC, errors="ignore") as f:
-                file_as_str = f.read()
-        except:
-            raise TypeError("TypeError: invalid XER file")
+        return file_as_str
 
-    if not file_as_str.startswith("ERMHDR"):
-        raise TypeError("TypeError: invalid XER file")
+    try:
+        file_as_str = _read_file_bytes(file)
+    except:
+        pass
+    else:
+        return file_as_str
 
-    return file_as_str.split("%T\t")
+    try:
+        file_as_str = file.read().decode(CODEC, errors="ignore")
+    except:
+        raise ValueError("Cannot Read File")
+    else:
+        return _verify_file(file_as_str)
+
+
+def _read_file_path(file):
+    with open(file, encoding=CODEC, errors="ignore") as f:
+        file_as_str = f.read()
+    return _verify_file(file_as_str)
+
+
+def _read_file_bytes(file: bytes):
+    file_as_str = file.decode(CODEC, errors="ignore")
+    return _verify_file(file_as_str)
+
+
+def _verify_file(_file: str) -> list[str]:
+    if not _file.startswith("ERMHDR"):
+        raise ValueError(f"ValueError: invalid XER file")
+
+    return _file.split("%T\t")
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
@@ -80,23 +107,21 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     lines = table.split("\n")
     name = lines.pop(0).strip()  # First line is the table name
     cols = lines.pop(0).split("\t")[1:]  # Second line is the column labels
-    if name in TABLE_TO_CLASS:
-        table = {
-            name: [
-                TABLE_TO_CLASS[name](**_row_to_dict(cols, line.split("\t")[1:]))
-                for line in lines
-                if line and not line.startswith("%E")
-            ]
-        }
-    else:
-        table = {
-            name: [
-                _row_to_dict(cols, line.split("\t")[1:])
-                for line in lines
-                if line and not line.startswith("%E")
-            ]
-        }
+    table = {
+        name: [
+            _eval_table_row(name, cols, line.split("\t")[1:])
+            for line in lines
+            if line and not line.startswith("%E")
+        ]
+    }
     return table
+
+
+def _eval_table_row(name, col, row):
+    if name in XER_TABLES:
+        return eval(name)(**_row_to_dict(col, row))
+
+    return _row_to_dict(col, row)
 
 
 def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
@@ -175,12 +200,12 @@ if __name__ == "__main__":
         print(file)
         xer = Xer(file)
         print(xer.version, xer.export_date)
-        for proj in xer.tables.project:
+        for proj in xer.tables["PROJECT"]:
             print(
                 proj.proj_short_name,
                 f"Data Date: {proj.last_recalc_date: %d-%b-%Y}",
                 f"End Date: {proj.scd_end_date: %d-%b-%Y}",
-                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.tables.task)):,}",
-                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables.taskpred)):,}",
+                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.tables['TASK'])):,}",
+                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables['TASKPRED'])):,}",
             )
             print("------------------------------\n")
