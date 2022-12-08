@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel
 
+from xerparser.schemas import CALENDAR, PROJWBS
+
 # from xer_api.data.sched_calendar import SchedCalendar
 # from xer_api.data.wbs import WbsNode
 
@@ -111,8 +113,8 @@ class TASK(BaseModel):
     driving_path_flag: str
     create_date: datetime
     update_date: datetime
-    # calendar: SchedCalendar = None
-    # wbs: WbsNode = None
+    calendar: SchedCalendar = None
+    wbs: WbsNode = None
 
     class Config:
         arbitrary_types_allowed = True
