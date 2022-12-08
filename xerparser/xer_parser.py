@@ -37,68 +37,66 @@ def xer_to_dict(file: bytes | str) -> dict:
         dict: Dictionary of the xer information and data tables
     """
     xer_data = {}
-    table_list = _parse_file_to_list_of_tables(file)
+    table_list = _split_file_into_tables(file)
 
     # The first row in the xer file includes information about the file
     version, export_date = table_list.pop(0).strip().split("\t")[1:3]
     xer_data["version"] = version
     xer_data["export_date"] = datetime.strptime(export_date, "%Y-%m-%d")
-
     xer_data["tables"] = {
         name: rows for table in table_list for name, rows in _parse_table(table).items()
     }
-
     xer_data["errors"] = _find_xer_errors(xer_data["tables"])
 
     return xer_data
 
 
-def _parse_file_to_list_of_tables(file) -> list[str]:
+def _split_file_into_tables(file) -> list[str]:
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
 
     # TODO: Add ability to read UploadFile from fastapi.
-    file_as_str = ""
+    file_contents = ""
 
     try:
-        file_as_str = _read_file_path(file)
+        file_contents = _read_file_path(file)
     except:
         pass
     else:
-        return file_as_str
+        return file_contents
 
     try:
-        file_as_str = _read_file_bytes(file)
+        file_contents = _read_file_bytes(file)
     except:
         pass
     else:
-        return file_as_str
+        return file_contents
 
     try:
-        file_as_str = file.read().decode(CODEC, errors="ignore")
+        file_contents = file.read().decode(CODEC, errors="ignore")
     except:
         raise ValueError("Cannot Read File")
     else:
-        return _verify_file(file_as_str)
+        return _verify_file(file_contents)
 
 
-def _read_file_path(file):
+def _read_file_path(file) -> list[str]:
     with open(file, encoding=CODEC, errors="ignore") as f:
         file_as_str = f.read()
     return _verify_file(file_as_str)
 
 
-def _read_file_bytes(file: bytes):
+def _read_file_bytes(file: bytes) -> list[str]:
     file_as_str = file.decode(CODEC, errors="ignore")
     return _verify_file(file_as_str)
 
 
-def _verify_file(_file: str) -> list[str]:
-    if not _file.startswith("ERMHDR"):
+def _verify_file(file_contents: str) -> list[str]:
+    if not file_contents.startswith("ERMHDR"):
         raise ValueError(f"ValueError: invalid XER file")
 
-    return _file.split("%T\t")
+    return file_contents.split("%T\t")
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
@@ -118,10 +116,18 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
 
 
 def _eval_table_row(name, col, row):
-    if name in XER_TABLES:
-        return eval(name)(**_row_to_dict(col, row))
+    # if name in TABLE_TO_CLASS:
+    #     return TABLE_TO_CLASS[name](**_row_to_dict(col, row))
 
-    return _row_to_dict(col, row)
+    try:
+        return TableMap[name].value(**_row_to_dict(col, row))
+    except KeyError:
+        return _row_to_dict(col, row)
+
+    # if name in TABLE_TO_CLASS:
+    #     return TABLE_TO_CLASS[name](**_row_to_dict(col, row))
+
+    # return _row_to_dict(col, row)
 
 
 def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
