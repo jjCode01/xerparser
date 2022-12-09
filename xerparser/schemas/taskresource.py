@@ -1,52 +1,9 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from pydantic import BaseModel
+from xerparser.schemas.account import ACCOUNT
+from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.task import TASK
-
-
-class RSRC(BaseModel):
-    """
-    A class to represent a Resource.
-    """
-
-    rsrc_id: str
-    clndr_id: str
-    rsrc_name: str
-    rsrc_short_name: str
-    cost_qty_type: str
-    active_flag: str
-    rsrc_type: str
-
-    def __eq__(self, __o: "RSRC") -> bool:
-        return all(
-            (
-                self.rsrc_name == __o.rsrc_name,
-                self.rsrc_short_name == __o.rsrc_short_name,
-                self.rsrc_type == __o.rsrc_type,
-            )
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.rsrc_name, self.rsrc_short_name, self.rsrc_type))
-
-
-class ACCOUNT(BaseModel):
-    """
-    A class to represent a cost account assigned to a Task Resource.
-    """
-
-    acct_id: str
-    acct_name: str
-    acct_short_name: str
-
-    def __eq__(self, __o: "ACCOUNT") -> bool:
-        return (
-            self.acct_name == __o.acct_name
-            and self.acct_short_name == __o.acct_short_name
-        )
-
-    def __hash__(self) -> int:
-        return hash((self.acct_name, self.acct_short_name))
 
 
 @dataclass
@@ -102,9 +59,12 @@ class TASKRSRC(BaseModel):
     act_this_per_cost: float
     act_this_per_qty: float
     rsrc_type: str
-    task: TASK
-    account: ACCOUNT | None
-    resource: RSRC
+    task: TASK = None
+    account: ACCOUNT | None = None
+    resource: RSRC = None
+
+    class config:
+        arbitrary_types_allowed = True
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (

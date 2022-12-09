@@ -4,9 +4,6 @@ from pydantic import BaseModel
 
 from xerparser.schemas import CALENDAR, PROJWBS
 
-# from xer_api.data.sched_calendar import SchedCalendar
-# from xer_api.data.wbs import WbsNode
-
 
 class ConstraintType(Enum):
     CS_ALAP = "As Late as Possible"
@@ -113,8 +110,8 @@ class TASK(BaseModel):
     driving_path_flag: str
     create_date: datetime
     update_date: datetime
-    calendar: SchedCalendar = None
-    wbs: WbsNode = None
+    calendar: CALENDAR = None
+    wbs: PROJWBS = None
 
     class Config:
         arbitrary_types_allowed = True

@@ -2,7 +2,6 @@
 # xer_parser.py
 
 from datetime import datetime
-from pydantic import BaseModel
 from xerparser.schemas import *
 
 
@@ -19,14 +18,15 @@ class Xer:
         _xer_dict = xer_to_dict(file)
         self.version: str = _xer_dict["version"]
         self.export_date: datetime = _xer_dict["export_date"]
-        self.tables = _xer_dict["tables"]
 
-        # _tables: dict[str, dict] = _xer_dict["tables"]
-        # self.project: list[PROJECT] = _tables.get("PROJECT", [])
-        # self.projwbs: list[PROJWBS] = _tables.get("PROJWBS", [])
-        # self.calendar: list[CALENDAR] = _tables.get("CALENDAR", [])
-        # self.task: list[TASK] = _tables.get("TASK", [])
-        # self.taskpred: list[TASKPRED] = _tables.get("TASKPRED", [])
+        _tables: dict = _xer_dict["tables"]
+        self.projects: dict[str, PROJECT] = {
+            proj.proj_id: proj for proj in _tables.get("PROJECT", [])
+        }
+
+        self.tasks: dict[str, TASK] = {
+            task.task_id: task for task in _tables.get("TASK", [])
+        }
 
 
 def xer_to_dict(file: bytes | str) -> dict:
@@ -55,8 +55,6 @@ def _split_file_into_tables(file) -> list[str]:
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
-
-    # TODO: Add ability to read UploadFile from fastapi.
     file_contents = ""
 
     try:
@@ -105,36 +103,31 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     lines = table.split("\n")
     name = lines.pop(0).strip()  # First line is the table name
     cols = lines.pop(0).split("\t")[1:]  # Second line is the column labels
-    table = {
-        name: [
-            _eval_table_row(name, cols, line.split("\t")[1:])
-            for line in lines
-            if line and not line.startswith("%E")
-        ]
-    }
-    return table
+
+    data = [
+        _eval_row(name, _row_to_dict(cols, row))
+        for row in lines
+        if row and not row.startswith("%E")
+    ]
+
+    return {name: data}
 
 
-def _eval_table_row(name, col, row):
-    # if name in TABLE_TO_CLASS:
-    #     return TABLE_TO_CLASS[name](**_row_to_dict(col, row))
+def _eval_row(name: str, row):
+    if name in TABLE_MAP:
+        obj = TABLE_MAP[name][0]
+        return obj(**row)
 
-    try:
-        return TableMap[name].value(**_row_to_dict(col, row))
-    except KeyError:
-        return _row_to_dict(col, row)
-
-    # if name in TABLE_TO_CLASS:
-    #     return TABLE_TO_CLASS[name](**_row_to_dict(col, row))
-
-    # return _row_to_dict(col, row)
+    return row
 
 
-def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
+def _row_to_dict(columns: list[str], row: str) -> dict:
     """Convert row of values to dictionary objects"""
+    values = row.split("\t")[1:]
     row = {
         key.strip(): _empty_str_to_none(val) for key, val in tuple(zip(columns, values))
     }
+
     return row
 
 
@@ -206,12 +199,12 @@ if __name__ == "__main__":
         print(file)
         xer = Xer(file)
         print(xer.version, xer.export_date)
-        for proj in xer.tables["PROJECT"]:
+        for proj in xer.projects.values():
             print(
                 proj.proj_short_name,
                 f"Data Date: {proj.last_recalc_date: %d-%b-%Y}",
                 f"End Date: {proj.scd_end_date: %d-%b-%Y}",
-                f"Tasks: {sum((task.proj_id == proj.proj_id for task in xer.tables['TASK'])):,}",
-                f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables['TASKPRED'])):,}",
+                f"Tasks: {sum(task.proj_id == proj.proj_id for task in xer.tasks.values()):,}",
+                # f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables['TASKPRED'])):,}",
             )
             print("------------------------------\n")
