@@ -2,7 +2,10 @@ from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel
 
-from xerparser.schemas import CALENDAR, PROJWBS
+from xerparser.schemas.calendars import CALENDAR
+from xerparser.schemas.projwbs import PROJWBS
+from xerparser.schemas.taskrsrc import TASKRSRC
+from xerparser.schemas.taskmemo import TASKMEMO
 
 
 class ConstraintType(Enum):
@@ -112,6 +115,10 @@ class TASK(BaseModel):
     update_date: datetime
     calendar: CALENDAR = None
     wbs: PROJWBS = None
+    predecessors: tuple = None
+    successors: tuple = None
+    resources: tuple[TASKRSRC] = None
+    notebooks: tuple[TASKMEMO] = None
 
     class Config:
         arbitrary_types_allowed = True
@@ -124,6 +131,13 @@ class TASK(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.task_code} - {self.task_name}"
+
+    @property
+    def budgeted_cost(self) -> dict:
+        if not self.resources:
+            return 0.0
+
+        return sum((res.cost.budget for res in self.resources))
 
     @property
     def constraints(self) -> dict:

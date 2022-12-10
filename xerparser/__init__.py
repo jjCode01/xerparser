@@ -1,4 +1,5 @@
 try:
-    from xerparser.xer_parser import *
+    from xerparser.src.parser import xer_to_dict
+    from xerparser.src.xer import Xer
 except ImportError:
     pass

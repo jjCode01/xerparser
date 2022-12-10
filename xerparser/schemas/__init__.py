@@ -3,7 +3,7 @@ from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.memotype import MEMOTYPE
 from xerparser.schemas.project import PROJECT
 from xerparser.schemas.projwbs import PROJWBS
-from xerparser.schemas.taskresource import TASKRSRC
+from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskpred import TASKPRED

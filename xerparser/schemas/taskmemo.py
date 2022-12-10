@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 import re
 from html_sanitizer import Sanitizer
-from xerparser.schemas.task import TASK
-from xerparser.schemas.memotype import MEMOTYPE
+
+# from xerparser.schemas.task import TASK
+# from xerparser.schemas.memotype import MEMOTYPE
 
 
 class TASKMEMO(BaseModel):
@@ -11,7 +12,7 @@ class TASKMEMO(BaseModel):
     proj_id: str
     task_id: str
     task_memo: str
-    task: TASK = None
+    # task: TASK = None
     topic: str = None
 
     class config:

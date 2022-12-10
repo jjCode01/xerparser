@@ -3,7 +3,6 @@ from datetime import datetime
 from pydantic import BaseModel
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
-from xerparser.schemas.task import TASK
 
 
 @dataclass
@@ -59,7 +58,6 @@ class TASKRSRC(BaseModel):
     act_this_per_cost: float
     act_this_per_qty: float
     rsrc_type: str
-    task: TASK = None
     account: ACCOUNT | None = None
     resource: RSRC = None
 
