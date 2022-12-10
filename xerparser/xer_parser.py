@@ -2,6 +2,7 @@
 # xer_parser.py
 
 from datetime import datetime
+from typing import Iterator
 from xerparser.schemas import *
 
 
@@ -15,18 +16,109 @@ CODEC = "cp1252"
 
 class Xer:
     def __init__(self, file: bytes | str) -> None:
-        _xer_dict = xer_to_dict(file)
-        self.version: str = _xer_dict["version"]
-        self.export_date: datetime = _xer_dict["export_date"]
+        _tables = _split_to_tables(_read_file(file))
 
-        _tables: dict = _xer_dict["tables"]
+        self.version: str = _tables["ERMHDR"][0]
+        self.export_date = datetime.strptime(_tables["ERMHDR"][1], "%Y-%m-%d")
+
         self.projects: dict[str, PROJECT] = {
-            proj.proj_id: proj for proj in _tables.get("PROJECT", [])
+            proj["proj_id"]: PROJECT(**proj)
+            for proj in self._parse_table_rows(_tables.get("PROJECT"))
+            if proj["export_flag"] == "Y"
         }
+
+        self.accounts: dict[str, ACCOUNT] = {
+            acct["acct_id"]: ACCOUNT(**acct)
+            for acct in self._parse_table_rows(_tables.get("ACCOUNT"))
+        }
+
+        self.notebooks: dict[str, MEMOTYPE] = {
+            topic["memo_type_id"]: MEMOTYPE(**topic)
+            for topic in self._parse_table_rows(_tables.get("MEMOTYPE"))
+        }
+
+        self.resources: dict[str, RSRC] = {
+            rsrc["rsrc_id"]: RSRC(**rsrc)
+            for rsrc in self._parse_table_rows(_tables.get("RSRC"))
+        }
+
+        self.calendars: dict[str, CALENDAR] = {
+            cal["clndr_id"]: CALENDAR(**cal)
+            for cal in self._parse_table_rows(_tables.get("CALENDAR"))
+        }
+
+        self.wbs: dict[str, PROJWBS] = {
+            wbs["wbs_id"]: PROJWBS(**wbs)
+            for wbs in self._parse_table_rows(_tables.get("PROJWBS"))
+            if wbs["proj_id"] in self.projects
+        }
+
+        for wbs in self.wbs.values():
+            if not wbs.is_project_node:
+                wbs.parent = self.wbs[wbs.parent_wbs_id]
+            else:
+                self.projects[wbs.proj_id].name = wbs.wbs_name
 
         self.tasks: dict[str, TASK] = {
-            task.task_id: task for task in _tables.get("TASK", [])
+            task.task_id: task for task in self._iter_tasks(_tables.get("TASK"))
         }
+
+        self.task_notes: dict[tuple, TASKMEMO] = {
+            (note.task.task_code, note.topic): note
+            for note in self._iter_memos(_tables.get("TASKMEMO"))
+        }
+
+        self.relationships: dict[tuple, TASKPRED] = {
+            (rel.predecessor.task_code, rel.successor.task_code, rel.link): rel
+            for rel in self._iter_relationships(_tables.get("TASKPRED"))
+        }
+
+        self.task_resources: dict[tuple, TASKRSRC] = {
+            res.taskrsrc_id: res
+            for res in self._iter_resources(_tables.get("TASKRSRC"))
+        }
+
+    def _iter_tasks(self, table: list) -> Iterator[TASK]:
+        for task in self._parse_table_rows(table):
+            if task["proj_id"] in self.projects:
+                calendar = self.calendars[task["clndr_id"]]
+                calendar.assignments += 1
+                wbs = self.wbs[task["wbs_id"]]
+                wbs.assignments += 1
+                yield TASK(calendar=calendar, wbs=wbs, **task)
+
+    def _iter_memos(self, table: list) -> Iterator[TASKMEMO]:
+        for memo in self._parse_table_rows(table):
+            if memo["proj_id"] in self.projects:
+                task = self.tasks[memo["task_id"]]
+                topic = self.notebooks[memo["memo_type_id"]].memo_type
+                yield TASKMEMO(task=task, topic=topic, **memo)
+
+    def _iter_relationships(self, table: list) -> Iterator[TASKPRED]:
+        for rel in self._parse_table_rows(table):
+            if rel["proj_id"] in self.projects and rel["pred_proj_id"] in self.projects:
+                pred = self.tasks[rel["pred_task_id"]]
+                succ = self.tasks[rel["task_id"]]
+                yield TASKPRED(predecessor=pred, successor=succ, **rel)
+
+    def _iter_resources(self, table: list) -> Iterator[TASKRSRC]:
+        for res in self._parse_table_rows(table):
+            if res["proj_id"] in self.projects:
+                task = self.tasks[res["task_id"]]
+                rsrc = self.resources.get(res["rsrc_id"])
+                account = self.accounts.get(res["acct_id"])
+                yield TASKRSRC(task=task, resource=rsrc, account=account, **res)
+
+    def _parse_table_rows(self, table: list[str] | None):
+        if table:
+            cols = table[0].split("\t")[1:]  # First line is the column labels
+            for row in table[1:]:
+                if row and not row.startswith("%E"):
+                    values = row.split("\t")[1:]
+                    yield {
+                        key.strip(): _empty_str_to_none(value)
+                        for key, value in tuple(zip(cols, values))
+                    }
 
 
 def xer_to_dict(file: bytes | str) -> dict:
@@ -37,7 +129,7 @@ def xer_to_dict(file: bytes | str) -> dict:
         dict: Dictionary of the xer information and data tables
     """
     xer_data = {}
-    table_list = _split_file_into_tables(file)
+    table_list = _split_to_tables(_read_file(file))
 
     # The first row in the xer file includes information about the file
     version, export_date = table_list.pop(0).strip().split("\t")[1:3]
@@ -51,7 +143,7 @@ def xer_to_dict(file: bytes | str) -> dict:
     return xer_data
 
 
-def _split_file_into_tables(file) -> list[str]:
+def _read_file(file) -> list[str]:
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
@@ -76,25 +168,41 @@ def _split_file_into_tables(file) -> list[str]:
     except:
         raise ValueError("Cannot Read File")
     else:
-        return _verify_file(file_contents)
+        return file_contents
 
 
 def _read_file_path(file) -> list[str]:
     with open(file, encoding=CODEC, errors="ignore") as f:
         file_as_str = f.read()
-    return _verify_file(file_as_str)
+    return file_as_str
 
 
 def _read_file_bytes(file: bytes) -> list[str]:
     file_as_str = file.decode(CODEC, errors="ignore")
-    return _verify_file(file_as_str)
+    return file_as_str
 
 
-def _verify_file(file_contents: str) -> list[str]:
+def _split_to_tables(file_contents: str) -> dict[str, str]:
     if not file_contents.startswith("ERMHDR"):
         raise ValueError(f"ValueError: invalid XER file")
 
-    return file_contents.split("%T\t")
+    tables = file_contents.split("%T\t")
+
+    return {
+        name: data for table in tables for name, data in _parse_tbl_name(table).items()
+    }
+
+
+def _parse_tbl_name(table: str) -> dict:
+    if table.startswith("ERMHDR"):
+        values = table.strip().split("\t")
+        name = values.pop(0).strip()
+        return {name: values}
+
+    lines = table.split("\n")
+    name = lines[0].strip()
+    data = lines[1:]
+    return {name: data}
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
@@ -202,9 +310,10 @@ if __name__ == "__main__":
         for proj in xer.projects.values():
             print(
                 proj.proj_short_name,
-                f"Data Date: {proj.last_recalc_date: %d-%b-%Y}",
-                f"End Date: {proj.scd_end_date: %d-%b-%Y}",
-                f"Tasks: {sum(task.proj_id == proj.proj_id for task in xer.tasks.values()):,}",
-                # f"Relationships: {sum((rel.proj_id == proj.proj_id for rel in xer.tables['TASKPRED'])):,}",
+                proj.name,
+                f"\n\tData Date: {proj.last_recalc_date: %d-%b-%Y}",
+                f"\n\tEnd Date: {proj.scd_end_date: %d-%b-%Y}",
+                f"\n\tTasks: {sum(task.proj_id == proj.proj_id for task in xer.tasks.values()):,}",
+                f"\n\tRelationships: {sum((rel.proj_id == proj.proj_id for rel in xer.relationships.values())):,}",
             )
             print("------------------------------\n")

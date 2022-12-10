@@ -11,7 +11,7 @@ class PROJECT(BaseModel):
     plan_end_date: datetime | None
     scd_end_date: datetime
     add_date: datetime
-    last_fin_dates_id: int | None
+    last_fin_dates_id: str | None
     last_schedule_date: datetime | None
     export_flag: str
     name: str = ""

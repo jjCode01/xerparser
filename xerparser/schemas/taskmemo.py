@@ -12,7 +12,7 @@ class TASKMEMO(BaseModel):
     task_id: str
     task_memo: str
     task: TASK = None
-    type: MEMOTYPE = None
+    topic: str = None
 
     class config:
         arbitrary_types_allowed = True
