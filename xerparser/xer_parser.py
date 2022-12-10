@@ -15,17 +15,11 @@ CODEC = "cp1252"
 
 
 class Xer:
-    def __init__(self, file: bytes | str) -> None:
+    def __init__(self, file: bytes | str, proj_id: str = None) -> None:
         _tables = _split_to_tables(_read_file(file))
 
         self.version: str = _tables["ERMHDR"][0]
         self.export_date = datetime.strptime(_tables["ERMHDR"][1], "%Y-%m-%d")
-
-        self.projects: dict[str, PROJECT] = {
-            proj["proj_id"]: PROJECT(**proj)
-            for proj in self._parse_table_rows(_tables.get("PROJECT"))
-            if proj["export_flag"] == "Y"
-        }
 
         self.accounts: dict[str, ACCOUNT] = {
             acct["acct_id"]: ACCOUNT(**acct)
@@ -46,6 +40,16 @@ class Xer:
             cal["clndr_id"]: CALENDAR(**cal)
             for cal in self._parse_table_rows(_tables.get("CALENDAR"))
         }
+
+        self.projects: dict[str, PROJECT] = {
+            proj["proj_id"]: PROJECT(**proj)
+            for proj in self._parse_table_rows(_tables.get("PROJECT"))
+            if proj["export_flag"] == "Y"
+            and (not proj_id or proj["proj_id"] == proj_id)
+        }
+
+        if not self.projects:
+            raise ValueError(f"{proj_id} is an invalid project id")
 
         self.wbs: dict[str, PROJWBS] = {
             wbs["wbs_id"]: PROJWBS(**wbs)
