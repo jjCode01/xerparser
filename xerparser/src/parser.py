@@ -1,3 +1,6 @@
+# xerparser
+# xer.py
+
 from datetime import datetime
 
 CODEC = "cp1252"
@@ -76,9 +79,7 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     name = lines.pop(0).strip()  # First line is the table name
     cols = lines.pop(0).split("\t")[1:]  # Second line is the column labels
 
-    data = [
-        _row_to_dict(cols, row) for row in lines if row and not row.startswith("%E")
-    ]
+    data = [_row_to_dict(cols, row) for row in lines if row.startswith("%R")]
 
     return {name: data}
 

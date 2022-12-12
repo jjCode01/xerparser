@@ -1,5 +1,9 @@
+# xerparser
+# task.py
+
 from datetime import datetime
 from enum import Enum
+from functools import cached_property
 from pydantic import BaseModel
 
 from xerparser.schemas.calendars import CALENDAR
@@ -70,6 +74,8 @@ class TaskType(Enum):
 
 
 class TASK(BaseModel):
+    """A class to represent a scehdule activity."""
+
     task_id: str
     proj_id: str
     wbs_id: str
@@ -122,6 +128,7 @@ class TASK(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        keep_untouched = (cached_property,)
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
@@ -132,12 +139,17 @@ class TASK(BaseModel):
     def __str__(self) -> str:
         return f"{self.task_code} - {self.task_name}"
 
-    @property
-    def budgeted_cost(self) -> dict:
+    @cached_property
+    def actual_cost(self) -> float:
         if not self.resources:
             return 0.0
+        return sum((res.act_total_cost for res in self.resources))
 
-        return sum((res.cost.budget for res in self.resources))
+    @cached_property
+    def budgeted_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.target_cost for res in self.resources))
 
     @property
     def constraints(self) -> dict:
@@ -198,6 +210,12 @@ class TASK(BaseModel):
     def percent_type(self) -> PercentType:
         return PercentType[self.complete_pct_type]
 
+    @cached_property
+    def remaining_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.remain_cost for res in self.resources))
+
     @property
     def remaining_duration(self) -> int:
         return int(self.remain_drtn_hr_cnt / 8)
@@ -209,6 +227,12 @@ class TASK(BaseModel):
     @property
     def status(self) -> TaskStatus:
         return TaskStatus[self.status_code]
+
+    @cached_property
+    def this_period_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.act_this_per_cost for res in self.resources))
 
     @property
     def total_float(self) -> int | None:

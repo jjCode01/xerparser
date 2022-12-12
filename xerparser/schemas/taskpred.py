@@ -1,10 +1,14 @@
-from datetime import datetime
+# xerparser
+# taskpred.py
 
+from datetime import datetime
 from pydantic import BaseModel
 from xerparser.schemas.task import TASK
 
 
 class TASKPRED(BaseModel):
+    """A class to represent a relationship between two activities."""
+
     task_pred_id: str
     task_id: str
     pred_task_id: str

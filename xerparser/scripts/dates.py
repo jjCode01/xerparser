@@ -75,14 +75,18 @@ def conv_time(time_str: str) -> time:
     return datetime.strptime(time_str, "%H:%M").time()
 
 
-def date_variance_days(dt1: datetime, dt2: datetime) -> int | str:
+def date_variance_days(dt1: datetime, dt2: datetime) -> int | None:
+    """Calculate variance in days between two dates."""
+
     if not isinstance(dt1, datetime) or not isinstance(dt2, datetime):
-        return "-"
+        return
 
     return (dt1 - dt2).days
 
 
 def date_to_str(date, include_weekday: bool = False) -> str:
+    """Convert datetime object to string."""
+
     if date is None:
         return "-"
 

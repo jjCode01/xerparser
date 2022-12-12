@@ -1,15 +1,20 @@
+# xerparser
+# taskrsrc.py
+
 from dataclasses import dataclass, field
 from datetime import datetime
-from pydantic import BaseModel
+
+# from functools import cached_property
+from pydantic import BaseModel, Field
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
+
+# from xerparser.schemas.task import TASK
 
 
 @dataclass
 class ResourceValues:
-    """
-    A class to represent resource cost or unit quantity values.
-    """
+    """A class to represent resource cost or unit quantity values."""
 
     budget: float
     actual: float
@@ -29,11 +34,9 @@ class ResourceValues:
 
 
 class TASKRSRC(BaseModel):
-    """
-    A class to represent a resource assigned to a schedule activity.
-    """
+    """A class to represent a resource assigned to a activity."""
 
-    taskrsrc_id: str
+    uid: str = Field(alias="taskrsrc_id")
     task_id: str
     proj_id: str
     acct_id: str | None
@@ -63,11 +66,11 @@ class TASKRSRC(BaseModel):
 
     class config:
         arbitrary_types_allowed = True
+        # keep_untouched = (cached_property,)
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (
-            self.task == __o.task
-            and self.resource == __o.resource
+            self.resource == __o.resource
             and self.account == __o.account
             and self.target_qty == __o.target_qty
             and self.target_lag_drtn_hr_cnt == __o.target_lag_drtn_hr_cnt
@@ -77,7 +80,6 @@ class TASKRSRC(BaseModel):
     def __hash__(self) -> int:
         return hash(
             (
-                self.task,
                 self.resource,
                 self.account,
                 self.target_qty,
@@ -86,8 +88,35 @@ class TASKRSRC(BaseModel):
             )
         )
 
-    def __str__(self) -> str:
-        return f"{self.task.task_code} | {self.resource.rsrc_name} | ${self.cost.budget:,.2f}"
+    @property
+    def act_total_cost(self) -> float:
+        return self.act_reg_cost + self.act_ot_cost
+
+    @property
+    def act_total_qty(self) -> float:
+        return self.act_reg_qty + self.act_ot_qty
+
+    @property
+    def at_completion_cost(self) -> float:
+        return self.act_total_cost + self.remain_cost
+
+    @property
+    def at_completion_qty(self) -> float:
+        return self.act_total_qty + self.remain_qty
+
+    @property
+    def cost_percent(self) -> float:
+        return (
+            0.0 if self.target_cost == 0.0 else self.act_total_cost / self.target_cost
+        )
+
+    @property
+    def cost_variance(self) -> float:
+        return round(self.at_completion_cost - self.target_cost, 2)
+
+    @property
+    def finish(self) -> datetime:
+        return (self.act_end_date, self.reend_date)[self.act_end_date is None]
 
     @property
     def lag(self) -> int:
@@ -99,31 +128,5 @@ class TASKRSRC(BaseModel):
         return self.resource.rsrc_type[3:]
 
     @property
-    def earned_value(self) -> float:
-        return self.cost.budget * self.task.percent_complete
-
-    @property
-    def finish(self) -> datetime:
-        return (self.act_end_date, self.reend_date)[self.act_end_date is None]
-
-    @property
     def start(self) -> datetime:
         return (self.act_start_date, self.restart_date)[self.act_start_date is None]
-
-    @property
-    def cost(self) -> ResourceValues:
-        return ResourceValues(
-            budget=self.target_cost,
-            actual=self.act_reg_cost + self.act_ot_cost,
-            this_period=self.act_this_per_cost,
-            remaining=self.remain_cost,
-        )
-
-    @property
-    def unit_qty(self) -> ResourceValues:
-        return ResourceValues(
-            budget=self.target_qty,
-            actual=self.act_reg_qty + self.act_ot_qty,
-            this_period=self.act_this_per_qty,
-            remaining=self.remain_qty,
-        )

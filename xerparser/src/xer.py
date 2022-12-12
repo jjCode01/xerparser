@@ -157,8 +157,8 @@ if __name__ == "__main__":
             print(
                 proj.proj_short_name,
                 proj.name,
-                f"\n\tData Date: {proj.last_recalc_date: %d-%b-%Y}",
-                f"\n\tEnd Date: {proj.scd_end_date: %d-%b-%Y}",
+                f"\n\tData Date: {proj.data_date: %d-%b-%Y}",
+                f"\n\tEnd Date: {proj.finish_date: %d-%b-%Y}",
                 f"\n\tTasks: {len(proj.tasks):,}",
                 f"\n\tRelationships: {len(proj.relationships):,}",
             )

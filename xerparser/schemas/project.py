@@ -1,33 +1,111 @@
+# xerparser
+# project.py
+
 from datetime import datetime
-from pydantic import BaseModel
+from functools import cached_property
+from pydantic import BaseModel, Field, validator
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 
 
 class PROJECT(BaseModel):
-    proj_id: str
-    project_flag: str
-    proj_short_name: str
-    last_recalc_date: datetime
-    plan_start_date: datetime
-    plan_end_date: datetime | None
-    scd_end_date: datetime
+    """
+    A class representing a schedule.
+
+    ...
+
+    Attributes
+    ----------
+    uid: str
+        Unique ID [proj_id]
+    actual_cost: float
+        Actual Cost to Date
     add_date: datetime
+        Date Added
+    budgeted_cost: float
+        Budgeted Cost
+    data_date: datetime
+        Schedule data date [last_recalc_date]
+    export_flag: bool
+        Project Export Flag
+    finish_date: datetime
+        Scheduled Finish [scd_end_date]
+    last_fin_dates_id: str | None
+        Last Financial Period
+    last_schedule_date: datetime | None
+        Date Last Scheduled
+    must_finish_date: datetime | None
+        Must Finish By [plan_end_date]
+    name: str
+        Project Name
+    plan_start_date: datetime
+        Planned Start
+    remaining_cost: float
+        Remaining Cost
+    short_name: str
+        Project ID [proj_short_name]
+    this_period_cost: float
+        Actual Cost this Period
+    relationships: list[TASKPRED]
+        List of Project Relationships
+    tasks: list[TASK]
+        List of Project Activities
+    wbs: list[PROJWBS]
+        List of Project WBS Nodes
+
+    """
+
+    # table fields from .xer file
+    uid: str = Field(alias="proj_id")
+    add_date: datetime
+    data_date: datetime = Field(alias="last_recalc_date")
+    export_flag: bool
+    finish_date: datetime = Field(alias="scd_end_date")
     last_fin_dates_id: str | None
     last_schedule_date: datetime | None
-    export_flag: str
+    must_finish_date: datetime | None = Field(alias="plan_end_date")
+    plan_start_date: datetime
+    short_name: str = Field(alias="proj_short_name")
+
+    # manually set from other tables
     name: str = ""
-    wbs: dict[str, PROJWBS] = None
     tasks: tuple[TASK] = None
     relationships: tuple[TASKPRED] = None
+    wbs: tuple[PROJWBS] = None
+
+    @validator("export_flag", pre=True)
+    def flag_to_bool(cls, value):
+        return value == "Y"
+
+    @validator("*", pre=True)
+    def empty_str_to_none(cls, value):
+        return (value, None)[value == ""]
 
     class Config:
         arbitrary_types_allowed = True
+        keep_untouched = (cached_property,)
 
-    @property
+    @cached_property
+    def actual_cost(self) -> float:
+        if not self.tasks:
+            return 0.0
+        return sum((task.actual_cost for task in self.tasks))
+
+    @cached_property
     def budgeted_cost(self) -> float:
         if not self.tasks:
             return 0.0
-
         return sum((task.budgeted_cost for task in self.tasks))
+
+    @cached_property
+    def remaining_cost(self) -> float:
+        if not self.tasks:
+            return 0.0
+        return sum((task.remaining_cost for task in self.tasks))
+
+    @cached_property
+    def this_period_cost(self) -> float:
+        if not self.tasks:
+            return 0.0
+        return sum((task.this_period_cost for task in self.tasks))

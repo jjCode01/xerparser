@@ -1,20 +1,35 @@
-from pydantic import BaseModel
+# xerparser
+# account.py
+
+from pydantic import BaseModel, Field
 
 
 class ACCOUNT(BaseModel):
     """
-    A class to represent a cost account assigned to a Task Resource.
+    A class to represent a cost account.
+
+    ...
+
+    Attributes
+    ----------
+    uid: str
+        Unique ID [acct_id]
+    description: str
+        Cost Account Description [acct_desc]
+    name: str
+        Cost Account Name [acct_name]
+    cost_code: str
+        Cost Account ID or Cost Code [acct_short_name]
+
     """
 
-    acct_id: str
-    acct_name: str
-    acct_short_name: str
+    uid: str = Field(alias="acct_id")
+    description: str | None
+    name: str = Field(alias="acct_name")
+    cost_code: str = Field(alias="acct_short_name")
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
-        return (
-            self.acct_name == __o.acct_name
-            and self.acct_short_name == __o.acct_short_name
-        )
+        return self.name == __o.name and self.cost_code == __o.cost_code
 
     def __hash__(self) -> int:
-        return hash((self.acct_name, self.acct_short_name))
+        return hash((self.name, self.short_name))

@@ -1,10 +1,11 @@
+# xerparser
+# rsrc.py
+
 from pydantic import BaseModel
 
 
 class RSRC(BaseModel):
-    """
-    A class to represent a Resource.
-    """
+    """A class to represent a Resource."""
 
     rsrc_id: str
     clndr_id: str
