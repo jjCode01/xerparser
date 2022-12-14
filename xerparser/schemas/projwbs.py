@@ -54,18 +54,18 @@ class PROJWBS(BaseModel):
     def flag_to_bool(cls, value):
         return value == "Y"
 
+    @validator("seq_num", pre=True)
+    def empty_str_to_none(cls, value):
+        return (value, None)[value == ""]
+
     def __eq__(self, __o: "PROJWBS") -> bool:
         self_path = WbsLinkedList(self)
         other_path = WbsLinkedList(__o)
-        return self_path.short_name_path(False) == other_path.short_name_path(False)
+        return self_path.code_path(False) == other_path.code_path(False)
 
     def __hash__(self) -> int:
         self_path = WbsLinkedList(self)
-        return hash(self_path.short_name_path(False))
-
-    @property
-    def is_project_node(self) -> bool:
-        return self.proj_node_flag == "Y"
+        return hash(self_path.code_path(False))
 
 
 class WbsLinkedList:
@@ -82,11 +82,9 @@ class WbsLinkedList:
 
     Methods
     ----------
-    ```python
     code_path(include_proj_node: bool=False) -> Iterator[PROJWBS]
     iter_path(include_proj_node: bool=False) -> str
     name_path(include_proj_node: bool=False) -> str
-    ```
 
     """
 
@@ -117,7 +115,7 @@ class WbsLinkedList:
             node = node.parent
 
     def code_path(self, include_proj_node=False) -> str:
-        """Generate full path of WBS Codes from head to tail
+        """Generate full path of WBS Codes from head to tail seperated by a dot
 
         Args:
             include_proj_node (bool, optional): Include Project Node as Head. Defaults to False.

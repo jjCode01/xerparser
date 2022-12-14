@@ -4,7 +4,7 @@
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
@@ -73,10 +73,37 @@ class TaskType(Enum):
         return self is self.TT_Task
 
 
+field_can_be_none = (
+    "total_float_hr_cnt",
+    "free_float_hr_cnt",
+    "remain_drtn_hr_cnt",
+    "target_drtn_hr_cnt",
+    "cstr_date",
+    "act_start_date",
+    "act_end_date",
+    "late_start_date",
+    "late_end_date",
+    "expect_end_date",
+    "early_start_date",
+    "early_end_date",
+    "restart_date",
+    "reend_date",
+    "rem_late_start_date",
+    "rem_late_end_date",
+    "cstr_type",
+    "suspend_date",
+    "resume_date",
+    "float_path",
+    "float_path_order",
+    "cstr_date2",
+    "cstr_type2",
+)
+
+
 class TASK(BaseModel):
     """A class to represent a scehdule activity."""
 
-    task_id: str
+    uid: str = Field(alias="task_id")
     proj_id: str
     wbs_id: str
     clndr_id: str
@@ -129,6 +156,14 @@ class TASK(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
+
+    # @validator("export_flag", pre=True)
+    # def flag_to_bool(cls, value):
+    #     return value == "Y"
+
+    @validator(*field_can_be_none, pre=True)
+    def empty_str_to_none(cls, value):
+        return (value, None)[value == ""]
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code

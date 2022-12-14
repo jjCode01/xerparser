@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, time
 
 
 def calc_time_var_hrs(start: time, end: time, ordered: bool = False) -> float:
-    """Calculate the hours between two time objects
+    """Calculate the variance in hours between two time objects
 
     Args:
         start (time): start time
@@ -10,7 +10,7 @@ def calc_time_var_hrs(start: time, end: time, ordered: bool = False) -> float:
         ordered (bool, optional): If False, reorder start and end times if start is greater than end. Defaults to False.
 
     Returns:
-        float: Duration between two times in hours
+        float: Variance between two times in hours
     """
 
     if not all(isinstance(t, time) for t in [start, end]):
@@ -29,7 +29,6 @@ def calc_time_var_hrs(start: time, end: time, ordered: bool = False) -> float:
 
 def clean_date(date: datetime) -> datetime:
     """Sets time value to 00:00:00 (12AM)"""
-
     if not isinstance(date, datetime):
         raise ValueError("Value Error: Argument must be a datetime object")
 
@@ -77,7 +76,6 @@ def conv_time(time_str: str) -> time:
 
 def date_variance_days(dt1: datetime, dt2: datetime) -> int | None:
     """Calculate variance in days between two dates."""
-
     if not isinstance(dt1, datetime) or not isinstance(dt2, datetime):
         return
 
@@ -86,7 +84,6 @@ def date_variance_days(dt1: datetime, dt2: datetime) -> int | None:
 
 def date_to_str(date, include_weekday: bool = False) -> str:
     """Convert datetime object to string."""
-
     if date is None:
         return "-"
 

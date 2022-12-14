@@ -1,7 +1,7 @@
 # xerparser
 # taskmemo.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import re
 from html_sanitizer import Sanitizer
 
@@ -9,7 +9,7 @@ from html_sanitizer import Sanitizer
 class TASKMEMO(BaseModel):
     """A class to represent a note assigned to an activity"""
 
-    memo_id: str
+    uid: str = Field(alias="memo_id")
     memo_type_id: str
     proj_id: str
     task_id: str

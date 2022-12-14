@@ -2,7 +2,7 @@
 # taskpred.py
 
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from xerparser.schemas.task import TASK
 
 
@@ -24,6 +24,10 @@ class TASKPRED(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    @validator("float_path", "aref", "arls", pre=True)
+    def empty_str_to_none(cls, value):
+        return (value, None)[value == ""]
 
     def __eq__(self, __o: "TASKPRED") -> bool:
         return (

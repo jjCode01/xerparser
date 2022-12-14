@@ -112,6 +112,9 @@ class WeekDay:
         return self.hours != 0
 
 
+CHECK_FOR_NONE = ("proj_id", "last_chng_date")
+
+
 class CALENDAR(BaseModel):
     """
     A class to represent a schedule Calendar.
@@ -145,7 +148,6 @@ class CALENDAR(BaseModel):
     is_default: bool = Field(alias="default_flag")
     name: str = Field(alias="clndr_name")
     proj_id: int | None
-    base_clndr_id: int | None
     last_chng_date: datetime | None
     type: str = Field(alias="clndr_type")
     data: str = Field(alias="clndr_data")
@@ -159,7 +161,7 @@ class CALENDAR(BaseModel):
     def flag_to_bool(cls, value):
         return value == "Y"
 
-    @validator("*", pre=True)
+    @validator("proj_id", "last_chng_date", pre=True)
     def empty_str_to_none(cls, value):
         return (value, None)[value == ""]
 

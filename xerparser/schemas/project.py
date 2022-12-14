@@ -8,6 +8,8 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 
+field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
+
 
 class PROJECT(BaseModel):
     """
@@ -78,7 +80,7 @@ class PROJECT(BaseModel):
     def flag_to_bool(cls, value):
         return value == "Y"
 
-    @validator("*", pre=True)
+    @validator(*field_can_be_none, pre=True)
     def empty_str_to_none(cls, value):
         return (value, None)[value == ""]
 

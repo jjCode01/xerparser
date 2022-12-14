@@ -6,10 +6,17 @@ A simple Python package that reads a P6 .xer file and converts it into a Python 
 Refer to the [Oracle Documentation]( https://docs.oracle.com/cd/F25600_01/English/Mapping_and_Schema/xer_import_export_data_map_project/index.htm) for more information regarding how data is mapped to the XER format.*  
 <br>
 ## Install
-**Windows**: pip install xerparser  
-**Linux/Mac**: pip3 install xerparser  
-<br>
-## Usage
+**Windows**:
+```bash
+pip install xerparser
+```
+**Linux/Mac**: 
+```bash
+pip3 install xerparser
+```
+<br>  
+
+## Usage  
 ```python
 xer_to_dict(file: str | bytes) -> dict
 ```  
@@ -20,11 +27,11 @@ from xerparser import xer_to_dict
 file = r"/path/to/file.xer"
 xer = xer_to_dict(file)
 ```
-The xer_to_dict function accepts .xer file passed as type **str** or type **bytes**.  
+The xer_to_dict function accepts .xer file passed as types **str**, **path**, or **bytes**.  
 The file and table data will be parsed and returned as a Python dictionary object contining the file and table data from the .xer.  
 <br>
 ## Keys / Attributes 
-**\["version"]** -> Version of P6 the .xer file was exported as.  <br>
+**\["version"]** -> Version of P6 the .xer file was exported as.  
 **\["export_date"]** -> Date the .xer file was exported from P6 (datetime object).  
 **\["errors"]** -> A list of potential errors in the .xer file based on common issues encountered when analyzing .xer files:  
 - Minimum required tables - an error is recorded if one of the following tables is missing:

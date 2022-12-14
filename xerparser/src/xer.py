@@ -58,11 +58,11 @@ class Xer:
         }
 
         self.tasks: dict[str, TASK] = {
-            task.task_id: task for task in self._iter_tasks(_tables.get("TASK", []))
+            task.uid: task for task in self._iter_tasks(_tables.get("TASK", []))
         }
 
         self.task_notes: dict[tuple, TASKMEMO] = {
-            note.memo_id: note for note in self._iter_memos(_tables.get("TASKMEMO", []))
+            note.uid: note for note in self._iter_memos(_tables.get("TASKMEMO", []))
         }
 
         self.relationships: dict[tuple, TASKPRED] = {
@@ -71,18 +71,17 @@ class Xer:
         }
 
         self.task_resources: dict[tuple, TASKRSRC] = {
-            res.taskrsrc_id: res
-            for res in self._iter_resources(_tables.get("TASKRSRC", []))
+            res.uid: res for res in self._iter_resources(_tables.get("TASKRSRC", []))
         }
 
         self._link_table_data()
 
     def _link_table_data(self) -> None:
         for wbs in self.wbs.values():
-            if not wbs.is_project_node:
+            if not wbs.is_proj_node:
                 wbs.parent = self.wbs[wbs.parent_wbs_id]
             else:
-                self.projects[wbs.proj_id].name = wbs.wbs_name
+                self.projects[wbs.proj_id].name = wbs.name
 
         for task, succ_logic in groupby(
             self.relationships.values(), lambda r: r.predecessor
@@ -123,7 +122,7 @@ class Xer:
         for memo in table:
             if memo["proj_id"] in self.projects:
                 # task = self.tasks[memo["task_id"]]
-                topic = self.notebooks[memo["memo_type_id"]].memo_type
+                topic = self.notebooks[memo["memo_type_id"]].topic
                 yield TASKMEMO(topic=topic, **memo)
 
     def _iter_relationships(self, table: list) -> Iterator[TASKPRED]:
@@ -155,7 +154,7 @@ if __name__ == "__main__":
         print(xer.export.version, xer.export.date)
         for proj in xer.projects.values():
             print(
-                proj.proj_short_name,
+                proj.short_name,
                 proj.name,
                 f"\n\tData Date: {proj.data_date: %d-%b-%Y}",
                 f"\n\tEnd Date: {proj.finish_date: %d-%b-%Y}",

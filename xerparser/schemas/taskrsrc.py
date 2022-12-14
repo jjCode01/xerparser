@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 # from functools import cached_property
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 
@@ -31,6 +31,17 @@ class ResourceValues:
 
     def __bool__(self) -> bool:
         return self.budget and self.actual
+
+
+field_can_be_none = (
+    "acct_id",
+    "act_start_date",
+    "act_end_date",
+    "restart_date",
+    "reend_date",
+    "rem_late_start_date",
+    "rem_late_end_date",
+)
 
 
 class TASKRSRC(BaseModel):
@@ -67,6 +78,10 @@ class TASKRSRC(BaseModel):
     class config:
         arbitrary_types_allowed = True
         # keep_untouched = (cached_property,)
+
+    @validator(*field_can_be_none, pre=True)
+    def empty_str_to_none(cls, value):
+        return (value, None)[value == ""]
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (
@@ -125,7 +140,7 @@ class TASKRSRC(BaseModel):
     @property
     def resource_type(self) -> str:
         """Resource type (Labor, Material, Non-Labor)"""
-        return self.resource.rsrc_type[3:]
+        return self.resource.type[3:]
 
     @property
     def start(self) -> datetime:

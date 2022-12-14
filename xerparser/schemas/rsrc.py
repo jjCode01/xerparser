@@ -1,28 +1,43 @@
 # xerparser
 # rsrc.py
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class RSRC(BaseModel):
-    """A class to represent a Resource."""
+    """
+    A class to represent a Resource.
 
-    rsrc_id: str
+    ...
+
+    Attributes
+    ----------
+    uid: str
+        Unique ID [rsrc_id]
+    clndr_id:
+        Unique ID of Calendar assigned to the resource
+    name:
+        Resource Name [rsrc_name]
+    short_name:
+        Resource ID [rsrc_short_name]
+    type: str
+        Resource Type [rsrc_type]
+    """
+
+    uid: str = Field(alias="rsrc_id")
     clndr_id: str
-    rsrc_name: str
-    rsrc_short_name: str
-    cost_qty_type: str
-    active_flag: str
-    rsrc_type: str
+    name: str = Field(alias="rsrc_name")
+    short_name: str = Field(alias="rsrc_short_name")
+    type: str = Field(alias="rsrc_type")
 
     def __eq__(self, __o: "RSRC") -> bool:
         return all(
             (
-                self.rsrc_name == __o.rsrc_name,
-                self.rsrc_short_name == __o.rsrc_short_name,
-                self.rsrc_type == __o.rsrc_type,
+                self.name == __o.name,
+                self.short_name == __o.short_name,
+                self.type == __o.type,
             )
         )
 
     def __hash__(self) -> int:
-        return hash((self.rsrc_name, self.rsrc_short_name, self.rsrc_type))
+        return hash((self.name, self.short_name, self.type))
