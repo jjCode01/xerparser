@@ -51,86 +51,52 @@ class Xer:
             if proj["export_flag"] == "Y"
         }
 
-        self.wbs: dict[str, PROJWBS] = {
-            wbs["wbs_id"]: self._set_wbs(**wbs)
-            for wbs in _tables.get("PROJWBS", [])
-            if wbs["proj_id"] in self.projects
-        }
+        for wbs in _tables.get("PROJWBS", []):
+            if proj := self.projects.get(wbs["proj_id"]):
+                proj.wbs[wbs["wbs_id"]] = self._set_wbs(**wbs)
 
-        self.tasks: dict[str, TASK] = {
-            task["task_id"]: self._set_task(**task)
-            for task in _tables.get("TASK", [])
-            if task["proj_id"] in self.projects
-        }
+        for task in _tables.get("TASK", []):
+            if proj := self.projects.get(task["proj_id"]):
+                proj.tasks[task["task_id"]] = self._set_task(**task)
 
-        self.task_resources: dict[str, TASKRSRC] = {
-            res["taskrsrc_id"]: self._set_taskrsrc(**res)
-            for res in _tables.get("TASKRSRC", [])
-            if res["proj_id"] in self.projects
-        }
+        for res in _tables.get("TASKRSRC", []):
+            if proj := self.projects.get(res["proj_id"]):
+                proj.tasks[res["task_id"]].resources.append(self._set_taskrsrc(**res))
 
-        self.task_notes: list[TASKMEMO] = sorted(
-            [self._set_memo(**note) for note in _tables.get("TASKMEMO", [])],
-            key=lambda n: n.task_id,
-        )
+        for memo in _tables.get("TASKMEMO", []):
+            if proj := self.projects.get(memo["proj_id"]):
+                proj.tasks[memo["task_id"]].memos.append(self._set_memo(**memo))
 
-        self.relationships: dict[tuple, TASKPRED] = {
-            rel["task_pred_id"]: self._set_taskpred(**rel)
-            for rel in _tables.get("TASKPRED", [])
-            if rel["proj_id"] in self.projects and rel["pred_proj_id"] in self.projects
-        }
+        for rel in _tables.get("TASKPRED", []):
+            if proj := self.projects.get(rel["proj_id"]):
+                proj.relationships[rel["task_pred_id"]] = self._set_taskpred(**rel)
 
-        self._link_table_data()
-
-    def _link_table_data(self) -> None:
-        for wbs in self.wbs.values():
-            if not wbs.is_proj_node:
-                wbs.parent = self.wbs[wbs.parent_wbs_id]
-
-        def sort_proj(obj):
-            return obj.proj_id
-
-        for proj_id, wbs in groupby(
-            sorted(self.wbs.values(), key=sort_proj), sort_proj
-        ):
-            self.projects[proj_id].wbs = tuple(wbs)
-
-        for proj_id, tasks in groupby(
-            sorted(self.tasks.values(), key=sort_proj), sort_proj
-        ):
-            self.projects[proj_id].tasks = tuple(tasks)
-
-        for proj_id, relationships in groupby(
-            sorted(self.relationships.values(), key=sort_proj), sort_proj
-        ):
-            self.projects[proj_id].relationships = tuple(relationships)
-
-        for proj_id, task_rsrcs in groupby(
-            sorted(self.task_resources.values(), key=sort_proj), sort_proj
-        ):
-            self.projects[proj_id].resources = tuple(task_rsrcs)
+        for proj in self.projects.values():
+            for wbs in proj.wbs.values():
+                # if not wbs.is_proj_node:
+                wbs.parent = proj.wbs.get(wbs.parent_wbs_id)
 
     def _set_memo(self, **kwargs) -> TASKMEMO:
         topic = self.notebooks[kwargs["memo_type_id"]].topic
-        task = self.tasks[kwargs["task_id"]]
+        task = self.projects[kwargs["proj_id"]].tasks[kwargs["task_id"]]
         return TASKMEMO(task=task, topic=topic, **kwargs)
 
     def _set_task(self, **kwargs) -> TASK:
         calendar = self.calendars[kwargs["clndr_id"]]
         calendar.assignments += 1
-        wbs = self.wbs[kwargs["wbs_id"]]
+        wbs = self.projects[kwargs["proj_id"]].wbs[kwargs["wbs_id"]]
         wbs.assignments += 1
         return TASK(calendar=calendar, wbs=wbs, **kwargs)
 
     def _set_taskpred(self, **kwargs) -> TASKPRED:
-        pred = self.tasks[kwargs["pred_task_id"]]
-        succ = self.tasks[kwargs["task_id"]]
+        pred = self.projects[kwargs["pred_proj_id"]].tasks[kwargs["pred_task_id"]]
+        succ = self.projects[kwargs["proj_id"]].tasks[kwargs["task_id"]]
         return TASKPRED(predecessor=pred, successor=succ, **kwargs)
 
     def _set_taskrsrc(self, **kwargs) -> TASKRSRC:
         rsrc = self.resources.get(kwargs["rsrc_id"])
         account = self.accounts.get(kwargs["acct_id"])
-        task = self.tasks.get(kwargs["task_id"])
+        task = self.projects[kwargs["proj_id"]].tasks[kwargs["task_id"]]
         return TASKRSRC(task=task, resource=rsrc, account=account, **kwargs)
 
     def _set_wbs(self, **kwargs) -> PROJWBS:

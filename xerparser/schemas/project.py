@@ -74,11 +74,9 @@ class PROJECT(BaseModel):
 
     # manually set from other tables
     name: str = ""
-    memos: tuple[TASKMEMO] = ()
-    tasks: tuple[TASK] = ()
-    relationships: tuple[TASKPRED] = ()
-    resources: tuple[TASKRSRC] = ()
-    wbs: tuple[PROJWBS] = ()
+    tasks: dict[str, TASK] = {}
+    relationships: dict[str, TASKPRED] = {}
+    wbs: dict[str, PROJWBS] = {}
 
     @validator("export_flag", pre=True)
     def flag_to_bool(cls, value):
@@ -96,20 +94,19 @@ class PROJECT(BaseModel):
     def actual_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((res.act_total_cost for res in self.resources))
+        return sum((task.actual_cost for task in self.tasks.values()))
 
     @property
     def actual_start(self) -> datetime:
         if not self.tasks:
             return self.plan_start_date
-
-        return min((task.start for task in self.tasks))
+        return min((task.start for task in self.tasks.values()))
 
     @property
     def budgeted_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((res.target_cost for res in self.resources))
+        return sum((task.budgeted_cost for task in self.tasks.values()))
 
     @property
     def original_duration(self) -> int:
@@ -119,7 +116,7 @@ class PROJECT(BaseModel):
     def remaining_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((res.remain_cost for res in self.resources))
+        return sum((task.remaining_cost for task in self.tasks.values()))
 
     @property
     def remaining_duration(self) -> int:
@@ -132,4 +129,4 @@ class PROJECT(BaseModel):
     def this_period_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((res.act_this_per_cost for res in self.resources))
+        return sum((task.this_period_cost for task in self.tasks.values()))

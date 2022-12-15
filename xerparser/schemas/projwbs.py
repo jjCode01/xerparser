@@ -19,6 +19,8 @@ class PROJWBS(BaseModel):
         Activity Assignment Count
     code: str
         WBS Code [wbs_short_name]
+    full_code: str
+        WBS Codes from Head to Tail seperated by a dot
     is_proj_node: bool
         Project Node Flag
     name: str
@@ -59,77 +61,20 @@ class PROJWBS(BaseModel):
         return (value, None)[value == ""]
 
     def __eq__(self, __o: "PROJWBS") -> bool:
-        self_path = WbsLinkedList(self)
-        other_path = WbsLinkedList(__o)
-        return self_path.code_path(False) == other_path.code_path(False)
+        return self.full_code == __o.full_code
 
     def __hash__(self) -> int:
-        self_path = WbsLinkedList(self)
-        return hash(self_path.code_path(False))
+        return hash(self.full_code)
 
+    @property
+    def full_code(self) -> str:
+        if self.is_proj_node:
+            return ""
 
-class WbsLinkedList:
-    """
-    A class representing a linked list of WBS nodes.
-
-    ...
-
-    Attributes
-    ----------
-    tail: PROJWBS
-        Last WBS Node in linked list
-
-
-    Methods
-    ----------
-    code_path(include_proj_node: bool=False) -> Iterator[PROJWBS]
-    iter_path(include_proj_node: bool=False) -> str
-    name_path(include_proj_node: bool=False) -> str
-
-    """
-
-    def __init__(self, tail: PROJWBS = None) -> None:
-        self.tail = tail
-
-    def __eq__(self, __o: "WbsLinkedList") -> bool:
-        return self.short_name_path() == __o.short_name_path()
-
-    def __hash__(self) -> int:
-        return hash(self.short_name_path())
-
-    def iter_path(self, include_proj_node=False) -> Iterator[PROJWBS]:
-        """Iterates through linked list from tail to head.
-
-        Args:
-            include_proj_node (bool, optional): Include Project Node as Head. Defaults to False.
-
-        Yields:
-            Iterator[PROJWBS]: WBS Node
-        """
-        node = self.tail
-        if not include_proj_node and node.is_project_node:
-            node = None
-
-        while node is not None and not node.is_project_node:
-            yield node
+        path = []
+        node = self
+        while node and not node.is_proj_node:
+            path.append(self.code)
             node = node.parent
 
-    def code_path(self, include_proj_node=False) -> str:
-        """Generate full path of WBS Codes from head to tail seperated by a dot
-
-        Args:
-            include_proj_node (bool, optional): Include Project Node as Head. Defaults to False.
-
-        Returns:
-            str: Full path of WBS Codes from head to tail
-        """
-        short_path = ".".join(
-            reversed([node.code for node in self.iter_path(include_proj_node)])
-        )
-        return short_path
-
-    def name_path(self, include_proj_node=False) -> str:
-        long_path = ".".join(
-            reversed([node.name for node in self.iter_path(include_proj_node)])
-        )
-        return long_path
+        return ".".join(reversed(path))

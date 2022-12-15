@@ -8,7 +8,6 @@ from datetime import datetime
 from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
-from xerparser.schemas.task import TASK
 
 
 @dataclass
@@ -72,7 +71,6 @@ class TASKRSRC(BaseModel):
     act_this_per_qty: float
     rsrc_type: str
     account: ACCOUNT | None
-    task: TASK
     resource: RSRC | None
 
     class config:
@@ -85,8 +83,7 @@ class TASKRSRC(BaseModel):
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (
-            self.task == __o.task
-            and self.resource == __o.resource
+            self.resource == __o.resource
             and self.account == __o.account
             and self.target_qty == __o.target_qty
             and self.target_lag_drtn_hr_cnt == __o.target_lag_drtn_hr_cnt
@@ -96,7 +93,6 @@ class TASKRSRC(BaseModel):
     def __hash__(self) -> int:
         return hash(
             (
-                self.task,
                 self.resource,
                 self.account,
                 self.target_qty,

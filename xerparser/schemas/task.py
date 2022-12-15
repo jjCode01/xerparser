@@ -8,6 +8,8 @@ from pydantic import BaseModel, Field, validator
 
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
+from xerparser.schemas.taskmemo import TASKMEMO
+from xerparser.schemas.taskrsrc import TASKRSRC
 
 
 class ConstraintType(Enum):
@@ -146,6 +148,8 @@ class TASK(BaseModel):
     update_date: datetime
     calendar: CALENDAR = None
     wbs: PROJWBS = None
+    memos: list[TASKMEMO] = []
+    resources: list[TASKRSRC] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -171,6 +175,18 @@ class TASK(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.task_code} - {self.task_name}"
+
+    @property
+    def actual_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.act_total_cost for res in self.resources))
+
+    @property
+    def budgeted_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.target_cost for res in self.resources))
 
     @property
     def constraints(self) -> dict:
@@ -228,6 +244,12 @@ class TASK(BaseModel):
         return PercentType[self.complete_pct_type]
 
     @property
+    def remaining_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.remain_cost for res in self.resources))
+
+    @property
     def remaining_duration(self) -> int:
         return int(self.remain_drtn_hr_cnt / 8)
 
@@ -238,6 +260,12 @@ class TASK(BaseModel):
     @property
     def status(self) -> TaskStatus:
         return TaskStatus[self.status_code]
+
+    @property
+    def this_period_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return sum((res.act_this_per_cost for res in self.resources))
 
     @property
     def total_float(self) -> int | None:
