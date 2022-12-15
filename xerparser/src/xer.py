@@ -102,27 +102,3 @@ class Xer:
             proj.name = wbs.name
 
         return wbs
-
-
-if __name__ == "__main__":
-    from pathlib import Path
-
-    directory = "/home/jesse/xer_files/"
-    # xer_directory = os.path.join(directory, "xer_files")
-    files = Path(directory).glob("*.xer")
-
-    for file in files:
-        print(file)
-        xer = Xer(file)
-        print(xer.export.version, xer.export.date)
-        for proj in xer.projects.values():
-            print(
-                proj.short_name,
-                proj.name,
-                f"\n\tData Date: {proj.data_date: %d-%b-%Y}",
-                f"\n\tEnd Date: {proj.finish_date: %d-%b-%Y}",
-                f"\n\tTasks: {len(proj.tasks):,}",
-                f"\n\tRelationships: {len(proj.relationships):,}",
-                f"\n\tBudgeted Cost: {proj.budgeted_cost:,.2f}",
-            )
-            print("------------------------------\n")

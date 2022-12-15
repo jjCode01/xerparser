@@ -26,41 +26,12 @@ def xer_to_dict(file: bytes | str) -> dict:
     return xer_data
 
 
-<<<<<<< HEAD:xerparser/xer_parser.py
-def _parse_file_to_list_of_tables(file) -> list[str]:
-=======
 def _read_file(file) -> list[str]:
->>>>>>> development:xerparser/src/parser.py
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
     file_contents = ""
 
-<<<<<<< HEAD:xerparser/xer_parser.py
-    # TODO: Add ability to read UploadFile from fastapi.
-    file_as_str = ""
-
-    if isinstance(file, bytes):
-        file_as_str = file.decode(CODEC, errors="ignore")
-    elif isinstance(file, str):
-        with open(file, encoding=CODEC, errors="ignore") as f:
-            file_as_str = f.read()
-    else:
-        # File is type ???
-        try:
-            file_as_str = file.read().decode(CODEC, errors="ignore")
-        except:
-            raise ValueError("Cannot Read File")
-
-    return _verify_file(file_as_str)
-
-
-def _verify_file(_file: str) -> list[str]:
-    if not _file.startswith("ERMHDR"):
-        raise ValueError(f"ValueError: invalid XER file")
-
-    return _file.split("%T\t")
-=======
     try:
         file_contents = _read_file_path(file)
     except:
@@ -99,7 +70,6 @@ def _split_tables(file_contents: str) -> dict[str, str]:
         raise ValueError(f"ValueError: invalid XER file")
 
     return file_contents.split("%T\t")
->>>>>>> development:xerparser/src/parser.py
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
