@@ -1,4 +1,2 @@
-try:
-    from .xer_parser import *
-except ImportError:
-    pass
+from xerparser.src.parser import xer_to_dict
+from xerparser.src.xer import Xer

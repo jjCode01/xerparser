@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xerparser"
-version = "0.2.11"
+version = "0.3.0"
 description = "Parse a P6 .xer file to a Python dictionary object."
 authors = ["Jesse <code@seqmanagement.com>"]
 license = "GPL-3.0-only"
@@ -10,6 +10,8 @@ repository = "https://github.com/jjCode01/xerparser"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pydantic = "^1.10.2"
+html-sanitizer = "^1.9.3"
 
 
 [build-system]

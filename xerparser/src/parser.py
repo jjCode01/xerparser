@@ -1,9 +1,7 @@
 # xerparser
-# xer_parser.py
+# xer.py
 
 from datetime import datetime
-
-__all__ = ("xer_to_dict",)
 
 CODEC = "cp1252"
 
@@ -16,28 +14,29 @@ def xer_to_dict(file: bytes | str) -> dict:
         dict: Dictionary of the xer information and data tables
     """
     xer_data = {}
-    table_list = _parse_file_to_list_of_tables(file)
+    table_list = _split_tables(_read_file(file))
 
     # The first row in the xer file includes information about the file
-    version, export_date = table_list.pop(0).strip().split("\t")[1:3]
-    xer_data["version"] = version
-    xer_data["export_date"] = datetime.strptime(export_date, "%Y-%m-%d")
-
-    tables = {
+    xer_data["ERMHDR"] = table_list.pop(0).strip().split("\t")[1:]
+    xer_data["tables"] = {
         name: rows for table in table_list for name, rows in _parse_table(table).items()
     }
-
-    xer_data["tables"] = tables
-    xer_data["errors"] = _find_xer_errors(tables)
+    xer_data["errors"] = _find_xer_errors(xer_data["tables"])
 
     return xer_data
 
 
+<<<<<<< HEAD:xerparser/xer_parser.py
 def _parse_file_to_list_of_tables(file) -> list[str]:
+=======
+def _read_file(file) -> list[str]:
+>>>>>>> development:xerparser/src/parser.py
     """
     Read file and verify it is a valid XER. Parse file into a list of tables.
     """
+    file_contents = ""
 
+<<<<<<< HEAD:xerparser/xer_parser.py
     # TODO: Add ability to read UploadFile from fastapi.
     file_as_str = ""
 
@@ -61,42 +60,62 @@ def _verify_file(_file: str) -> list[str]:
         raise ValueError(f"ValueError: invalid XER file")
 
     return _file.split("%T\t")
+=======
+    try:
+        file_contents = _read_file_path(file)
+    except:
+        pass
+    else:
+        return file_contents
+
+    try:
+        file_contents = _read_file_bytes(file)
+    except:
+        pass
+    else:
+        return file_contents
+
+    try:
+        file_contents = file.read().decode(CODEC, errors="ignore")
+    except:
+        raise ValueError("Cannot Read File")
+    else:
+        return file_contents
+
+
+def _read_file_path(file) -> list[str]:
+    with open(file, encoding=CODEC, errors="ignore") as f:
+        file_as_str = f.read()
+    return file_as_str
+
+
+def _read_file_bytes(file: bytes) -> list[str]:
+    file_as_str = file.decode(CODEC, errors="ignore")
+    return file_as_str
+
+
+def _split_tables(file_contents: str) -> dict[str, str]:
+    if not file_contents.startswith("ERMHDR"):
+        raise ValueError(f"ValueError: invalid XER file")
+
+    return file_contents.split("%T\t")
+>>>>>>> development:xerparser/src/parser.py
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
     """Parse table name, columns, and rows"""
 
-    lines = table.split("\n")
+    lines: list[str] = table.split("\n")
     name = lines.pop(0).strip()  # First line is the table name
-    cols = lines.pop(0).split("\t")[1:]  # Second line is the column labels
-    table = {
-        name: [
-            _row_to_dict(cols, line.split("\t")[1:])
-            for line in lines
-            if line and not line.startswith("%E")
-        ]
-    }
-    return table
+    cols = lines.pop(0).strip().split("\t")[1:]  # Second line is the column labels
 
+    data = [
+        dict(zip(cols, row.strip().split("\t")[1:]))
+        for row in lines
+        if row.startswith("%R")
+    ]
 
-def _row_to_dict(columns: list[str, str], values: list) -> dict[str, str]:
-    """Convert row of values to dictionary objects"""
-
-    return {
-        key.strip(): _empty_str_to_none(val) for key, val in tuple(zip(columns, values))
-    }
-
-
-def _empty_str_to_none(value: str) -> str | None:
-    """
-    Convert empty strings to type None.
-    For projects using pydantic, which does not automatically convert
-    empty strings to None and causes an error when creating a BaseModel schema.
-    """
-    if value == "":
-        return None
-
-    return value
+    return {name: data}
 
 
 def _find_xer_errors(tables: dict) -> list[str]:
