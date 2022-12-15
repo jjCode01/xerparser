@@ -8,8 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
-
-# from xerparser.schemas.task import TASK
+from xerparser.schemas.task import TASK
 
 
 @dataclass
@@ -72,8 +71,9 @@ class TASKRSRC(BaseModel):
     act_this_per_cost: float
     act_this_per_qty: float
     rsrc_type: str
-    account: ACCOUNT | None = None
-    resource: RSRC = None
+    account: ACCOUNT | None
+    task: TASK
+    resource: RSRC | None
 
     class config:
         arbitrary_types_allowed = True

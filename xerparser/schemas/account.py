@@ -36,4 +36,4 @@ class ACCOUNT(BaseModel):
         return self.name == __o.name and self.code == __o.code
 
     def __hash__(self) -> int:
-        return hash((self.name, self.short_name))
+        return hash((self.name, self.name))

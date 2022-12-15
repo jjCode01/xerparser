@@ -9,7 +9,7 @@ from xerparser.schemas.task import TASK
 class TASKPRED(BaseModel):
     """A class to represent a relationship between two activities."""
 
-    task_pred_id: str
+    uid: str = Field(alias="task_pred_id")
     task_id: str
     pred_task_id: str
     proj_id: str

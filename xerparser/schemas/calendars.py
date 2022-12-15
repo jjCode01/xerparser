@@ -112,9 +112,6 @@ class WeekDay:
         return self.hours != 0
 
 
-CHECK_FOR_NONE = ("proj_id", "last_chng_date")
-
-
 class CALENDAR(BaseModel):
     """
     A class to represent a schedule Calendar.
@@ -125,33 +122,31 @@ class CALENDAR(BaseModel):
     ----------
     uid: str
         Unique ID [clndr_id]
+    assignments: int
+        Activity Count Calendar is Assigned to
+    data: str
+        Calendar Data; Weekday and Exception Information
     is_default: bool
         Default Calendar [default_flag]
+    last_chng_date: datetime | None
+        Date Last Modified
     name: str
         Calendar Name [clndr_name]
     proj_id: str | None
         Unique Project ID for Project Level Calendars
-    base_clndr_id: str | None
-        Unique ID for Base Calendar
-    last_chng_date: datetime | None
-        Date Last Modified
     type: str
         Calendar Type (Global, Resource, or Project)
-    data: str
-        Calendar Data; Weekday and Exception Information
-    assignments: int
-        Activity Count Calendar is Assigned to
 
     """
 
     uid: str = Field(alias="clndr_id")
+    assignments: int = 0
+    data: str = Field(alias="clndr_data")
     is_default: bool = Field(alias="default_flag")
+    last_chng_date: datetime | None
     name: str = Field(alias="clndr_name")
     proj_id: int | None
-    last_chng_date: datetime | None
     type: str = Field(alias="clndr_type")
-    data: str = Field(alias="clndr_data")
-    assignments: int = 0
 
     @validator("type", pre=True)
     def set_clndr_type(cls, value):

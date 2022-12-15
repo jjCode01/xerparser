@@ -8,8 +8,6 @@ from pydantic import BaseModel, Field, validator
 
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
-from xerparser.schemas.taskrsrc import TASKRSRC
-from xerparser.schemas.taskmemo import TASKMEMO
 
 
 class ConstraintType(Enum):
@@ -109,7 +107,7 @@ class TASK(BaseModel):
     clndr_id: str
     phys_complete_pct: float
     complete_pct_type: str
-    task_type: str
+    type: TaskType = Field(alias="task_type")
     duration_type: str
     status_code: str
     task_code: str
@@ -143,27 +141,27 @@ class TASK(BaseModel):
     float_path_order: int | None
     cstr_date2: datetime | None
     cstr_type2: str | None
-    driving_path_flag: str
+    is_longest_path: bool = Field(alias="driving_path_flag")
     create_date: datetime
     update_date: datetime
     calendar: CALENDAR = None
     wbs: PROJWBS = None
-    predecessors: tuple = None
-    successors: tuple = None
-    resources: tuple[TASKRSRC] = None
-    notebooks: tuple[TASKMEMO] = None
 
     class Config:
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
-    # @validator("export_flag", pre=True)
-    # def flag_to_bool(cls, value):
-    #     return value == "Y"
+    @validator("is_longest_path", pre=True)
+    def flag_to_bool(cls, value):
+        return value == "Y"
 
     @validator(*field_can_be_none, pre=True)
     def empty_str_to_none(cls, value):
         return (value, None)[value == ""]
+
+    @validator("type", pre=True)
+    def type_to_tasktype(cls, value):
+        return TaskType[value]
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
@@ -173,18 +171,6 @@ class TASK(BaseModel):
 
     def __str__(self) -> str:
         return f"{self.task_code} - {self.task_name}"
-
-    @cached_property
-    def actual_cost(self) -> float:
-        if not self.resources:
-            return 0.0
-        return sum((res.act_total_cost for res in self.resources))
-
-    @cached_property
-    def budgeted_cost(self) -> float:
-        if not self.resources:
-            return 0.0
-        return sum((res.target_cost for res in self.resources))
 
     @property
     def constraints(self) -> dict:
@@ -212,14 +198,10 @@ class TASK(BaseModel):
         return not self.status.is_completed and self.total_float_hr_cnt <= 0
 
     @property
-    def is_longest_path(self) -> bool:
-        return self.driving_path_flag == "Y"
-
-    @property
     def original_duration(self) -> int:
         return int(self.target_drtn_hr_cnt / 8)
 
-    @property
+    @cached_property
     def percent_complete(self) -> float:
         if self.percent_type is PercentType.CP_Phys:
             return self.phys_complete_pct / 100
@@ -245,12 +227,6 @@ class TASK(BaseModel):
     def percent_type(self) -> PercentType:
         return PercentType[self.complete_pct_type]
 
-    @cached_property
-    def remaining_cost(self) -> float:
-        if not self.resources:
-            return 0.0
-        return sum((res.remain_cost for res in self.resources))
-
     @property
     def remaining_duration(self) -> int:
         return int(self.remain_drtn_hr_cnt / 8)
@@ -263,18 +239,8 @@ class TASK(BaseModel):
     def status(self) -> TaskStatus:
         return TaskStatus[self.status_code]
 
-    @cached_property
-    def this_period_cost(self) -> float:
-        if not self.resources:
-            return 0.0
-        return sum((res.act_this_per_cost for res in self.resources))
-
     @property
     def total_float(self) -> int | None:
         if self.total_float_hr_cnt is None:
             return
         return int(self.total_float_hr_cnt / 8)
-
-    @property
-    def type(self) -> TaskType:
-        return TaskType[self.task_type]

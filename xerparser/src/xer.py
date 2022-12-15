@@ -2,7 +2,7 @@
 # xer.py
 
 from itertools import groupby
-from typing import Iterator
+from collections import defaultdict
 from xerparser.src.parser import xer_to_dict
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.calendars import CALENDAR
@@ -52,26 +52,32 @@ class Xer:
         }
 
         self.wbs: dict[str, PROJWBS] = {
-            wbs["wbs_id"]: PROJWBS(**wbs)
+            wbs["wbs_id"]: self._set_wbs(**wbs)
             for wbs in _tables.get("PROJWBS", [])
             if wbs["proj_id"] in self.projects
         }
 
         self.tasks: dict[str, TASK] = {
-            task.uid: task for task in self._iter_tasks(_tables.get("TASK", []))
+            task["task_id"]: self._set_task(**task)
+            for task in _tables.get("TASK", [])
+            if task["proj_id"] in self.projects
         }
 
-        self.task_notes: dict[tuple, TASKMEMO] = {
-            note.uid: note for note in self._iter_memos(_tables.get("TASKMEMO", []))
+        self.task_resources: dict[str, TASKRSRC] = {
+            res["taskrsrc_id"]: self._set_taskrsrc(**res)
+            for res in _tables.get("TASKRSRC", [])
+            if res["proj_id"] in self.projects
         }
+
+        self.task_notes: list[TASKMEMO] = sorted(
+            [self._set_memo(**note) for note in _tables.get("TASKMEMO", [])],
+            key=lambda n: n.task_id,
+        )
 
         self.relationships: dict[tuple, TASKPRED] = {
-            (rel.predecessor.task_code, rel.successor.task_code, rel.link): rel
-            for rel in self._iter_relationships(_tables.get("TASKPRED", []))
-        }
-
-        self.task_resources: dict[tuple, TASKRSRC] = {
-            res.uid: res for res in self._iter_resources(_tables.get("TASKRSRC", []))
+            rel["task_pred_id"]: self._set_taskpred(**rel)
+            for rel in _tables.get("TASKPRED", [])
+            if rel["proj_id"] in self.projects and rel["pred_proj_id"] in self.projects
         }
 
         self._link_table_data()
@@ -80,65 +86,58 @@ class Xer:
         for wbs in self.wbs.values():
             if not wbs.is_proj_node:
                 wbs.parent = self.wbs[wbs.parent_wbs_id]
-            else:
-                self.projects[wbs.proj_id].name = wbs.name
 
-        for task, succ_logic in groupby(
-            self.relationships.values(), lambda r: r.predecessor
+        def sort_proj(obj):
+            return obj.proj_id
+
+        for proj_id, wbs in groupby(
+            sorted(self.wbs.values(), key=sort_proj), sort_proj
         ):
-            task.successors = tuple(succ_logic)
-
-        for task, pred_logic in groupby(
-            self.relationships.values(), lambda r: r.successor
-        ):
-            task.predecessors = tuple(pred_logic)
-
-        for task_id, resources in groupby(
-            self.task_resources.values(), lambda r: r.task_id
-        ):
-            self.tasks[task_id].resources = tuple(resources)
-
-        for proj_id, wbs in groupby(self.wbs.values(), lambda r: r.proj_id):
             self.projects[proj_id].wbs = tuple(wbs)
 
-        for proj_id, tasks in groupby(self.tasks.values(), lambda t: t.proj_id):
+        for proj_id, tasks in groupby(
+            sorted(self.tasks.values(), key=sort_proj), sort_proj
+        ):
             self.projects[proj_id].tasks = tuple(tasks)
 
         for proj_id, relationships in groupby(
-            self.relationships.values(), lambda r: r.proj_id
+            sorted(self.relationships.values(), key=sort_proj), sort_proj
         ):
             self.projects[proj_id].relationships = tuple(relationships)
 
-    def _iter_tasks(self, table: list) -> Iterator[TASK]:
-        for task in table:
-            if task["proj_id"] in self.projects:
-                calendar = self.calendars[task["clndr_id"]]
-                calendar.assignments += 1
-                wbs = self.wbs[task["wbs_id"]]
-                wbs.assignments += 1
-                yield TASK(calendar=calendar, wbs=wbs, **task)
+        for proj_id, task_rsrcs in groupby(
+            sorted(self.task_resources.values(), key=sort_proj), sort_proj
+        ):
+            self.projects[proj_id].resources = tuple(task_rsrcs)
 
-    def _iter_memos(self, table: list) -> Iterator[TASKMEMO]:
-        for memo in table:
-            if memo["proj_id"] in self.projects:
-                # task = self.tasks[memo["task_id"]]
-                topic = self.notebooks[memo["memo_type_id"]].topic
-                yield TASKMEMO(topic=topic, **memo)
+    def _set_memo(self, **kwargs) -> TASKMEMO:
+        topic = self.notebooks[kwargs["memo_type_id"]].topic
+        return TASKMEMO(topic=topic, **kwargs)
 
-    def _iter_relationships(self, table: list) -> Iterator[TASKPRED]:
-        for rel in table:
-            if rel["proj_id"] in self.projects and rel["pred_proj_id"] in self.projects:
-                pred = self.tasks[rel["pred_task_id"]]
-                succ = self.tasks[rel["task_id"]]
-                yield TASKPRED(predecessor=pred, successor=succ, **rel)
+    def _set_task(self, **kwargs) -> TASK:
+        calendar = self.calendars[kwargs["clndr_id"]]
+        calendar.assignments += 1
+        wbs = self.wbs[kwargs["wbs_id"]]
+        wbs.assignments += 1
+        return TASK(calendar=calendar, wbs=wbs, **kwargs)
 
-    def _iter_resources(self, table: list) -> Iterator[TASKRSRC]:
-        for res in table:
-            if res["proj_id"] in self.projects:
-                task = self.tasks[res["task_id"]]
-                rsrc = self.resources.get(res["rsrc_id"])
-                account = self.accounts.get(res["acct_id"])
-                yield TASKRSRC(task=task, resource=rsrc, account=account, **res)
+    def _set_taskpred(self, **kwargs) -> TASKPRED:
+        pred = self.tasks[kwargs["pred_task_id"]]
+        succ = self.tasks[kwargs["task_id"]]
+        return TASKPRED(predecessor=pred, successor=succ, **kwargs)
+
+    def _set_taskrsrc(self, **kwargs) -> TASKRSRC:
+        rsrc = self.resources.get(kwargs["rsrc_id"])
+        account = self.accounts.get(kwargs["acct_id"])
+        task = self.tasks.get(kwargs["task_id"])
+        return TASKRSRC(task=task, resource=rsrc, account=account, **kwargs)
+
+    def _set_wbs(self, **kwargs) -> PROJWBS:
+        wbs = PROJWBS(**kwargs)
+        if wbs.is_proj_node and (proj := self.projects.get(wbs.proj_id)):
+            proj.name = wbs.name
+
+        return wbs
 
 
 if __name__ == "__main__":
@@ -160,5 +159,6 @@ if __name__ == "__main__":
                 f"\n\tEnd Date: {proj.finish_date: %d-%b-%Y}",
                 f"\n\tTasks: {len(proj.tasks):,}",
                 f"\n\tRelationships: {len(proj.relationships):,}",
+                f"\n\tBudgeted Cost: {proj.budgeted_cost:,.2f}",
             )
             print("------------------------------\n")

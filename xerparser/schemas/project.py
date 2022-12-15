@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field, validator
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
+from xerparser.schemas.taskrsrc import TASKRSRC
 
 field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
 
@@ -72,9 +73,10 @@ class PROJECT(BaseModel):
 
     # manually set from other tables
     name: str = ""
-    tasks: tuple[TASK] = None
-    relationships: tuple[TASKPRED] = None
-    wbs: tuple[PROJWBS] = None
+    tasks: tuple[TASK] = ()
+    relationships: tuple[TASKPRED] = ()
+    resources: tuple[TASKRSRC] = ()
+    wbs: tuple[PROJWBS] = ()
 
     @validator("export_flag", pre=True)
     def flag_to_bool(cls, value):
@@ -88,26 +90,26 @@ class PROJECT(BaseModel):
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
-    @cached_property
+    @property
     def actual_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((task.actual_cost for task in self.tasks))
+        return sum((res.act_total_cost for res in self.resources))
 
-    @cached_property
+    @property
     def budgeted_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((task.budgeted_cost for task in self.tasks))
+        return sum((res.target_cost for res in self.resources))
 
-    @cached_property
+    @property
     def remaining_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((task.remaining_cost for task in self.tasks))
+        return sum((res.remain_cost for res in self.resources))
 
-    @cached_property
+    @property
     def this_period_cost(self) -> float:
         if not self.tasks:
             return 0.0
-        return sum((task.this_period_cost for task in self.tasks))
+        return sum((res.act_this_per_cost for res in self.resources))
