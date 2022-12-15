@@ -17,9 +17,6 @@ from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.ermhdr import ERMHDR
 
 
-__all__ = ("Xer",)
-
-
 class Xer:
     def __init__(self, file: bytes | str) -> None:
         _xer = xer_to_dict(file)
