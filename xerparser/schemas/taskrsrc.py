@@ -44,7 +44,7 @@ field_can_be_none = (
 
 
 class TASKRSRC(BaseModel):
-    """A class to represent a resource assigned to a activity."""
+    """A class to represent a resource assigned to an activity."""
 
     uid: str = Field(alias="taskrsrc_id")
     task_id: str
@@ -85,7 +85,8 @@ class TASKRSRC(BaseModel):
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (
-            self.resource == __o.resource
+            self.task == __o.task
+            and self.resource == __o.resource
             and self.account == __o.account
             and self.target_qty == __o.target_qty
             and self.target_lag_drtn_hr_cnt == __o.target_lag_drtn_hr_cnt
@@ -95,6 +96,7 @@ class TASKRSRC(BaseModel):
     def __hash__(self) -> int:
         return hash(
             (
+                self.task,
                 self.resource,
                 self.account,
                 self.target_qty,

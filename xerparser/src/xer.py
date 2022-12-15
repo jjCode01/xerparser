@@ -112,7 +112,8 @@ class Xer:
 
     def _set_memo(self, **kwargs) -> TASKMEMO:
         topic = self.notebooks[kwargs["memo_type_id"]].topic
-        return TASKMEMO(topic=topic, **kwargs)
+        task = self.tasks[kwargs["task_id"]]
+        return TASKMEMO(task=task, topic=topic, **kwargs)
 
     def _set_task(self, **kwargs) -> TASK:
         calendar = self.calendars[kwargs["clndr_id"]]

@@ -6,6 +6,7 @@ from functools import cached_property
 from pydantic import BaseModel, Field, validator
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
+from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 
@@ -73,6 +74,7 @@ class PROJECT(BaseModel):
 
     # manually set from other tables
     name: str = ""
+    memos: tuple[TASKMEMO] = ()
     tasks: tuple[TASK] = ()
     relationships: tuple[TASKPRED] = ()
     resources: tuple[TASKRSRC] = ()
@@ -97,16 +99,34 @@ class PROJECT(BaseModel):
         return sum((res.act_total_cost for res in self.resources))
 
     @property
+    def actual_start(self) -> datetime:
+        if not self.tasks:
+            return self.plan_start_date
+
+        return min((task.start for task in self.tasks))
+
+    @property
     def budgeted_cost(self) -> float:
         if not self.tasks:
             return 0.0
         return sum((res.target_cost for res in self.resources))
 
     @property
+    def original_duration(self) -> int:
+        return self.finish_date - self.actual_start
+
+    @property
     def remaining_cost(self) -> float:
         if not self.tasks:
             return 0.0
         return sum((res.remain_cost for res in self.resources))
+
+    @property
+    def remaining_duration(self) -> int:
+        if self.data_date >= self.finish_date:
+            return 0
+
+        return (self.finish_date - self.data_date).days
 
     @property
     def this_period_cost(self) -> float:
