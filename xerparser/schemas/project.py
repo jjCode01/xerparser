@@ -6,6 +6,7 @@ from datetime import datetime
 from functools import cached_property
 from pydantic import BaseModel, Field, validator
 from statistics import mean
+from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK, TaskStatus, ConstraintType
 from xerparser.schemas.taskmemo import TASKMEMO
@@ -75,6 +76,7 @@ class PROJECT(BaseModel):
     short_name: str = Field(alias="proj_short_name")
 
     # manually set from other tables
+    calendars: set[CALENDAR] = set()
     name: str = ""
     tasks: dict[str, TASK] = {}
     relationships: dict[str, TASKPRED] = {}

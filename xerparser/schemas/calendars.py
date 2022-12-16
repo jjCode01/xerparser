@@ -122,8 +122,6 @@ class CALENDAR(BaseModel):
     ----------
     uid: str
         Unique ID [clndr_id]
-    assignments: int
-        Activity Count Calendar is Assigned to
     data: str
         Calendar Data; Weekday and Exception Information
     is_default: bool
@@ -140,7 +138,6 @@ class CALENDAR(BaseModel):
     """
 
     uid: str = Field(alias="clndr_id")
-    assignments: int = 0
     data: str = Field(alias="clndr_data")
     is_default: bool = Field(alias="default_flag")
     last_chng_date: datetime | None

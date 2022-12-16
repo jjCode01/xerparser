@@ -80,7 +80,7 @@ class Xer:
 
     def _set_task(self, **kwargs) -> TASK:
         calendar = self.calendars[kwargs["clndr_id"]]
-        calendar.assignments += 1
+        self.projects[kwargs["proj_id"]].calendars.add(calendar)
         wbs = self.projects[kwargs["proj_id"]].wbs[kwargs["wbs_id"]]
         wbs.assignments += 1
         return TASK(calendar=calendar, wbs=wbs, **kwargs)
