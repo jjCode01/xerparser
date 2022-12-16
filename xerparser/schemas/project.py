@@ -1,11 +1,13 @@
 # xerparser
 # project.py
 
+from collections import Counter
 from datetime import datetime
 from functools import cached_property
 from pydantic import BaseModel, Field, validator
+from statistics import mean
 from xerparser.schemas.projwbs import PROJWBS
-from xerparser.schemas.task import TASK
+from xerparser.schemas.task import TASK, TaskStatus, ConstraintType
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
@@ -109,8 +111,30 @@ class PROJECT(BaseModel):
         return sum((task.budgeted_cost for task in self.tasks.values()))
 
     @property
+    def duration_percent(self) -> float:
+        if self.original_duration == 0:
+            return 0.0
+
+        if self.data_date >= self.finish_date:
+            return 1.0
+
+        return 1 - self.remaining_duration / self.original_duration
+
+    @cached_property
+    def finish_constraints(self) -> list[tuple[TASK, str]]:
+        return sorted(
+            [
+                (task, cnst)
+                for task in self.tasks.values()
+                for cnst in ("prime", "second")
+                if task.constraints[cnst]["type"] is ConstraintType.CS_MEOB
+            ],
+            key=lambda t: t[0].finish,
+        )
+
+    @property
     def original_duration(self) -> int:
-        return self.finish_date - self.actual_start
+        return (self.finish_date - self.actual_start).days
 
     @property
     def remaining_cost(self) -> float:
@@ -125,8 +149,55 @@ class PROJECT(BaseModel):
 
         return (self.finish_date - self.data_date).days
 
+    @cached_property
+    def task_percent(self) -> float:
+        if not self.tasks:
+            return 0.0
+
+        orig_dur_sum = sum((task.original_duration for task in self.tasks.values()))
+        rem_dur_sum = sum((task.remaining_duration for task in self.tasks.values()))
+        task_dur_percent = 1 - rem_dur_sum / orig_dur_sum if orig_dur_sum else 0.0
+
+        status_cnt = Counter([t.status for t in self.tasks.values()])
+        status_percent = (
+            status_cnt[TaskStatus.TK_Active] / 2 + status_cnt[TaskStatus.TK_Complete]
+        ) / len(self.tasks)
+
+        return mean([task_dur_percent, status_percent])
+
+    @cached_property
+    def tasks_by_code(self) -> dict[str, TASK]:
+        return {task.task_code: task for task in self.tasks.values()}
+
     @property
     def this_period_cost(self) -> float:
         if not self.tasks:
             return 0.0
         return sum((task.this_period_cost for task in self.tasks.values()))
+
+    @cached_property
+    def wbs_by_path(self) -> dict[str, PROJWBS]:
+        return {node.full_code: node for node in self.wbs.values()}
+
+    def planned_progress(self, before_date: datetime) -> dict[str, list[TASK]]:
+        progress = {"start": [], "finish": [], "late_start": [], "late_finish": []}
+
+        if before_date < self.data_date:
+            return progress
+
+        for task in self.tasks.values():
+            if task.status.is_not_started:
+                if task.start < before_date:
+                    progress["start"].append(task)
+
+                if task.late_start_date < before_date:
+                    progress["late_start"].append(task)
+
+            if not task.status.is_completed:
+                if task.finish < before_date:
+                    progress["finish"].append(task)
+
+                if task.late_end_date < before_date:
+                    progress["late_finish"].append(task)
+
+        return progress

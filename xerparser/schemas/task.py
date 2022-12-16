@@ -113,7 +113,7 @@ class TASK(BaseModel):
     duration_type: str
     status_code: str
     task_code: str
-    task_name: str
+    name: str = Field(alias="task_name")
     total_float_hr_cnt: float | None
     free_float_hr_cnt: float | None
     remain_drtn_hr_cnt: float | None
