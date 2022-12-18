@@ -74,7 +74,7 @@ class PROJWBS(BaseModel):
         path = []
         node = self
         while node and not node.is_proj_node:
-            path.append(self.code)
+            path.append(node.code)
             node = node.parent
 
         return ".".join(reversed(path))

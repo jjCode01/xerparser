@@ -162,10 +162,10 @@ class CALENDAR(BaseModel):
         keep_untouched = (cached_property,)
 
     def __eq__(self, __o: "CALENDAR") -> bool:
-        return self.name == __o.name and self.clndr_type == __o.clndr_type
+        return self.name == __o.name and self.type == __o.type
 
     def __hash__(self) -> int:
-        return hash((self.name, self.clndr_type))
+        return hash((self.name, self.type))
 
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
@@ -175,14 +175,14 @@ class CALENDAR(BaseModel):
         """Parse work week from Calendar data field."""
         return {
             WEEKDAYS[int(day[0]) - 1]: _parse_work_day(day)
-            for day in _parse_clndr_data(self.clndr_data, REGEX_WEEKDAYS)
+            for day in _parse_clndr_data(self.data, REGEX_WEEKDAYS)
         }
 
     @cached_property
     def holidays(self) -> list[datetime]:
         """Parse non-workday exceptions from Calendar data field."""
         nonwork_days = []
-        for e in _parse_clndr_data(self.clndr_data, REGEX_HOL):
+        for e in _parse_clndr_data(self.data, REGEX_HOL):
             _date = conv_excel_date(int(e))
 
             # Verify exception is not already a non-work day on the standard calendar
@@ -195,7 +195,7 @@ class CALENDAR(BaseModel):
     def work_exceptions(self) -> dict[datetime, WeekDay]:
         """Parse work-day exceptions from Calendar data field."""
         exception_dict = {}
-        for exception in _parse_clndr_data(self.clndr_data, REGEX_EXCEPT):
+        for exception in _parse_clndr_data(self.data, REGEX_EXCEPT):
             _date = conv_excel_date(int(exception[:5]))
             _day = _parse_work_day(exception)
 
