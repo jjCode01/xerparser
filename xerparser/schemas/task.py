@@ -13,6 +13,8 @@ from xerparser.schemas.taskrsrc import TASKRSRC
 
 
 class ConstraintType(Enum):
+    """Map codes used for constraint types to readable descriptions"""
+
     CS_ALAP = "As Late as Possible"
     CS_MEO = "Finish On"
     CS_MEOA = "Finish on or After"
@@ -25,12 +27,16 @@ class ConstraintType(Enum):
 
 
 class PercentType(Enum):
+    """Map codes used for percent types to readable descriptions"""
+
     CP_Phys = "Physical"
     CP_Drtn = "Duration"
     CP_Units = "Unit"
 
 
 class TaskStatus(Enum):
+    """Map codes used for Task status to readable descriptions"""
+
     TK_NotStart = "Not Started"
     TK_Active = "In Progress"
     TK_Complete = "Complete"
@@ -53,6 +59,8 @@ class TaskStatus(Enum):
 
 
 class TaskType(Enum):
+    """Map codes used for Task types to readable descriptions"""
+
     TT_Mile = "Start Milestone"
     TT_FinMile = "Finish Milestone"
     TT_LOE = "Level of Effort"
@@ -73,6 +81,7 @@ class TaskType(Enum):
         return self is self.TT_Task
 
 
+# Passed to pydantic validator to convert any emtpy strings to None
 field_can_be_none = (
     "total_float_hr_cnt",
     "free_float_hr_cnt",
@@ -101,24 +110,36 @@ field_can_be_none = (
 
 
 class TASK(BaseModel):
-    """A class to represent a scehdule activity."""
+    """
+    A class to represent a scehdule activity.
+    """
 
     uid: str = Field(alias="task_id")
+
+    # Foreign keys
     proj_id: str
     wbs_id: str
     clndr_id: str
+
+    # General Task info
     phys_complete_pct: float
     complete_pct_type: str
     type: TaskType = Field(alias="task_type")
-    duration_type: str
-    status_code: str
+    status: TaskStatus = Field(alias="status_code")
     task_code: str
     name: str = Field(alias="task_name")
+
+    # Durations and float
+    duration_type: str
     total_float_hr_cnt: float | None
     free_float_hr_cnt: float | None
     remain_drtn_hr_cnt: float | None
     target_drtn_hr_cnt: float | None
-    cstr_date: datetime | None
+    float_path: int | None
+    float_path_order: int | None
+    is_longest_path: bool = Field(alias="driving_path_flag")
+
+    # Dates
     act_start_date: datetime | None
     act_end_date: datetime | None
     late_start_date: datetime | None
@@ -126,26 +147,29 @@ class TASK(BaseModel):
     expect_end_date: datetime | None
     early_start_date: datetime | None
     early_end_date: datetime | None
+    rem_late_start_date: datetime | None
+    rem_late_end_date: datetime | None
     restart_date: datetime | None
     reend_date: datetime | None
     target_start_date: datetime
     target_end_date: datetime
+    suspend_date: datetime | None
+    resume_date: datetime | None
+    create_date: datetime
+    update_date: datetime
+
+    # Constraints
+    cstr_date: datetime | None
+    cstr_type: str | None
+    cstr_date2: datetime | None
+    cstr_type2: str | None
+
+    # Unit quantities
     target_work_qty: float
     act_work_qty: float
     target_equip_qty: float
     act_equip_qty: float
-    rem_late_start_date: datetime | None
-    rem_late_end_date: datetime | None
-    cstr_type: str | None
-    suspend_date: datetime | None
-    resume_date: datetime | None
-    float_path: int | None
-    float_path_order: int | None
-    cstr_date2: datetime | None
-    cstr_type2: str | None
-    is_longest_path: bool = Field(alias="driving_path_flag")
-    create_date: datetime
-    update_date: datetime
+
     calendar: CALENDAR = None
     wbs: PROJWBS = None
     memos: list[TASKMEMO] = []
@@ -166,6 +190,10 @@ class TASK(BaseModel):
     @validator("type", pre=True)
     def type_to_tasktype(cls, value):
         return TaskType[value]
+
+    @validator("status", pre=True)
+    def status_to_taskstatus(cls, value):
+        return TaskStatus[value]
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
@@ -256,10 +284,6 @@ class TASK(BaseModel):
     @property
     def start(self) -> datetime:
         return (self.act_start_date, self.early_start_date)[self.status.is_not_started]
-
-    @property
-    def status(self) -> TaskStatus:
-        return TaskStatus[self.status_code]
 
     @property
     def this_period_cost(self) -> float:

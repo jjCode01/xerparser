@@ -96,24 +96,28 @@ class PROJECT(BaseModel):
 
     @property
     def actual_cost(self) -> float:
+        """Sum of task resource actual costs"""
         if not self.tasks:
             return 0.0
         return sum((task.actual_cost for task in self.tasks.values()))
 
     @property
     def actual_start(self) -> datetime:
+        """Earliest task start date"""
         if not self.tasks:
             return self.plan_start_date
         return min((task.start for task in self.tasks.values()))
 
     @property
     def budgeted_cost(self) -> float:
+        """Sum of task resource budgeted costs"""
         if not self.tasks:
             return 0.0
         return sum((task.budgeted_cost for task in self.tasks.values()))
 
     @property
     def duration_percent(self) -> float:
+        """Project duration percent complete"""
         if self.original_duration == 0:
             return 0.0
 
@@ -124,6 +128,7 @@ class PROJECT(BaseModel):
 
     @cached_property
     def finish_constraints(self) -> list[tuple[TASK, str]]:
+        """List of all Tasks with Finish on or Before constraints"""
         return sorted(
             [
                 (task, cnst)
@@ -136,23 +141,26 @@ class PROJECT(BaseModel):
 
     @property
     def original_duration(self) -> int:
+        "Project overall duration in calendar days from actual start date to finish date"
         return (self.finish_date - self.actual_start).days
 
     @property
     def remaining_cost(self) -> float:
+        """Sum of task resource remaining costs"""
         if not self.tasks:
             return 0.0
         return sum((task.remaining_cost for task in self.tasks.values()))
 
     @property
     def remaining_duration(self) -> int:
+        """Project remaining duration in calendar days from data date to finish date"""
         if self.data_date >= self.finish_date:
             return 0
-
         return (self.finish_date - self.data_date).days
 
     @cached_property
     def task_percent(self) -> float:
+        """Calculated Project percent complete based on task updates"""
         if not self.tasks:
             return 0.0
 
@@ -173,6 +181,7 @@ class PROJECT(BaseModel):
 
     @property
     def this_period_cost(self) -> float:
+        """Sum of task resource this period costs"""
         if not self.tasks:
             return 0.0
         return sum((task.this_period_cost for task in self.tasks.values()))
@@ -182,10 +191,15 @@ class PROJECT(BaseModel):
         return {node.full_code: node for node in self.wbs.values()}
 
     def planned_progress(self, before_date: datetime) -> dict[str, list[TASK]]:
-        progress = {"start": [], "finish": [], "late_start": [], "late_finish": []}
+        """All planned progress through a given date.
 
-        if before_date < self.data_date:
-            return progress
+        Args:
+            before_date (datetime): End date for planned progress
+
+        Returns:
+            dict[str, list[TASK]]: Early and late planned progress during time frame
+        """
+        progress = {"start": [], "finish": [], "late_start": [], "late_finish": []}
 
         for task in self.tasks.values():
             if task.status.is_not_started:
