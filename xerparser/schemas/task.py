@@ -170,7 +170,10 @@ class TASK(BaseModel):
     target_equip_qty: float
     act_equip_qty: float
 
-    calendar: CALENDAR = None
+    # calendar is optional None type for occurances when the
+    # xer file is corrupted and task clndr_id references a
+    # non-existent calendar.
+    calendar: CALENDAR | None = None
     wbs: PROJWBS = None
     memos: list[TASKMEMO] = []
     resources: list[TASKRSRC] = []
