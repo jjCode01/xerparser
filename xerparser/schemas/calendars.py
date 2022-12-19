@@ -146,7 +146,7 @@ class CALENDAR(BaseModel):
     type: str = Field(alias="clndr_type")
 
     @validator("type", pre=True)
-    def set_clndr_type(cls, value):
+    def set_clndr_type(cls, value) -> str:
         return CALENDAR_TYPES[value]
 
     @validator("is_default", pre=True)

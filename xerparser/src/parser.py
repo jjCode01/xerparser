@@ -121,8 +121,13 @@ def _find_xer_errors(tables: dict) -> list[str]:
 
     # check for tasks assigned to an invalid calendar (not included in CALENDAR TABLE)
     clndr_ids = [c["clndr_id"] for c in tables.get("CALENDAR", [])]
+    export_projects = [
+        p["proj_id"] for p in tables.get("PROJECT", []) if p["export_flag"] == "Y"
+    ]
     tasks_with_invalid_calendar = [
-        task for task in tables.get("TASK", []) if not task["clndr_id"] in clndr_ids
+        task
+        for task in tables.get("TASK", [])
+        if not task["clndr_id"] in clndr_ids and task["proj_id"] in export_projects
     ]
     if tasks_with_invalid_calendar:
         invalid_cal_count = len(
