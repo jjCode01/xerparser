@@ -1,75 +1,35 @@
 # xerparser
 # xer.py
 
-from datetime import datetime
 
-CODEC = "cp1252"
-
-
-def xer_to_dict(file: bytes | str) -> dict:
-    """Reads a P6 .xer file and converts it into a Python dictionary object.
+def xer_to_dict(xer_contents: str) -> dict:
+    """Reads contents of a P6 .xer file and converts it into a Python dictionary object.
     Args:
-        file (bytes | str): .xer file exported from P6.
+        file (str): .xer file contents
     Returns:
         dict: Dictionary of the xer information and data tables
     """
-    xer_data = {}
-    table_list = _split_tables(_read_file(file))
+    if not isinstance(xer_contents, str):
+        raise TypeError(
+            f"TypeError: xer_contents argument must be <class 'str'>; got {type(xer_contents)}"
+        )
 
-    # The first row in the xer file includes information about the file
-    xer_data["ERMHDR"] = table_list.pop(0).strip().split("\t")[1:]
-    xer_data["tables"] = {
-        name: rows for table in table_list for name, rows in _parse_table(table).items()
-    }
-    xer_data["errors"] = _find_xer_errors(xer_data["tables"])
+    if not xer_contents.startswith("ERMHDR"):
+        raise ValueError("ValueError: invalid XER file")
+
+    table_delimiter = "%T\t"
+    tables = xer_contents.split(table_delimiter)
+
+    # The first row in the xer file includes file export information
+    xer_data = {"ERMHDR": tables.pop(0).strip().split("\t")[1:]}
+    xer_data.update(
+        **{name: rows for table in tables for name, rows in _parse_table(table).items()}
+    )
+    # xer_data["tables"] = {
+    #     name: rows for table in tables for name, rows in _parse_table(table).items()
+    # }
 
     return xer_data
-
-
-def _read_file(file) -> list[str]:
-    """
-    Read file and verify it is a valid XER. Parse file into a list of tables.
-    """
-    file_contents = ""
-
-    try:
-        file_contents = _read_file_path(file)
-    except:
-        pass
-    else:
-        return file_contents
-
-    try:
-        file_contents = _read_file_bytes(file)
-    except:
-        pass
-    else:
-        return file_contents
-
-    try:
-        file_contents = file.read().decode(CODEC, errors="ignore")
-    except:
-        raise ValueError("Cannot Read File")
-    else:
-        return file_contents
-
-
-def _read_file_path(file) -> list[str]:
-    with open(file, encoding=CODEC, errors="ignore") as f:
-        file_as_str = f.read()
-    return file_as_str
-
-
-def _read_file_bytes(file: bytes) -> list[str]:
-    file_as_str = file.decode(CODEC, errors="ignore")
-    return file_as_str
-
-
-def _split_tables(file_contents: str) -> dict[str, str]:
-    if not file_contents.startswith("ERMHDR"):
-        raise ValueError(f"ValueError: invalid XER file")
-
-    return file_contents.split("%T\t")
 
 
 def _parse_table(table: str) -> dict[str, list[dict]]:
@@ -86,55 +46,3 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     ]
 
     return {name: data}
-
-
-def _find_xer_errors(tables: dict) -> list[str]:
-    """
-    Find issues with the xer file, including
-    - Missing tables
-    - Non-existent calendars assigned to activities
-    """
-    # This list of required tables may be subjective
-    # TODO: Add ability to pass in your own list of required tables.
-    REQUIRED_TABLES = ("CALENDAR", "PROJECT", "PROJWBS", "TASK", "TASKPRED")
-
-    REQUIRED_TABLE_PAIRS = {
-        "TASKFIN": "FINDATES",
-        "TRSRCFIN": "FINDATES",
-        "TASKRSRC": "RSRC",
-        "TASKMEMO": "MEMOTYPE",
-        "ACTVCODE": "ACTVTYPE",
-        "TASKACTV": "ACTVCODE",
-    }
-
-    errors = []
-
-    # Check for minimum tables required to be in the XER
-    for name in REQUIRED_TABLES:
-        if name not in tables:
-            errors.append(f"Missing Required Table {name}")
-
-    # Check for required table pairs
-    for t1, t2 in REQUIRED_TABLE_PAIRS.items():
-        if t1 in tables and t2 not in tables:
-            errors.append(f"Missing Table {t2} Required for Table {t1}")
-
-    # check for tasks assigned to an invalid calendar (not included in CALENDAR TABLE)
-    clndr_ids = [c["clndr_id"] for c in tables.get("CALENDAR", [])]
-    export_projects = [
-        p["proj_id"] for p in tables.get("PROJECT", []) if p["export_flag"] == "Y"
-    ]
-    tasks_with_invalid_calendar = [
-        task
-        for task in tables.get("TASK", [])
-        if not task["clndr_id"] in clndr_ids and task["proj_id"] in export_projects
-    ]
-    if tasks_with_invalid_calendar:
-        invalid_cal_count = len(
-            set([t["clndr_id"] for t in tasks_with_invalid_calendar])
-        )
-        errors.append(
-            f"XER is Missing {invalid_cal_count} Calendars Assigned to {len(tasks_with_invalid_calendar)} Tasks"
-        )
-
-    return errors

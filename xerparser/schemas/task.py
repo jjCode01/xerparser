@@ -177,6 +177,8 @@ class TASK(BaseModel):
     wbs: PROJWBS = None
     memos: list[TASKMEMO] = []
     resources: list[TASKRSRC] = []
+    predecessors: list["LinkToTask"] = []
+    successors: list["LinkToTask"] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -241,6 +243,36 @@ class TASK(BaseModel):
         return (self.free_float_hr_cnt / 8, None)[self.status.is_completed]
 
     @property
+    def has_predecessor(self) -> bool:
+        return len(self.predecessors) > 0
+
+    @property
+    def has_successor(self) -> bool:
+        return len(self.successors) > 0
+
+    @property
+    def has_finish_successor(self) -> bool:
+        if not self.has_successor:
+            return True
+
+        for succ in self.successors:
+            if succ.link in ("FS", "FF"):
+                return True
+
+        return False
+
+    @property
+    def has_start_predecessor(self) -> bool:
+        if not self.has_predecessor:
+            return True
+
+        for pred in self.predecessors:
+            if pred.link in ("FS", "SS"):
+                return True
+
+        return False
+
+    @property
     def is_critical(self) -> bool:
         return not self.status.is_completed and self.total_float_hr_cnt <= 0
 
@@ -299,3 +331,24 @@ class TASK(BaseModel):
         if self.total_float_hr_cnt is None:
             return
         return int(self.total_float_hr_cnt / 8)
+
+
+class LinkToTask:
+    """
+    A class to represent a logic tie to another activity
+    """
+
+    def __init__(self, task: TASK, link: str, lag_days: int) -> None:
+        if link.upper() not in ("FF", "FS", "SF", "SS"):
+            raise AttributeError(
+                f"link attribute must have a value FF, FS, SF, or SS; got {link}"
+            )
+        self.task = task
+        self.link = link
+        self.lag = lag_days
+
+    def __eq__(self, __o: "LinkToTask") -> bool:
+        return all((self.task == __o.task, self.link == __o.link))
+
+    def __hash__(self) -> int:
+        return hash((self.task, self.link))
