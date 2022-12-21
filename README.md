@@ -37,7 +37,7 @@ The tables stored in the .xer file are attributes for the `Xer` class. Since a x
   xer.export_info       # export data
   xer.errors            # list of potential errors in export process
   xer.calendars         # dict of CALENDAR objects
-  xer.notebook_topics   # dict of CALENDAR objects
+  xer.notebook_topics   # dict of MEMOTYPE objects
   xer.projects          # dict of PROJECT objects
   xer.resources         # dict of RSRC objectrs
   ```  
