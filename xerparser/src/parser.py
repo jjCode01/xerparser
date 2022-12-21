@@ -25,9 +25,6 @@ def xer_to_dict(xer_contents: str) -> dict:
     xer_data.update(
         **{name: rows for table in tables for name, rows in _parse_table(table).items()}
     )
-    # xer_data["tables"] = {
-    #     name: rows for table in tables for name, rows in _parse_table(table).items()
-    # }
 
     return xer_data
 

@@ -8,6 +8,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
+from xerparser.schemas.trsrcfin import TRSRCFIN
 
 
 @dataclass
@@ -72,6 +73,7 @@ class TASKRSRC(BaseModel):
     rsrc_type: str
     account: ACCOUNT | None
     resource: RSRC | None
+    periods: list[TRSRCFIN] = []
 
     class config:
         arbitrary_types_allowed = True

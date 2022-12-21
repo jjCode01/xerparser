@@ -19,7 +19,7 @@ pip3 install xerparser
 <br>  
 
 ## Usage  
-Import the ***Xer*** class from **xerparser**  and pass the contents of a .xer file as an argument.  
+Import the `Xer` class from `xerparser`  and pass the contents of a .xer file as an argument. Use the `Xer` class variable `CODEC` to set the proper encoding to decode the file.
 ```python
 from xerparser import Xer
 
@@ -28,15 +28,16 @@ with open(file, encoding=Xer.CODEC, errors="ignore") as f:
     file_contents = f.read()
 xer = Xer(file_contents)
 ```
-The Xer class accepts the contents of a .xer file passed as a **str**.  
+*Note: do not pass the the .xer file directly as an argument. The file must be decoded and read into a string, which can then be passed as an argument.*  
 <br>
 ## Attributes 
-The tables stored in the .xer file are attributes for the `Xer` class. Since a xer file can contain multiple projects/schedules, the tables are accessable as either Global , Project specific, or Task Specific:
+The tables stored in the .xer file are accessable as either Global , Project specific, Task specific, or Resource specific:
 ###  Global
   ```python
   xer.export_info       # export data
   xer.errors            # list of potential errors in export process
   xer.calendars         # dict of CALENDAR objects
+  xer.financial_periods # dict of FINDATES objects
   xer.notebook_topics   # dict of MEMOTYPE objects
   xer.projects          # dict of PROJECT objects
   xer.resources         # dict of RSRC objectrs
@@ -57,8 +58,17 @@ project.wbs             # dict of PROJWBS objects
 task = project.tasks.values()[0]
 
 task.memos        # list of TASKMEMO objects
-task.resources    # list of TASKRSRC objects
+task.resources    # dict of TASKRSRC objects
+task.periods      # list of TASKFIN objects
 ```
+### Resource Specific
+```python
+# Get first task resource
+resource = task.resources.values()[0]
+
+resource.periods  # list of TRSRCFIN objects
+```
+
 <br>
 
 ## Error Checking

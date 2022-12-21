@@ -1,4 +1,17 @@
 # Change Log  
+## 0.4.1 - 2022-12-21
+### General Note
+This change focused on parsing Financial Periods and Past Period Data stored in a .xer file. This information is stored in the `FINDATES`, `TASKFIN` and `TRSRCFIN` Tables. 
+### Added  
+* Added `FINDATES` class to represent Financial Periods.
+* Added `TASKFIN` class to represent Activity Past Period Actuals.
+* Added `TRSRCFIN` class to represent Activity Resource Assignment Past Period Actuals.
+* `Xer` class now has `financial_periods` (dict) attribute, which stores `FINDATES` objects.
+* `TASK` class now has a `periods` (list) attribute, which stores `TASKFIN` objects.
+* `TASKRSRC` class now has a `periods` (list) attribute, which stores `TRSRCFIN` objects.
+### Changed
+* `resources` attribute of `TASK` class changed from type list to type dict. This allows for easier assignment of financial period data (`TRSRCFIN`) to task resources (`TASKRSRC`).
+---
 ## 0.4.0 - 2022-12-20
 ### General
 * General code clean up and refactoring

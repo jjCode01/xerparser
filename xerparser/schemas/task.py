@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, validator
 
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
+from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
 
@@ -176,9 +177,10 @@ class TASK(BaseModel):
     calendar: CALENDAR | None = None
     wbs: PROJWBS = None
     memos: list[TASKMEMO] = []
-    resources: list[TASKRSRC] = []
+    resources: dict[str, TASKRSRC] = {}
     predecessors: list["LinkToTask"] = []
     successors: list["LinkToTask"] = []
+    periods: list[TASKFIN] = []
 
     class Config:
         arbitrary_types_allowed = True
@@ -213,13 +215,13 @@ class TASK(BaseModel):
     def actual_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.act_total_cost for res in self.resources))
+        return sum((res.act_total_cost for res in self.resources.values()))
 
     @property
     def budgeted_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.target_cost for res in self.resources))
+        return sum((res.target_cost for res in self.resources.values()))
 
     @property
     def constraints(self) -> dict:
@@ -310,7 +312,7 @@ class TASK(BaseModel):
     def remaining_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.remain_cost for res in self.resources))
+        return sum((res.remain_cost for res in self.resources.values()))
 
     @property
     def remaining_duration(self) -> int:
@@ -324,7 +326,7 @@ class TASK(BaseModel):
     def this_period_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.act_this_per_cost for res in self.resources))
+        return sum((res.act_this_per_cost for res in self.resources.values()))
 
     @property
     def total_float(self) -> int | None:
