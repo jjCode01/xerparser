@@ -94,25 +94,21 @@ class PROJECT(BaseModel):
         arbitrary_types_allowed = True
         keep_untouched = (cached_property,)
 
-    @property
+    @cached_property
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
-        if not self.tasks:
-            return 0.0
         return sum((task.actual_cost for task in self.tasks.values()))
 
-    @property
+    @cached_property
     def actual_start(self) -> datetime:
         """Earliest task start date"""
         if not self.tasks:
             return self.plan_start_date
         return min((task.start for task in self.tasks.values()))
 
-    @property
+    @cached_property
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
-        if not self.tasks:
-            return 0.0
         return sum((task.budgeted_cost for task in self.tasks.values()))
 
     @property
@@ -144,19 +140,15 @@ class PROJECT(BaseModel):
         "Project overall duration in calendar days from actual start date to finish date"
         return (self.finish_date - self.actual_start).days
 
-    @property
+    @cached_property
     def remaining_cost(self) -> float:
         """Sum of task resource remaining costs"""
-        if not self.tasks:
-            return 0.0
         return sum((task.remaining_cost for task in self.tasks.values()))
 
     @property
     def remaining_duration(self) -> int:
         """Project remaining duration in calendar days from data date to finish date"""
-        if self.data_date >= self.finish_date:
-            return 0
-        return (self.finish_date - self.data_date).days
+        return max((0, (self.finish_date - self.data_date).days))
 
     @cached_property
     def task_percent(self) -> float:
@@ -179,11 +171,9 @@ class PROJECT(BaseModel):
     def tasks_by_code(self) -> dict[str, TASK]:
         return {task.task_code: task for task in self.tasks.values()}
 
-    @property
+    @cached_property
     def this_period_cost(self) -> float:
         """Sum of task resource this period costs"""
-        if not self.tasks:
-            return 0.0
         return sum((task.this_period_cost for task in self.tasks.values()))
 
     @cached_property
