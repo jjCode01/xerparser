@@ -8,16 +8,14 @@ from functools import cached_property
 from pydantic import BaseModel, Field, validator
 import re
 from dataclasses import dataclass, field
-from typing import Iterator
+from typing import Iterator, ClassVar
 from xerparser.scripts.dates import (
     calc_time_var_hrs,
-    conv_excel_date,
     conv_time,
     clean_dates,
     clean_date,
 )
 
-CALENDAR_TYPES = {"CA_Base": "Global", "CA_Rsrc": "Resource", "CA_Project": "Project"}
 
 WEEKDAYS = (
     "Sunday",
@@ -30,20 +28,13 @@ WEEKDAYS = (
 )
 
 # Regular Expressions used to parse the Calendar Data
-REGEX_WEEKDAYS = (
-    r"(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
+REGEX_WEEKDAYS = re.compile(
+    "(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
 )
-REGEX_SHIFT = r"[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d"
-REGEX_HOUR = r"[0-2]?\d:[0-5]\d"
-REGEX_HOL = r"(?<=d\|)\d{5}(?=\)\(\))"
-REGEX_EXCEPT = r"(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)"
-
-# Reference https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-TERM_COLORS = {
-    "CYAN_FG": "\033[38;5;51m",
-    "BLUE_FG": "\033[38;5;45m",
-    "NATIVE_FG": "\033[m",
-}
+REGEX_SHIFT = re.compile("[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d")
+REGEX_HOUR = re.compile("[0-2]?\d:[0-5]\d")
+REGEX_HOL = re.compile("(?<=d\|)\d{5}(?=\)\(\))")
+REGEX_EXCEPT = re.compile("(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)")
 
 
 @dataclass(frozen=True)
@@ -91,22 +82,6 @@ class WeekDay:
     def __len__(self) -> int:
         return len(self.shifts)
 
-    def __str__(self) -> str:
-        clr_cyan = TERM_COLORS["CYAN_FG"]
-        clr_native = TERM_COLORS["NATIVE_FG"]
-        clr = clr_cyan if self.hours else clr_native
-
-        hour_ct = (
-            f"{clr}{self.hours:04.1f}{clr_native}" if self else f"{clr_native}   -"
-        )
-        hour_wk = (
-            f"{clr}{self.start:%I:%M %p}{clr_native} to {clr}{self.finish:%I:%M %p}{clr_native}"
-            if self
-            else f"{clr_native}Non-work day        "
-        )
-
-        return f"{clr}{self.week_day[:3]}{clr_native} | {hour_ct} hrs | {hour_wk}"
-
     def __bool__(self) -> bool:
         """[False] if hours == 0; [True] is hours > 0."""
         return self.hours != 0
@@ -137,17 +112,23 @@ class CALENDAR(BaseModel):
 
     """
 
+    CALENDAR_TYPES: ClassVar[dict] = {
+        "CA_Base": "Global",
+        "CA_Rsrc": "Resource",
+        "CA_Project": "Project",
+    }
     uid: str = Field(alias="clndr_id")
     data: str = Field(alias="clndr_data")
     is_default: bool = Field(alias="default_flag")
     last_chng_date: datetime | None
     name: str = Field(alias="clndr_name")
-    proj_id: int | None
+    proj_id: str | None
     type: str = Field(alias="clndr_type")
 
     @validator("type", pre=True)
+    @staticmethod
     def set_clndr_type(cls, value) -> str:
-        return CALENDAR_TYPES[value]
+        return CALENDAR.CALENDAR_TYPES[value]
 
     @validator("is_default", pre=True)
     def flag_to_bool(cls, value):
@@ -170,20 +151,34 @@ class CALENDAR(BaseModel):
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
 
-    @cached_property
-    def work_week(self) -> dict[str, WeekDay]:
-        """Parse work week from Calendar data field."""
-        return {
-            WEEKDAYS[int(day[0]) - 1]: _parse_work_day(day)
-            for day in _parse_clndr_data(self.data, REGEX_WEEKDAYS)
-        }
+    @staticmethod
+    def conv_excel_date(ordinal: int, _epoch0=datetime(1899, 12, 31)) -> datetime:
+        """Convert Excel date format to datetime object
+
+        Args:
+            ordinal (str): Excel date format
+            _epoch0 (datetime, optional): Start date for conversion. Defaults to datetime(1899, 12, 31).
+
+        Returns:
+            datetime: Excel date format converted to datetime object
+        """
+        if ordinal < 0 or not isinstance(ordinal, int):
+            raise ValueError("Innappropiate value passed, should be positive integer.")
+
+        # Excel leap year bug, 1900 is not a leap year
+        if ordinal >= 60:
+            ordinal -= 1
+
+        return (_epoch0 + timedelta(days=ordinal)).replace(
+            microsecond=0, second=0, minute=0, hour=0
+        )
 
     @cached_property
     def holidays(self) -> list[datetime]:
         """Parse non-workday exceptions from Calendar data field."""
         nonwork_days = []
         for e in _parse_clndr_data(self.data, REGEX_HOL):
-            _date = conv_excel_date(int(e))
+            _date = self.conv_excel_date(int(e))
 
             # Verify exception is not already a non-work day on the standard calendar
             if self.work_week.get(f"{_date:%A}"):
@@ -196,7 +191,7 @@ class CALENDAR(BaseModel):
         """Parse work-day exceptions from Calendar data field."""
         exception_dict = {}
         for exception in _parse_clndr_data(self.data, REGEX_EXCEPT):
-            _date = conv_excel_date(int(exception[:5]))
+            _date = self.conv_excel_date(int(exception[:5]))
             _day = _parse_work_day(exception)
 
             # Verify exception object is different than standard weekday object
@@ -205,25 +200,13 @@ class CALENDAR(BaseModel):
 
         return exception_dict
 
-    def print_cal(self) -> str:
-        clr_blue = TERM_COLORS["BLUE_FG"]
-        clr_native = TERM_COLORS["NATIVE_FG"]
-
-        lines = [f"{clr_blue}{self.clndr_name}{clr_native}"]
-        lines.append(f"Calendar Type:       {clr_blue}{self.type}{clr_native}")
-        lines.append(f"Non-work Exceptions: {clr_blue}{len(self.holidays)}{clr_native}")
-        lines.append(
-            f"Work Exceptions:     {clr_blue}{len(self.work_exceptions)}{clr_native}"
-        )
-
-        # Table of weekday objects
-        lines.append("\nDay | Hours    | Time Period")
-        lines.append(f'{"-"*4}+{"-"*10}+{"-"*22}')
-        for day in self.work_week:
-            lines.append(f"{day}")
-        lines.append(f'{"-"*38}')
-
-        return "\n".join(lines)
+    @cached_property
+    def work_week(self) -> dict[str, WeekDay]:
+        """Parse work week from Calendar data field."""
+        return {
+            WEEKDAYS[int(day[0]) - 1]: _parse_work_day(day)
+            for day in _parse_clndr_data(self.data, REGEX_WEEKDAYS)
+        }
 
 
 def _calc_work_hours(
