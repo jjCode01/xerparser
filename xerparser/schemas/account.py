@@ -30,7 +30,7 @@ class ACCOUNT(BaseModel):
 
     @validator("description", pre=True)
     def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
+        return (value, None)[value == "" or value == "ï»¿"]
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
         return self.name == __o.name and self.code == __o.code

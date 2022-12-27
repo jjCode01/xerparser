@@ -1,7 +1,7 @@
 # xerparser
 # taskrsrc.py
 
-from dataclasses import dataclass, field
+# from dataclasses import dataclass, field
 from datetime import datetime
 
 # from functools import cached_property
@@ -9,27 +9,6 @@ from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
-
-
-@dataclass
-class ResourceValues:
-    """A class to represent resource cost or unit quantity values."""
-
-    budget: float
-    actual: float
-    this_period: float
-    remaining: float
-    at_completion: float = field(init=False)
-    variance: float = field(init=False)
-    percent: float = field(init=False)
-
-    def __post_init__(self):
-        self.at_completion = self.actual + self.remaining
-        self.variance = round(self.at_completion - self.budget, 2)
-        self.percent = 0.0 if self.budget == 0.0 else self.actual / self.budget
-
-    def __bool__(self) -> bool:
-        return self.budget and self.actual
 
 
 field_can_be_none = (
@@ -72,12 +51,13 @@ class TASKRSRC(BaseModel):
     act_this_per_qty: float
     rsrc_type: str
     account: ACCOUNT | None
-    resource: RSRC | None
+    resource: RSRC | None = None
     periods: list[TRSRCFIN] = []
 
     class config:
         arbitrary_types_allowed = True
-        # keep_untouched = (cached_property,)
+
+    # keep_untouched = (cached_property,)
 
     @validator(*field_can_be_none, pre=True)
     def empty_str_to_none(cls, value):

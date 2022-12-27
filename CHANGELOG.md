@@ -1,4 +1,29 @@
 # Change Log  
+## 0.5.0 - 2022-12-29
+### General Notes
+* This change focused on parsing Activity Code Data stored in a .xer file. This information is stored in the `ACTVTYPE`, `ACTVCODE`, and `TASKACTV` Tables.  
+* Some refactoring includes breaking changes, so this is being considered a minor version bump rather than a patch.
+### Added
+* Added `ACTVTYPE` class to represent Activity Code Types.
+* Added `ACTVCODE` class to represent Activity Code Values.
+* Added `activity_code_types` (dict), `activity_code_values` (dict), `wbs_nodes` (dict), `tasks` (dict) and `relationships` (dict) attributes to `Xer` class. 
+* Added `activity_codes` attribute to `TASK` class, which holds a dict of `ACTVTYPE`, `ACTVCODE` pairs assigned to a task via the `TASKACTV` Table.
+* Added `activity_codes` attribute to `PROJECT` class, which holds Project level activity code types.
+### Changed
+* Moved `conv_excel_date` function from `dates.py` to a Static Method of the `CALENDAR` class. This function is only used to parse dates in the `clndr_data`.
+* Moved `CALENDAR_TYPES` from being a Global variable in `calendars.py` to be a `CALENDAR` class variable.
+* The Global Regular Expression variables in `calendars.py` now use the `re.compile` method.
+* Renamed `fin_dates_id` attribute of `FINDATES` class to `uid`. This is consistent with the naming in other classes.
+* Renamed `fin_dates_name` attribute of `FINDATES` class to `name`. This is consistent with the naming in other classes.
+* `MEMOTYPE` and `TASKMEMO` classes no longer iherit from Pydantic BaseModel class. All attributes of both `MEMOTYPE` and `TASKMEMO` are strings, so type validation is not needed.
+* Added `__eq__` and `__hash__` methods to `MEMOTYPE` class.
+* Moved Enumerators `ConstraintType`, `PercentType`, `TaskStatus` and `TaskType` to inside the `TASK` class.
+* Refactored how `calendars`, `wbs_nodes`, `tasks` and `relationships` attributes are assigned for the `PROJECT` class. Each of these attributes is now a list rather than a dict or set. These objects are now referenced directly in the `Xer` class as a dict using its Unique ID as the key, so the `PROJECT` reference to these objects can be a simple list.
+* `PROJECT` properties `actual_cost`, `budgeted_cost`, `remaining_cost`, and `this_period_cost` now return float values rounded to two decimal places.
+### Removed
+* Removed `__str__` method from `WeekDay` class in `calendars.py`. This was originally used for testing and is no longer needed.
+* Removed `print_cal` method from `CALENDAR` class. This were originally used for testing and is no longer needed.
+
 ## 0.4.1 - 2022-12-21
 ### General Note
 This change focused on parsing Financial Periods and Past Period Data stored in a .xer file. This information is stored in the `FINDATES`, `TASKFIN` and `TRSRCFIN` Tables. 

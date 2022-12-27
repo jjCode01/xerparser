@@ -6,12 +6,11 @@ from datetime import datetime
 from functools import cached_property
 from pydantic import BaseModel, Field, validator
 from statistics import mean
+from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
-from xerparser.schemas.task import TASK, TaskStatus, ConstraintType
-from xerparser.schemas.taskmemo import TASKMEMO
+from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
-from xerparser.schemas.taskrsrc import TASKRSRC
 
 field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
 
@@ -76,11 +75,12 @@ class PROJECT(BaseModel):
     short_name: str = Field(alias="proj_short_name")
 
     # manually set from other tables
-    calendars: set[CALENDAR] = set()
+    activity_codes: list[ACTVTYPE] = []
+    calendars: list[CALENDAR] = []
     name: str = ""
-    tasks: dict[str, TASK] = {}
-    relationships: dict[str, TASKPRED] = {}
-    wbs: dict[str, PROJWBS] = {}
+    tasks: list[TASK] = []
+    relationships: list[TASKPRED] = []
+    wbs_nodes: list[PROJWBS] = []
 
     @validator("export_flag", pre=True)
     def flag_to_bool(cls, value):
@@ -97,19 +97,19 @@ class PROJECT(BaseModel):
     @cached_property
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
-        return sum((task.actual_cost for task in self.tasks.values()))
+        return round(sum(task.actual_cost for task in self.tasks), 2)
 
     @cached_property
     def actual_start(self) -> datetime:
         """Earliest task start date"""
         if not self.tasks:
             return self.plan_start_date
-        return min((task.start for task in self.tasks.values()))
+        return min((task.start for task in self.tasks))
 
     @cached_property
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
-        return sum((task.budgeted_cost for task in self.tasks.values()))
+        return round(sum(task.budgeted_cost for task in self.tasks), 2)
 
     @property
     def duration_percent(self) -> float:
@@ -120,7 +120,7 @@ class PROJECT(BaseModel):
         if self.data_date >= self.finish_date:
             return 1.0
 
-        return 1 - self.remaining_duration / self.original_duration
+        return round(1 - self.remaining_duration / self.original_duration, 4)
 
     @cached_property
     def finish_constraints(self) -> list[tuple[TASK, str]]:
@@ -130,7 +130,7 @@ class PROJECT(BaseModel):
                 (task, cnst)
                 for task in self.tasks.values()
                 for cnst in ("prime", "second")
-                if task.constraints[cnst]["type"] is ConstraintType.CS_MEOB
+                if task.constraints[cnst]["type"] is TASK.ConstraintType.CS_MEOB
             ],
             key=lambda t: t[0].finish,
         )
@@ -143,7 +143,7 @@ class PROJECT(BaseModel):
     @cached_property
     def remaining_cost(self) -> float:
         """Sum of task resource remaining costs"""
-        return sum((task.remaining_cost for task in self.tasks.values()))
+        return round(sum(task.remaining_cost for task in self.tasks), 2)
 
     @property
     def remaining_duration(self) -> int:
@@ -156,25 +156,26 @@ class PROJECT(BaseModel):
         if not self.tasks:
             return 0.0
 
-        orig_dur_sum = sum((task.original_duration for task in self.tasks.values()))
-        rem_dur_sum = sum((task.remaining_duration for task in self.tasks.values()))
+        orig_dur_sum = sum((task.original_duration for task in self.tasks))
+        rem_dur_sum = sum((task.remaining_duration for task in self.tasks))
         task_dur_percent = 1 - rem_dur_sum / orig_dur_sum if orig_dur_sum else 0.0
 
-        status_cnt = Counter([t.status for t in self.tasks.values()])
+        status_cnt = Counter([t.status for t in self.tasks])
         status_percent = (
-            status_cnt[TaskStatus.TK_Active] / 2 + status_cnt[TaskStatus.TK_Complete]
+            status_cnt[TASK.TaskStatus.TK_Active] / 2
+            + status_cnt[TASK.TaskStatus.TK_Complete]
         ) / len(self.tasks)
 
-        return mean([task_dur_percent, status_percent])
+        return round(mean([task_dur_percent, status_percent]), 4)
 
     @cached_property
     def tasks_by_code(self) -> dict[str, TASK]:
-        return {task.task_code: task for task in self.tasks.values()}
+        return {task.task_code: task for task in self.tasks}
 
     @cached_property
     def this_period_cost(self) -> float:
         """Sum of task resource this period costs"""
-        return sum((task.this_period_cost for task in self.tasks.values()))
+        return round(sum(task.this_period_cost for task in self.tasks), 2)
 
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:
@@ -191,7 +192,7 @@ class PROJECT(BaseModel):
         """
         progress = {"start": [], "finish": [], "late_start": [], "late_finish": []}
 
-        for task in self.tasks.values():
+        for task in self.tasks:
             if task.status.is_not_started:
                 if task.start < before_date:
                     progress["start"].append(task)

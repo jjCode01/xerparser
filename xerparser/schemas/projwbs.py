@@ -1,7 +1,6 @@
 # xerparser
 # projwbs.py
 
-from typing import Iterator
 from pydantic import BaseModel, Field, validator
 
 
