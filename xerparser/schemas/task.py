@@ -6,80 +6,13 @@ from enum import Enum
 from functools import cached_property
 from pydantic import BaseModel, Field, validator
 
+from xerparser.schemas.actvcode import ACTVCODE
+from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
-
-
-class ConstraintType(Enum):
-    """Map codes used for constraint types to readable descriptions"""
-
-    CS_ALAP = "As Late as Possible"
-    CS_MEO = "Finish On"
-    CS_MEOA = "Finish on or After"
-    CS_MEOB = "Finish on or Before"
-    CS_MANDFIN = "Mandatory Finish"
-    CS_MANDSTART = "Mandatory Start"
-    CS_MSO = "Start On"
-    CS_MSOA = "Start On or After"
-    CS_MSOB = "Start On or Before"
-
-
-class PercentType(Enum):
-    """Map codes used for percent types to readable descriptions"""
-
-    CP_Phys = "Physical"
-    CP_Drtn = "Duration"
-    CP_Units = "Unit"
-
-
-class TaskStatus(Enum):
-    """Map codes used for Task status to readable descriptions"""
-
-    TK_NotStart = "Not Started"
-    TK_Active = "In Progress"
-    TK_Complete = "Complete"
-
-    @property
-    def is_not_started(self) -> bool:
-        return self is self.TK_NotStart
-
-    @property
-    def is_in_progress(self) -> bool:
-        return self is self.TK_Active
-
-    @property
-    def is_completed(self) -> bool:
-        return self is self.TK_Complete
-
-    @property
-    def is_open(self) -> bool:
-        return self is not self.TK_Complete
-
-
-class TaskType(Enum):
-    """Map codes used for Task types to readable descriptions"""
-
-    TT_Mile = "Start Milestone"
-    TT_FinMile = "Finish Milestone"
-    TT_LOE = "Level of Effort"
-    TT_Task = "Task Dependent"
-    TT_Rsrc = "Resource Dependent"
-    TT_WBS = "WBS Summary"
-
-    @property
-    def is_milestone(self) -> bool:
-        return self is self.TT_FinMile or self is self.TT_Mile
-
-    @property
-    def is_loe(self) -> bool:
-        return self is self.TT_LOE
-
-    @property
-    def is_task(self) -> bool:
-        return self is self.TT_Task
 
 
 # Passed to pydantic validator to convert any emtpy strings to None
@@ -114,6 +47,71 @@ class TASK(BaseModel):
     """
     A class to represent a scehdule activity.
     """
+
+    class ConstraintType(Enum):
+        """Map codes used for constraint types to readable descriptions"""
+
+        CS_ALAP = "As Late as Possible"
+        CS_MEO = "Finish On"
+        CS_MEOA = "Finish on or After"
+        CS_MEOB = "Finish on or Before"
+        CS_MANDFIN = "Mandatory Finish"
+        CS_MANDSTART = "Mandatory Start"
+        CS_MSO = "Start On"
+        CS_MSOA = "Start On or After"
+        CS_MSOB = "Start On or Before"
+
+    class PercentType(Enum):
+        """Map codes used for percent types to readable descriptions"""
+
+        CP_Phys = "Physical"
+        CP_Drtn = "Duration"
+        CP_Units = "Unit"
+
+    class TaskStatus(Enum):
+        """Map codes used for Task status to readable descriptions"""
+
+        TK_NotStart = "Not Started"
+        TK_Active = "In Progress"
+        TK_Complete = "Complete"
+
+        @property
+        def is_not_started(self) -> bool:
+            return self is self.TK_NotStart
+
+        @property
+        def is_in_progress(self) -> bool:
+            return self is self.TK_Active
+
+        @property
+        def is_completed(self) -> bool:
+            return self is self.TK_Complete
+
+        @property
+        def is_open(self) -> bool:
+            return self is not self.TK_Complete
+
+    class TaskType(Enum):
+        """Map codes used for Task types to readable descriptions"""
+
+        TT_Mile = "Start Milestone"
+        TT_FinMile = "Finish Milestone"
+        TT_LOE = "Level of Effort"
+        TT_Task = "Task Dependent"
+        TT_Rsrc = "Resource Dependent"
+        TT_WBS = "WBS Summary"
+
+        @property
+        def is_milestone(self) -> bool:
+            return self is self.TT_FinMile or self is self.TT_Mile
+
+        @property
+        def is_loe(self) -> bool:
+            return self is self.TT_LOE
+
+        @property
+        def is_task(self) -> bool:
+            return self is self.TT_Task
 
     uid: str = Field(alias="task_id")
 
@@ -174,6 +172,7 @@ class TASK(BaseModel):
     # calendar is optional None type for occurances when the
     # xer file is corrupted and task clndr_id references a
     # non-existent calendar.
+    activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
     calendar: CALENDAR | None = None
     wbs: PROJWBS = None
     memos: list[TASKMEMO] = []
@@ -196,11 +195,11 @@ class TASK(BaseModel):
 
     @validator("type", pre=True)
     def type_to_tasktype(cls, value):
-        return TaskType[value]
+        return TASK.TaskType[value]
 
     @validator("status", pre=True)
     def status_to_taskstatus(cls, value):
-        return TaskStatus[value]
+        return TASK.TaskStatus[value]
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
@@ -227,11 +226,13 @@ class TASK(BaseModel):
     def constraints(self) -> dict:
         return {
             "prime": {
-                "type": ConstraintType[self.cstr_type] if self.cstr_type else None,
+                "type": TASK.ConstraintType[self.cstr_type] if self.cstr_type else None,
                 "date": self.cstr_date,
             },
             "second": {
-                "type": ConstraintType[self.cstr_type2] if self.cstr_type2 else None,
+                "type": TASK.ConstraintType[self.cstr_type2]
+                if self.cstr_type2
+                else None,
                 "date": self.cstr_date2,
             },
         }
@@ -284,10 +285,10 @@ class TASK(BaseModel):
 
     @cached_property
     def percent_complete(self) -> float:
-        if self.percent_type is PercentType.CP_Phys:
+        if self.percent_type is TASK.PercentType.CP_Phys:
             return self.phys_complete_pct / 100
 
-        if self.percent_type is PercentType.CP_Drtn:
+        if self.percent_type is TASK.PercentType.CP_Drtn:
             if self.status.is_not_started or self.original_duration == 0:
                 return 0.0
             if self.status.is_completed:
@@ -297,7 +298,7 @@ class TASK(BaseModel):
 
             return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
 
-        if self.percent_type is PercentType.CP_Units:
+        if self.percent_type is TASK.PercentType.CP_Units:
             target_units = self.target_work_qty + self.target_equip_qty
             if target_units == 0:
                 return 0.0
@@ -306,7 +307,7 @@ class TASK(BaseModel):
 
     @property
     def percent_type(self) -> PercentType:
-        return PercentType[self.complete_pct_type]
+        return TASK.PercentType[self.complete_pct_type]
 
     @property
     def remaining_cost(self) -> float:
@@ -345,9 +346,9 @@ class LinkToTask:
             raise AttributeError(
                 f"link attribute must have a value FF, FS, SF, or SS; got {link}"
             )
-        self.task = task
-        self.link = link
-        self.lag = lag_days
+        self.task: TASK = task
+        self.link: str = link
+        self.lag: int = lag_days
 
     def __eq__(self, __o: "LinkToTask") -> bool:
         return all((self.task == __o.task, self.link == __o.link))
