@@ -35,7 +35,7 @@ def clean_date(date: datetime) -> datetime:
     return date.replace(microsecond=0, second=0, minute=0, hour=0)
 
 
-def clean_dates(dates: list[datetime]) -> list[datetime]:
+def clean_dates(*dates: datetime) -> list[datetime]:
     """Remove time values from a list of datetime objects"""
     return [clean_date(d) for d in dates]
 

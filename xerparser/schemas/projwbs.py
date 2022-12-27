@@ -2,6 +2,7 @@
 # projwbs.py
 
 from pydantic import BaseModel, Field, validator
+from typing import Optional
 
 
 class PROJWBS(BaseModel):
@@ -42,7 +43,7 @@ class PROJWBS(BaseModel):
     code: str = Field(alias="wbs_short_name")
     is_proj_node: bool = Field(alias="proj_node_flag")
     name: str = Field(alias="wbs_name")
-    parent: "PROJWBS" = None
+    parent: Optional["PROJWBS"] = None
     parent_wbs_id: str
     proj_id: str
     seq_num: int | None

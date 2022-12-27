@@ -100,7 +100,7 @@ class Xer:
         self._set_project_attrs(_xer)
         self._set_task_attrs(_xer)
 
-    def _set_project_attrs(self, xer: dict) -> str:
+    def _set_project_attrs(self, xer: dict) -> None:
         def proj_key(obj: Any) -> str:
             return (obj.proj_id, "")[obj.proj_id is None]
 
@@ -177,15 +177,15 @@ class Xer:
         rsrc = self.resources.get(kwargs["rsrc_id"])
         account = self.accounts.get(kwargs["acct_id"])
         task = self.tasks[kwargs["task_id"]]
-        taskrsrc = TASKRSRC(task=task, resource=rsrc, account=account, **kwargs)
+        taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)
         return {taskrsrc.uid: taskrsrc}
 
     def _set_taskfin(self, **kwargs) -> TASKFIN:
-        period = self.financial_periods.get(kwargs["fin_dates_id"])
+        period = self.financial_periods[kwargs["fin_dates_id"]]
         return TASKFIN(period=period, **kwargs)
 
     def _set_taskrsrc_fin(self, **kwargs) -> TRSRCFIN:
-        period = self.financial_periods.get(kwargs["fin_dates_id"])
+        period = self.financial_periods[kwargs["fin_dates_id"]]
         return TRSRCFIN(period=period, **kwargs)
 
     def _set_wbs(self, **kwargs) -> PROJWBS:

@@ -133,7 +133,7 @@ class TASK(BaseModel):
     total_float_hr_cnt: float | None
     free_float_hr_cnt: float | None
     remain_drtn_hr_cnt: float | None
-    target_drtn_hr_cnt: float | None
+    target_drtn_hr_cnt: float
     float_path: int | None
     float_path_order: int | None
     is_longest_path: bool = Field(alias="driving_path_flag")
@@ -174,7 +174,7 @@ class TASK(BaseModel):
     # non-existent calendar.
     activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
     calendar: CALENDAR | None = None
-    wbs: PROJWBS = None
+    wbs: PROJWBS | None = None
     memos: list[TASKMEMO] = []
     resources: dict[str, TASKRSRC] = {}
     predecessors: list["LinkToTask"] = []
@@ -208,7 +208,7 @@ class TASK(BaseModel):
         return hash(self.task_code)
 
     def __str__(self) -> str:
-        return f"{self.task_code} - {self.task_name}"
+        return f"{self.task_code} - {self.name}"
 
     @property
     def actual_cost(self) -> float:
@@ -239,11 +239,19 @@ class TASK(BaseModel):
 
     @property
     def finish(self) -> datetime:
-        return (self.early_end_date, self.act_end_date)[self.status.is_completed]
+        """Calculated activity finish date (Actual Finish or Early Finish)"""
+        if self.act_end_date:
+            return self.act_end_date
+        if self.early_end_date:
+            return self.early_end_date
+        raise ValueError(f"Could not find finish date for task {self.task_code}")
 
     @property
     def free_float(self) -> int | None:
-        return (self.free_float_hr_cnt / 8, None)[self.status.is_completed]
+        if not self.free_float_hr_cnt:
+            return None
+
+        return int(self.free_float_hr_cnt / 8)
 
     @property
     def has_predecessor(self) -> bool:
@@ -277,7 +285,7 @@ class TASK(BaseModel):
 
     @property
     def is_critical(self) -> bool:
-        return not self.status.is_completed and self.total_float_hr_cnt <= 0
+        return self.total_float_hr_cnt is not None and self.total_float_hr_cnt <= 0
 
     @property
     def original_duration(self) -> int:
@@ -288,22 +296,26 @@ class TASK(BaseModel):
         if self.percent_type is TASK.PercentType.CP_Phys:
             return self.phys_complete_pct / 100
 
-        if self.percent_type is TASK.PercentType.CP_Drtn:
+        elif self.percent_type is TASK.PercentType.CP_Drtn:
+            if self.remain_drtn_hr_cnt is None or self.status.is_completed:
+                return 1.0
             if self.status.is_not_started or self.original_duration == 0:
                 return 0.0
-            if self.status.is_completed:
-                return 1.0
             if self.remain_drtn_hr_cnt >= self.target_drtn_hr_cnt:
                 return 0.0
 
             return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
 
-        if self.percent_type is TASK.PercentType.CP_Units:
+        elif self.percent_type is TASK.PercentType.CP_Units:
             target_units = self.target_work_qty + self.target_equip_qty
             if target_units == 0:
                 return 0.0
             actual_units = self.act_work_qty + self.act_equip_qty
             return 1 - actual_units / target_units
+
+        raise ValueError(
+            f"Could not calculate percent compelete for task {self.task_code}"
+        )
 
     @property
     def percent_type(self) -> PercentType:
@@ -317,11 +329,18 @@ class TASK(BaseModel):
 
     @property
     def remaining_duration(self) -> int:
+        if self.remain_drtn_hr_cnt is None:
+            return 0
         return int(self.remain_drtn_hr_cnt / 8)
 
     @property
     def start(self) -> datetime:
-        return (self.act_start_date, self.early_start_date)[self.status.is_not_started]
+        """Calculated activity start date (Actual Start or Early Start)"""
+        if self.act_start_date:
+            return self.act_start_date
+        if self.early_end_date:
+            return self.early_end_date
+        raise ValueError(f"Could not find start date for task {self.task_code}")
 
     @property
     def this_period_cost(self) -> float:

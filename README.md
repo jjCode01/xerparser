@@ -34,32 +34,39 @@ xer = Xer(file_contents)
 The tables stored in the .xer file are accessable as either Global , Project specific, Task specific, or Resource specific:
 ###  Global
   ```python
-  xer.export_info       # export data
-  xer.errors            # list of potential errors in export process
-  xer.calendars         # dict of CALENDAR objects
-  xer.financial_periods # dict of FINDATES objects
-  xer.notebook_topics   # dict of MEMOTYPE objects
-  xer.projects          # dict of PROJECT objects
-  xer.resources         # dict of RSRC objectrs
+  xer.export_info           # export data
+  xer.errors                # list of potential errors in export process
+  xer.activity_code_types   # dict of ACTVTYPE objects
+  xer.activity_code_values  # dict of ACTVCODE objects
+  xer.calendars             # dict of all CALENDAR objects
+  xer.financial_periods     # dict of FINDATES objects
+  xer.notebook_topics       # dict of MEMOTYPE objects
+  xer.projects              # dict of PROJECT objects
+  xer.tasks                 # dict of all TASK objects
+  xer.relationships         # dict of all TASKPRED objects
+  xer.resources             # dict of RSRC objects
+  xer.wbs_nodes             # dict of all PROJWBS objects
   ```  
 ### Project Specific
 ```python
 # Get first project
 project = xer.projects.values()[0]
 
-project.calendars       # set of CALENDAR objects used by project
-project.tasks           # dict of TASK objects
-project.relationships   # dict of TASKPRED objects
-project.wbs             # dict of PROJWBS objects
+project.activity_codes  # list of project specific ACTVTYPE objects
+project.calendars       # list of project specific CALENDAR objects
+project.tasks           # list of project specific TASK objects
+project.relationships   # list of project specific TASKPRED objects
+project.wbs_nodes       # list of project specific PROJWBS objects
 ```
 ### Task Specific
 ```python
 # Get first task
-task = project.tasks.values()[0]
+task = project.tasks[0]
 
-task.memos        # list of TASKMEMO objects
-task.resources    # dict of TASKRSRC objects
-task.periods      # list of TASKFIN objects
+task.activity_codes   # dict of ACTVTYPE: ACTVCODE objects
+task.memos            # list of TASKMEMO objects
+task.resources        # dict of TASKRSRC objects
+task.periods          # list of TASKFIN objects
 ```
 ### Resource Specific
 ```python

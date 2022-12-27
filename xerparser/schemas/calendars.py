@@ -29,12 +29,12 @@ WEEKDAYS = (
 
 # Regular Expressions used to parse the Calendar Data
 REGEX_WEEKDAYS = re.compile(
-    "(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
+    r"(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
 )
-REGEX_SHIFT = re.compile("[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d")
-REGEX_HOUR = re.compile("[0-2]?\d:[0-5]\d")
-REGEX_HOL = re.compile("(?<=d\|)\d{5}(?=\)\(\))")
-REGEX_EXCEPT = re.compile("(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)")
+REGEX_SHIFT = re.compile(r"[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d")
+REGEX_HOUR = re.compile(r"[0-2]?\d:[0-5]\d")
+REGEX_HOL = re.compile(r"(?<=d\|)\d{5}(?=\)\(\))")
+REGEX_EXCEPT = re.compile(r"(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)")
 
 
 @dataclass(frozen=True)
@@ -59,7 +59,7 @@ class WeekDay:
     """
 
     week_day: str
-    shifts: list[time] = field(default_factory=list)
+    shifts: list[tuple[time, time]] = field(default_factory=list)
     hours: float = field(init=False, default=0)
     start: time = field(init=False, default=time(0, 0, 0, 0))
     finish: time = field(init=False, default=time(0, 0, 0, 0))
@@ -126,7 +126,7 @@ class CALENDAR(BaseModel):
     type: str = Field(alias="clndr_type")
 
     @validator("type", pre=True)
-    @staticmethod
+    @classmethod
     def set_clndr_type(cls, value) -> str:
         return CALENDAR.CALENDAR_TYPES[value]
 
@@ -264,10 +264,10 @@ def _get_workday(cldnr: CALENDAR, date: datetime) -> WeekDay:
     if clean_date in cldnr.work_exceptions.keys():
         return cldnr.work_exceptions[clean_date]
 
-    return cldnr.work_week.get(f"{clean_date:%A}")
+    return cldnr.work_week[f"{clean_date:%A}"]
 
 
-def _parse_clndr_data(clndr_data: str, reg_ex: str) -> list:
+def _parse_clndr_data(clndr_data: str, reg_ex) -> list:
     """
     Searches Calendar data property and returns strings
     matching reg_ex argument.
@@ -282,7 +282,7 @@ def _parse_work_day(day: str) -> WeekDay:
     weekday = WEEKDAYS[int(day[0]) - 1]
     shift_hours = sorted([conv_time(hr) for hr in re.findall(REGEX_HOUR, day)])
 
-    shift_hours_tuple = []
+    shift_hours_tuple: list[tuple[time, time]] = []
     for hr in range(0, len(shift_hours), 2):
         shift_hours_tuple.append((shift_hours[hr], shift_hours[hr + 1]))
 
@@ -342,7 +342,7 @@ def iter_nonwork_exceptions(
         raise ValueError("Arguments must be a datetime object")
 
     # Clean start and end dates to remove time values
-    cl_dates = clean_dates([start, end])
+    cl_dates = clean_dates(start, end)
 
     check_date = min(cl_dates)
     while check_date <= max(cl_dates):

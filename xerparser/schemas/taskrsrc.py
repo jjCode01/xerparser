@@ -111,17 +111,29 @@ class TASKRSRC(BaseModel):
 
     @property
     def finish(self) -> datetime:
-        return (self.act_end_date, self.reend_date)[self.act_end_date is None]
+        """Calculated Finish Date for task resource (Actual Finish or Early Finish)"""
+        if self.act_end_date:
+            return self.act_end_date
+        if self.reend_date:
+            return self.reend_date
+        raise ValueError(f"Could not find finish date for taskrsrc {self.uid}")
 
     @property
     def lag(self) -> int:
         return int(self.target_lag_drtn_hr_cnt / 8)
 
     @property
-    def resource_type(self) -> str:
+    def resource_type(self) -> str | None:
         """Resource type (Labor, Material, Non-Labor)"""
+        if not self.resource:
+            return
         return self.resource.type[3:]
 
     @property
     def start(self) -> datetime:
-        return (self.act_start_date, self.restart_date)[self.act_start_date is None]
+        """Calculated Start Date for task resource (Actual Start or Early Start)"""
+        if self.act_start_date:
+            return self.act_start_date
+        if self.restart_date:
+            return self.restart_date
+        raise ValueError(f"Could not find start date for taskrsrc {self.uid}")

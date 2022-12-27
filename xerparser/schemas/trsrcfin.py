@@ -12,7 +12,7 @@ class TRSRCFIN(BaseModel):
     proj_id: str
     task_id: str
     taskrsrc_id: str
-    period = FINDATES
+    period: FINDATES
 
     @validator("act_cost", "act_qty", pre=True)
     def empty_to_float(value):

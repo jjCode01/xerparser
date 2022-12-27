@@ -128,7 +128,7 @@ class PROJECT(BaseModel):
         return sorted(
             [
                 (task, cnst)
-                for task in self.tasks.values()
+                for task in self.tasks
                 for cnst in ("prime", "second")
                 if task.constraints[cnst]["type"] is TASK.ConstraintType.CS_MEOB
             ],
@@ -139,6 +139,10 @@ class PROJECT(BaseModel):
     def original_duration(self) -> int:
         "Project overall duration in calendar days from actual start date to finish date"
         return (self.finish_date - self.actual_start).days
+
+    @cached_property
+    def relationships_by_hash(self) -> dict[int, TASKPRED]:
+        return {hash(rel): rel for rel in self.relationships}
 
     @cached_property
     def remaining_cost(self) -> float:
@@ -179,7 +183,7 @@ class PROJECT(BaseModel):
 
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:
-        return {node.full_code: node for node in self.wbs.values()}
+        return {node.full_code: node for node in self.wbs_nodes}
 
     def planned_progress(self, before_date: datetime) -> dict[str, list[TASK]]:
         """All planned progress through a given date.
@@ -197,14 +201,14 @@ class PROJECT(BaseModel):
                 if task.start < before_date:
                     progress["start"].append(task)
 
-                if task.late_start_date < before_date:
+                if task.late_start_date and task.late_start_date < before_date:
                     progress["late_start"].append(task)
 
             if not task.status.is_completed:
                 if task.finish < before_date:
                     progress["finish"].append(task)
 
-                if task.late_end_date < before_date:
+                if task.late_end_date and task.late_end_date < before_date:
                     progress["late_finish"].append(task)
 
         return progress

@@ -19,8 +19,8 @@ class TASKPRED(BaseModel):
     float_path: int | None
     aref: datetime | None
     arls: datetime | None
-    predecessor: TASK = None
-    successor: TASK = None
+    predecessor: TASK | None = None
+    successor: TASK | None = None
 
     class Config:
         arbitrary_types_allowed = True
