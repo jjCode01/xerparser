@@ -5,9 +5,7 @@
 class RSRC:
     """
     A class to represent a Resource.
-
     ...
-
     Attributes
     ----------
     uid: str

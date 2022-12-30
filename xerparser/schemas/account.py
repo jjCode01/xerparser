@@ -5,9 +5,7 @@
 class ACCOUNT:
     """
     A class to represent a cost account.
-
     ...
-
     Attributes
     ----------
     uid: str
@@ -18,7 +16,6 @@ class ACCOUNT:
         Cost Account Description [acct_desc]
     name: str
         Cost Account Name [acct_name]
-
     """
 
     def __init__(self, **kwargs) -> None:
