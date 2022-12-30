@@ -132,3 +132,5 @@ dmypy.json
 .pyre/
 
 .vscode/
+tests/fixtures/*.json
+tests/config.py

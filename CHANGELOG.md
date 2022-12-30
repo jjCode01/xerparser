@@ -1,4 +1,8 @@
 # Change Log  
+## 0.5.1 - 2022-12-30  
+### General Notes  
+* Updated tests.  
+---  
 ## 0.5.0 - 2022-12-29
 ### General Notes
 * This change focused on parsing Activity Code Data stored in a .xer file. This information is stored in the `ACTVTYPE`, `ACTVCODE`, and `TASKACTV` Tables.  
@@ -24,7 +28,7 @@
 ### Removed
 * Removed `__str__` method from `WeekDay` class in `calendars.py`. This was originally used for testing and is no longer needed.
 * Removed `print_cal` method from `CALENDAR` class. This were originally used for testing and is no longer needed.
-
+---  
 ## 0.4.1 - 2022-12-21
 ### General Note
 This change focused on parsing Financial Periods and Past Period Data stored in a .xer file. This information is stored in the `FINDATES`, `TASKFIN` and `TRSRCFIN` Tables. 
@@ -37,7 +41,7 @@ This change focused on parsing Financial Periods and Past Period Data stored in 
 * `TASKRSRC` class now has a `periods` (list) attribute, which stores `TRSRCFIN` objects.
 ### Changed
 * `resources` attribute of `TASK` class changed from type list to type dict. This allows for easier assignment of financial period data (`TRSRCFIN`) to task resources (`TASKRSRC`).
----
+---  
 ## 0.4.0 - 2022-12-20
 ### General
 * General code clean up and refactoring
