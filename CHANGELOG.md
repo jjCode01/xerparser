@@ -2,6 +2,8 @@
 ## 0.5.2 - 2022-12-30  
 ### General Notes  
 * Updated tests.  
+### Chantes
+* Reverted `ACCOUNT` and `RSRS` classes to inherit from Pydantic BaseModel. Was getting validation errors since the `TASKRSRC` class inherits from BaseModel. Not sure why this was happening.
 ---  
 ## 0.5.1 - 2022-12-30
 ### General Notes
