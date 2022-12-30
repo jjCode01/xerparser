@@ -37,9 +37,7 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     cols = lines.pop(0).strip().split("\t")[1:]  # Second line is the column labels
 
     data = [
-        dict(zip(cols, row.strip().split("\t")[1:]))
-        for row in lines
-        if row.startswith("%R")
+        dict(zip(cols, row.split("\t")[1:])) for row in lines if row.startswith("%R")
     ]
 
     return {name: data}

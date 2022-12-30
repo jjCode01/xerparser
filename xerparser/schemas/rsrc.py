@@ -1,8 +1,10 @@
 # xerparser
 # rsrc.py
 
+from pydantic import BaseModel, Field
 
-class RSRC:
+
+class RSRC(BaseModel):
     """
     A class to represent a Resource.
     ...
@@ -20,12 +22,11 @@ class RSRC:
         Resource Type [rsrc_type]
     """
 
-    def __init__(self, **kwargs) -> None:
-        self.uid: str = kwargs["rsrc_id"]
-        self.clndr_id: str = kwargs["clndr_id"]
-        self.name: str = kwargs["rsrc_name"]
-        self.short_name: str = kwargs["rsrc_short_name"]
-        self.type: str = kwargs["rsrc_type"]
+    uid: str = Field(alias="rsrc_id")
+    clndr_id: str
+    name: str = Field(alias="rsrc_name")
+    short_name: str = Field(alias="rsrc_short_name")
+    type: str = Field(alias="rsrc_type")
 
     def __eq__(self, __o: "RSRC") -> bool:
         return all(

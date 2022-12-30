@@ -17,7 +17,7 @@ from xerparser.src.xer import CALENDAR, PROJECT, Xer
 
 DATE_FORMAT = "%Y-%m-%d %M:%S"  # format datetime objects to strings
 PLANNED_DAYS = 14  # planned days ahead of data date for planned_progress testing
-MAX_TEST_FILES = 150  # maximum number of files to test
+MAX_TEST_FILES = 250  # maximum number of files to test
 
 
 def process_xer(file: Path):

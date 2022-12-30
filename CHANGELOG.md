@@ -2,6 +2,9 @@
 ## 0.5.2 - 2022-12-30  
 ### General Notes  
 * Updated tests.  
+### Chantes
+* Reverted `ACCOUNT` and `RSRS` classes to inherit from Pydantic BaseModel. Was getting validation errors since the `TASKRSRC` class inherits from BaseModel. Not sure why this was happening.  
+* Fixed bug in parser that was striping out the last values in a table row if they were empty. 
 ---  
 ## 0.5.1 - 2022-12-30
 ### General Notes
@@ -10,6 +13,7 @@ Minor code cleanup and refactoring.
 * `ACCOUNT` class no longer inherits from Pydantic BaseModel. All attributes are strings so type validation is not needed.
 * The `description` attribute of `ACCOUNT` class will now return an empty string if its empty; it used to return None.
 * `RSRC` class no longer inherits from Pydantic BaseModel. All attributes are strings so type validation is not needed.
+---  
 ## 0.5.0 - 2022-12-29
 ### General Notes
 * This change focused on parsing Activity Code Data stored in a .xer file. This information is stored in the `ACTVTYPE`, `ACTVCODE`, and `TASKACTV` Tables.  

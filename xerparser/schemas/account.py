@@ -1,8 +1,10 @@
 # xerparser
 # account.py
 
+from pydantic import BaseModel, Field, validator
 
-class ACCOUNT:
+
+class ACCOUNT(BaseModel):
     """
     A class to represent a cost account.
     ...
@@ -18,18 +20,20 @@ class ACCOUNT:
         Cost Account Name [acct_name]
     """
 
-    def __init__(self, **kwargs) -> None:
-        self.uid: str = kwargs["acct_id"]
-        self.code: str = kwargs["acct_short_name"]
-        self.description: str = _check_description(kwargs["acct_desc"])
-        self.name: str = kwargs["acct_name"]
+    uid: str = Field(alias="acct_id")
+    code: str = Field(alias="acct_short_name")
+    description: str = Field(alias="acct_descr")
+    name: str = Field(alias="acct_name")
+
+    class Config:
+        arbitrary_types_allowed = True
+
+    @validator("description", pre=True)
+    def check_description(cls, value: str) -> str:
+        return (value, "")[value == "" or value == "ï»¿"]
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
         return self.name == __o.name and self.code == __o.code
 
     def __hash__(self) -> int:
         return hash((self.name, self.name))
-
-
-def _check_description(value: str) -> str:
-    return (value, "")[value == "" or value == "ï»¿"]
