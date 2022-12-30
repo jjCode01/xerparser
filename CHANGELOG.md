@@ -1,7 +1,15 @@
 # Change Log  
-## 0.5.1 - 2022-12-30  
+## 0.5.2 - 2022-12-30  
 ### General Notes  
 * Updated tests.  
+---  
+## 0.5.1 - 2022-12-30
+### General Notes
+Minor code cleanup and refactoring.
+### Changes
+* `ACCOUNT` class no longer inherits from Pydantic BaseModel. All attributes are strings so type validation is not needed.
+* The `description` attribute of `ACCOUNT` class will now return an empty string if its empty; it used to return None.
+* `RSRC` class no longer inherits from Pydantic BaseModel. All attributes are strings so type validation is not needed.  
 ---  
 ## 0.5.0 - 2022-12-29
 ### General Notes

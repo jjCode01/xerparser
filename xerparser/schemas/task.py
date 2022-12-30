@@ -20,7 +20,6 @@ field_can_be_none = (
     "total_float_hr_cnt",
     "free_float_hr_cnt",
     "remain_drtn_hr_cnt",
-    "target_drtn_hr_cnt",
     "cstr_date",
     "act_start_date",
     "act_end_date",

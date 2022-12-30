@@ -2,7 +2,7 @@
 # xer.py
 
 
-def xer_to_dict(xer_contents: str) -> dict:
+def xer_to_dict(xer_contents: str) -> dict[str, list]:
     """Reads contents of a P6 .xer file and converts it into a Python dictionary object.
     Args:
         file (str): .xer file contents
