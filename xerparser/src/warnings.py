@@ -42,7 +42,7 @@ class ScheduleWarnings:
 
         self.calendar_missing_holidays: dict[CALENDAR, list[datetime]] = {}
 
-        for task in project.tasks.values():
+        for task in project.tasks:
             if not task.has_predecessor:
                 self.open_predecessors.append(task)
 

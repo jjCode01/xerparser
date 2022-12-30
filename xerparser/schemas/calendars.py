@@ -112,6 +112,7 @@ class CALENDAR(BaseModel):
 
     """
 
+    # TODO: Change this to an Enum
     CALENDAR_TYPES: ClassVar[dict] = {
         "CA_Base": "Global",
         "CA_Rsrc": "Resource",

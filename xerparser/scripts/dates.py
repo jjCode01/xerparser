@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, time
+from datetime import datetime, time
 
 
 def calc_time_var_hrs(start: time, end: time, ordered: bool = False) -> float:
@@ -41,33 +41,5 @@ def clean_dates(*dates: datetime) -> list[datetime]:
 
 
 def conv_time(time_str: str) -> time:
-    """Convert a string representing time into a datetime.time object.
-
-    Args:
-        time_str (str): time as string
-
-    Returns:
-        time: time as datetime.time object
-    """
+    """Convert a string representing time into a datetime.time object."""
     return datetime.strptime(time_str, "%H:%M").time()
-
-
-def date_variance_days(dt1: datetime, dt2: datetime) -> int | None:
-    """Calculate variance in days between two dates."""
-    if not all(isinstance(dt, datetime) for dt in (dt1, dt2)):
-        return
-
-    return (dt1 - dt2).days
-
-
-def date_to_str(date, include_weekday: bool = False) -> str:
-    """Convert datetime object to string."""
-    if date is None:
-        return "-"
-
-    if not isinstance(date, datetime):
-        raise ValueError("Expected datetime object")
-
-    date_format = ("%d-%b-%Y", "%a %d-%b-%Y")[include_weekday]
-
-    return datetime.strftime(date, date_format)

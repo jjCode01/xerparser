@@ -196,6 +196,9 @@ class PROJECT(BaseModel):
         """
         progress = {"start": [], "finish": [], "late_start": [], "late_finish": []}
 
+        if before_date < self.data_date:
+            return progress
+
         for task in self.tasks:
             if task.status.is_not_started:
                 if task.start < before_date:
