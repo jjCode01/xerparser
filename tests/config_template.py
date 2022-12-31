@@ -1,5 +1,5 @@
 """
-!!! RENAME THIS FILE TO config.py !!!
+!!! COPY THIS FILE TO config.py !!!
 
 Replace value of `directory` with the path to a folder containing .xer files.
 The test setup will recursively run through this folder and any children folders to find

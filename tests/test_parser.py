@@ -5,8 +5,8 @@ import unittest
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -99,6 +99,10 @@ def create_test_data(file_directory: Path) -> None:
         )
 
     json_data = json.dumps(data_list, indent=4)
+    file_path = Path("./tests/fixtures")
+    if not Path.exists(file_path):
+        Path.mkdir(file_path)
+
     with open("./tests/fixtures/xer_data.json", "w") as outfile:
         outfile.write(json_data)
 
