@@ -5,7 +5,7 @@
 * Minor code cleanup and refactoring.
 ### Changes
 * The `description` attribute of `ACCOUNT` class will now return an empty string if its empty; it used to return None.
-* Fixed bug in parser that was striping out the last values (columns) in a table row if they were empty. This was causing validation errors with missing attributes in Pydantic.
+* Fixed bug in parser that was stripping out the last values (columns) in a table row if they were empty. This was causing validation errors with missing attributes in Pydantic.
 ---  
 ## 0.5.0 - 2022-12-29
 ### General Notes

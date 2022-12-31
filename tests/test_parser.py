@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-import config
+import tests.config as config
 
 from xerparser.src.xer import CALENDAR, PROJECT, Xer
 

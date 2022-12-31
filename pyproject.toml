@@ -17,6 +17,9 @@ html-sanitizer = "^1.9.3"
 tqdm = "^4.64.1"
 python-dateutil = "^2.8.2"
 
+[tool.poetry.scripts]
+test = 'xerparser.scripts.scripts:test'
+
 
 [build-system]
 requires = ["poetry-core"]
