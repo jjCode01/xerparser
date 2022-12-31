@@ -35,9 +35,19 @@ def _parse_table(table: str) -> dict[str, list[dict]]:
     lines: list[str] = table.split("\n")
     name = lines.pop(0).strip()  # First line is the table name
     cols = lines.pop(0).strip().split("\t")[1:]  # Second line is the column labels
-
-    data = [
-        dict(zip(cols, row.split("\t")[1:])) for row in lines if row.startswith("%R")
-    ]
-
+    data = [dict(zip(cols, _clean_row(row))) for row in lines if row.startswith("%R")]
     return {name: data}
+
+
+def _clean_row(row: str) -> list[str]:
+    """Strips white space from last value in row"""
+    row_values = row.split("\t")[1:]
+    if row_values:
+        row_values[-1] = _clean_value(row_values[-1])
+    return row_values
+
+
+def _clean_value(val: str) -> str:
+    if val == "":
+        return ""
+    return val.strip()

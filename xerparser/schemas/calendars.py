@@ -3,6 +3,7 @@
 
 
 from datetime import datetime, timedelta, time
+from enum import Enum
 from functools import cached_property
 
 from pydantic import BaseModel, Field, validator
@@ -112,24 +113,23 @@ class CALENDAR(BaseModel):
 
     """
 
-    # TODO: Change this to an Enum
-    CALENDAR_TYPES: ClassVar[dict] = {
-        "CA_Base": "Global",
-        "CA_Rsrc": "Resource",
-        "CA_Project": "Project",
-    }
+    class CalendarType(Enum):
+        CA_Base = "Global"
+        CA_Rsrc = "Resource"
+        CA_Project = "Project"
+
     uid: str = Field(alias="clndr_id")
     data: str = Field(alias="clndr_data")
     is_default: bool = Field(alias="default_flag")
     last_chng_date: datetime | None
     name: str = Field(alias="clndr_name")
     proj_id: str | None
-    type: str = Field(alias="clndr_type")
+    type: CalendarType = Field(alias="clndr_type")
 
     @validator("type", pre=True)
     @classmethod
-    def set_clndr_type(cls, value) -> str:
-        return CALENDAR.CALENDAR_TYPES[value]
+    def set_clndr_type(cls, value) -> CalendarType:
+        return CALENDAR.CalendarType[value]
 
     @validator("is_default", pre=True)
     def flag_to_bool(cls, value):

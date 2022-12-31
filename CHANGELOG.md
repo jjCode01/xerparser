@@ -1,11 +1,14 @@
 # Change Log  
-## 0.5.1 - 2022-12-30
+## 0.5.1 - 2022-12-31
 ### General Notes
 * Updated tests.  
-* Minor code cleanup and refactoring.
+* More testing has resulted in minor code cleanup and refactoring.
 ### Changes
 * The `description` attribute of `ACCOUNT` class will now return an empty string if its empty; it used to return None.
 * Fixed bug in parser that was stripping out the last values (columns) in a table row if they were empty. This was causing validation errors with missing attributes in Pydantic.
+* Changed `CALENDAR` class variable `CALENDAR_TYPES` (dict) to `CalendarTypes` (Enum).  
+* `wbs` argument is now required during initialization of a `TASK` object.
+* `predecessor` and `successor` arguments are now required during initialization of a `TASKPRED` object.
 ---  
 ## 0.5.0 - 2022-12-29
 ### General Notes

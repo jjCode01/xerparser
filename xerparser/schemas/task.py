@@ -173,7 +173,7 @@ class TASK(BaseModel):
     # non-existent calendar.
     activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
     calendar: CALENDAR | None = None
-    wbs: PROJWBS | None = None
+    wbs: PROJWBS
     memos: list[TASKMEMO] = []
     resources: dict[str, TASKRSRC] = {}
     predecessors: list["LinkToTask"] = []
