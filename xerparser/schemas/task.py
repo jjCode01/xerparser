@@ -203,6 +203,12 @@ class TASK(BaseModel):
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
 
+    def __lt__(self, __o: "TASK") -> bool:
+        return self.task_code < __o.task_code
+
+    def __gt__(self, __o: "TASK") -> bool:
+        return self.task_code > __o.task_code
+
     def __hash__(self) -> int:
         return hash(self.task_code)
 
@@ -213,13 +219,21 @@ class TASK(BaseModel):
     def actual_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.act_total_cost for res in self.resources.values()))
+        return round(sum((res.act_total_cost for res in self.resources.values())), 2)
+
+    @property
+    def at_completion_cost(self) -> float:
+        if not self.resources:
+            return 0.0
+        return round(
+            sum((res.at_completion_cost for res in self.resources.values())), 2
+        )
 
     @property
     def budgeted_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.target_cost for res in self.resources.values()))
+        return round(sum((res.target_cost for res in self.resources.values())), 2)
 
     @property
     def constraints(self) -> dict:
@@ -253,36 +267,6 @@ class TASK(BaseModel):
         return int(self.free_float_hr_cnt / 8)
 
     @property
-    def has_predecessor(self) -> bool:
-        return len(self.predecessors) > 0
-
-    @property
-    def has_successor(self) -> bool:
-        return len(self.successors) > 0
-
-    @property
-    def has_finish_successor(self) -> bool:
-        if not self.has_successor:
-            return True
-
-        for succ in self.successors:
-            if succ.link in ("FS", "FF"):
-                return True
-
-        return False
-
-    @property
-    def has_start_predecessor(self) -> bool:
-        if not self.has_predecessor:
-            return True
-
-        for pred in self.predecessors:
-            if pred.link in ("FS", "SS"):
-                return True
-
-        return False
-
-    @property
     def is_critical(self) -> bool:
         return self.total_float_hr_cnt is not None and self.total_float_hr_cnt <= 0
 
@@ -293,7 +277,7 @@ class TASK(BaseModel):
     @cached_property
     def percent_complete(self) -> float:
         if self.percent_type is TASK.PercentType.CP_Phys:
-            return self.phys_complete_pct / 100
+            return round(self.phys_complete_pct / 100, 4)
 
         elif self.percent_type is TASK.PercentType.CP_Drtn:
             if self.remain_drtn_hr_cnt is None or self.status.is_completed:
@@ -303,7 +287,7 @@ class TASK(BaseModel):
             if self.remain_drtn_hr_cnt >= self.target_drtn_hr_cnt:
                 return 0.0
 
-            return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
+            return round(1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt, 4)
 
         elif self.percent_type is TASK.PercentType.CP_Units:
             target_units = self.target_work_qty + self.target_equip_qty
@@ -324,7 +308,7 @@ class TASK(BaseModel):
     def remaining_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.remain_cost for res in self.resources.values()))
+        return round(sum((res.remain_cost for res in self.resources.values())), 2)
 
     @property
     def remaining_duration(self) -> int:
@@ -345,7 +329,7 @@ class TASK(BaseModel):
     def this_period_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return sum((res.act_this_per_cost for res in self.resources.values()))
+        return round(sum((res.act_this_per_cost for res in self.resources.values())), 2)
 
     @property
     def total_float(self) -> int | None:
