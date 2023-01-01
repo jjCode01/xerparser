@@ -6,10 +6,9 @@ from datetime import datetime, timedelta, time
 from enum import Enum
 from functools import cached_property
 
-from pydantic import BaseModel, Field, validator
 import re
 from dataclasses import dataclass, field
-from typing import Iterator, ClassVar
+from typing import Iterator
 from xerparser.scripts.dates import (
     calc_time_var_hrs,
     conv_time,
@@ -88,7 +87,7 @@ class WeekDay:
         return self.hours != 0
 
 
-class CALENDAR(BaseModel):
+class CALENDAR:
     """
     A class to represent a schedule Calendar.
 
@@ -118,30 +117,14 @@ class CALENDAR(BaseModel):
         CA_Rsrc = "Resource"
         CA_Project = "Project"
 
-    uid: str = Field(alias="clndr_id")
-    data: str = Field(alias="clndr_data")
-    is_default: bool = Field(alias="default_flag")
-    last_chng_date: datetime | None
-    name: str = Field(alias="clndr_name")
-    proj_id: str | None
-    type: CalendarType = Field(alias="clndr_type")
-
-    @validator("type", pre=True)
-    @classmethod
-    def set_clndr_type(cls, value) -> CalendarType:
-        return CALENDAR.CalendarType[value]
-
-    @validator("is_default", pre=True)
-    def flag_to_bool(cls, value):
-        return value == "Y"
-
-    @validator("proj_id", "last_chng_date", pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
-
-    class Config:
-        arbitrary_types_allowed = True
-        keep_untouched = (cached_property,)
+    def __init__(self, **data) -> None:
+        self.uid: str = data["clndr_id"]
+        self.data: str = data["clndr_data"]
+        self.is_default: bool = data["default_flag"] == "Y"
+        self.last_chng_date: datetime | None = _datetime_or_none(data["last_chng_date"])
+        self.name: str = data["clndr_name"]
+        self.proj_id: str | None = _str_or_none(data["proj_id"])
+        self.type: CALENDAR.CalendarType = CALENDAR.CalendarType[data["clndr_type"]]
 
     def __eq__(self, __o: "CALENDAR") -> bool:
         return self.name == __o.name and self.type == __o.type
@@ -486,3 +469,13 @@ def rem_hours_per_day(
     )
 
     return rem_hrs
+
+
+def _str_or_none(value: str) -> str | None:
+    return (value, None)[value == ""]
+
+
+def _datetime_or_none(value: str) -> datetime | None:
+    if value == "":
+        return None
+    return datetime.strptime(value, "%Y-%m-%d %H:%M")

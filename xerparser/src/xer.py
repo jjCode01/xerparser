@@ -176,7 +176,7 @@ class Xer:
     def _set_taskrsrc(self, **kwargs) -> dict[str, TASKRSRC]:
         rsrc = self.resources.get(kwargs["rsrc_id"])
         account = self.accounts.get(kwargs["acct_id"])
-        task = self.tasks[kwargs["task_id"]]
+        # task = self.tasks[kwargs["task_id"]]
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)
         return {taskrsrc.uid: taskrsrc}
 

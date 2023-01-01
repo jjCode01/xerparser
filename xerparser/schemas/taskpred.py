@@ -2,32 +2,28 @@
 # taskpred.py
 
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
 from xerparser.schemas.task import TASK
 
 
-class TASKPRED(BaseModel):
+class TASKPRED:
     """A class to represent a relationship between two activities."""
 
-    uid: str = Field(alias="task_pred_id")
-    task_id: str
-    pred_task_id: str
-    proj_id: str
-    pred_proj_id: str
-    pred_type: str
-    lag_hr_cnt: int
-    float_path: int | None
-    aref: datetime | None
-    arls: datetime | None
-    predecessor: TASK
-    successor: TASK
+    def __init__(self, predecessor: TASK, successor: TASK, **data) -> None:
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    @validator("float_path", "aref", "arls", pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
+        self.uid: str = data["task_pred_id"]
+        self.task_id: str = data["task_id"]
+        self.pred_task_id: str = data["pred_task_id"]
+        self.proj_id: str = data["proj_id"]
+        self.pred_proj_id: str = data["pred_proj_id"]
+        self.pred_type: str = data["pred_type"]
+        self.lag_hr_cnt: int = int(data["lag_hr_cnt"])
+        self.float_path: int | None = (
+            None if data["float_path"] == "" else int(data["float_path"])
+        )
+        self.aref: datetime | None = _datetime_or_none(data["aref"])
+        self.arls: datetime | None = _datetime_or_none(data["arls"])
+        self.predecessor: TASK = predecessor
+        self.successor: TASK = successor
 
     def __eq__(self, __o: "TASKPRED") -> bool:
         return (
@@ -46,3 +42,9 @@ class TASKPRED(BaseModel):
     @property
     def link(self) -> str:
         return self.pred_type[-2:]
+
+
+def _datetime_or_none(value: str) -> datetime | None:
+    if value == "":
+        return None
+    return datetime.strptime(value, "%Y-%m-%d %H:%M")

@@ -4,7 +4,8 @@
 from collections import Counter
 from datetime import datetime
 from functools import cached_property
-from pydantic import BaseModel, Field, validator
+
+# from pydantic import BaseModel, Field, validator
 from statistics import mean
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
@@ -12,10 +13,11 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 
-field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
+# field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
+DATE_FMT = "%Y-%m-%d %H:%M"
 
 
-class PROJECT(BaseModel):
+class PROJECT:
     """
     A class representing a schedule.
 
@@ -62,37 +64,33 @@ class PROJECT(BaseModel):
 
     """
 
-    # table fields from .xer file
-    uid: str = Field(alias="proj_id")
-    add_date: datetime
-    data_date: datetime = Field(alias="last_recalc_date")
-    export_flag: bool
-    finish_date: datetime = Field(alias="scd_end_date")
-    last_fin_dates_id: str | None
-    last_schedule_date: datetime | None
-    must_finish_date: datetime | None = Field(alias="plan_end_date")
-    plan_start_date: datetime
-    short_name: str = Field(alias="proj_short_name")
+    def __init__(self, **data) -> None:
 
-    # manually set from other tables
-    activity_codes: list[ACTVTYPE] = []
-    calendars: list[CALENDAR] = []
-    name: str = ""
-    tasks: list[TASK] = []
-    relationships: list[TASKPRED] = []
-    wbs_nodes: list[PROJWBS] = []
+        # table fields from .xer file
+        self.uid: str = data["proj_id"]
+        self.add_date: datetime = datetime.strptime(data["add_date"], DATE_FMT)
+        self.data_date: datetime = datetime.strptime(data["last_recalc_date"], DATE_FMT)
+        self.export_flag: bool = data["export_flag"] == "Y"
+        self.finish_date: datetime = datetime.strptime(data["scd_end_date"], DATE_FMT)
+        self.last_fin_dates_id: str | None = _str_or_none(data["last_fin_dates_id"])
+        self.last_schedule_date: datetime | None = _datetime_or_none(
+            data.get("last_schedule_date", "")
+        )
+        self.must_finish_date: datetime | None = _datetime_or_none(
+            data["plan_end_date"]
+        )
+        self.plan_start_date: datetime = datetime.strptime(
+            data["plan_start_date"], DATE_FMT
+        )
+        self.short_name: str = data["proj_short_name"]
 
-    @validator("export_flag", pre=True)
-    def flag_to_bool(cls, value):
-        return value == "Y"
-
-    @validator(*field_can_be_none, pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
-
-    class Config:
-        arbitrary_types_allowed = True
-        keep_untouched = (cached_property,)
+        # manually set from other tables
+        self.activity_codes: list[ACTVTYPE] = []
+        self.calendars: list[CALENDAR] = []
+        self.name: str = ""
+        self.tasks: list[TASK] = []
+        self.relationships: list[TASKPRED] = []
+        self.wbs_nodes: list[PROJWBS] = []
 
     @cached_property
     def actual_cost(self) -> float:
@@ -215,3 +213,13 @@ class PROJECT(BaseModel):
                     progress["late_finish"].append(task)
 
         return progress
+
+
+def _str_or_none(value: str) -> str | None:
+    return (value, None)[value == ""]
+
+
+def _datetime_or_none(value: str) -> datetime | None:
+    if value == "":
+        return None
+    return datetime.strptime(value, "%Y-%m-%d %H:%M")

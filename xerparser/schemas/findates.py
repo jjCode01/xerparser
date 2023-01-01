@@ -2,16 +2,18 @@
 # findates.py
 
 from datetime import datetime
-from pydantic import BaseModel, Field
+
+DATE_FMT = "%Y-%m-%d %H:%M"
 
 
-class FINDATES(BaseModel):
+class FINDATES:
     """A class representing a Financial Period"""
 
-    uid: str = Field(alias="fin_dates_id")  # Unique ID
-    name: str = Field(alias="fin_dates_name")  # Period Name
-    start_date: datetime
-    end_date: datetime
+    def __init__(self, **data) -> None:
+        self.uid: str = data["fin_dates_id"]  # Unique ID
+        self.name: str = data["fin_dates_name"]  # Period Name
+        self.start_date: datetime = datetime.strptime(data["start_date"], DATE_FMT)
+        self.end_date: datetime = datetime.strptime(data["end_date"], DATE_FMT)
 
     def __eq__(self, __o: "FINDATES") -> bool:
         return all(

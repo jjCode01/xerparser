@@ -4,64 +4,53 @@
 # from dataclasses import dataclass, field
 from datetime import datetime
 
-# from functools import cached_property
-from pydantic import BaseModel, Field, validator
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
 
-
-field_can_be_none = (
-    "acct_id",
-    "act_start_date",
-    "act_end_date",
-    "restart_date",
-    "reend_date",
-    "rem_late_start_date",
-    "rem_late_end_date",
-)
+DATE_FMT = "%Y-%m-%d %H:%M"
 
 
-class TASKRSRC(BaseModel):
+class TASKRSRC:
     """A class to represent a resource assigned to an activity."""
 
-    uid: str = Field(alias="taskrsrc_id")
-    task_id: str
-    proj_id: str
-    acct_id: str | None
-    rsrc_id: str
-    remain_qty: float
-    target_qty: float
-    act_ot_qty: float
-    act_reg_qty: float
-    target_cost: float
-    act_reg_cost: float
-    act_ot_cost: float
-    remain_cost: float
-    act_start_date: datetime | None
-    act_end_date: datetime | None
-    restart_date: datetime | None
-    reend_date: datetime | None
-    target_start_date: datetime
-    target_end_date: datetime
-    target_lag_drtn_hr_cnt: int
-    rem_late_start_date: datetime | None
-    rem_late_end_date: datetime | None
-    act_this_per_cost: float
-    act_this_per_qty: float
-    rsrc_type: str
-    account: ACCOUNT | None
-    resource: RSRC | None = None
-    periods: list[TRSRCFIN] = []
-
-    class config:
-        arbitrary_types_allowed = True
-
-    # keep_untouched = (cached_property,)
-
-    @validator(*field_can_be_none, pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
+    def __init__(self, account: ACCOUNT | None, resource: RSRC | None, **data) -> None:
+        self.uid: str = data["taskrsrc_id"]
+        self.task_id: str = data["task_id"]
+        self.proj_id: str = data["proj_id"]
+        self.acct_id: str | None = _str_or_none(data["acct_id"])
+        self.rsrc_id: str = data["rsrc_id"]
+        self.remain_qty: float = float(data["remain_qty"])
+        self.target_qty: float = float(data["target_qty"])
+        self.act_ot_qty: float = float(data["act_ot_qty"])
+        self.act_reg_qty: float = float(data["act_reg_qty"])
+        self.target_cost: float = float(data["target_cost"])
+        self.act_reg_cost: float = float(data["act_reg_cost"])
+        self.act_ot_cost: float = float(data["act_ot_cost"])
+        self.remain_cost: float = float(data["remain_cost"])
+        self.act_start_date: datetime | None = _datetime_or_none(data["act_start_date"])
+        self.act_end_date: datetime | None = _datetime_or_none(data["act_end_date"])
+        self.restart_date: datetime | None = _datetime_or_none(data["restart_date"])
+        self.reend_date: datetime | None = _datetime_or_none(data["reend_date"])
+        self.target_start_date: datetime = datetime.strptime(
+            data["target_start_date"], DATE_FMT
+        )
+        self.target_end_date: datetime = datetime.strptime(
+            data["target_end_date"], DATE_FMT
+        )
+        self.target_lag_drtn_hr_cnt: int = int(data["target_lag_drtn_hr_cnt"])
+        self.rem_late_start_date: datetime | None = _datetime_or_none(
+            data["rem_late_start_date"]
+        )
+        self.rem_late_end_date: datetime | None = _datetime_or_none(
+            data["rem_late_end_date"]
+        )
+        self.act_this_per_cost: float = float(data["act_this_per_cost"])
+        self.act_this_per_qty: float = float(data["act_this_per_qty"])
+        self.rsrc_type: str = data["rsrc_type"]
+        self.account: ACCOUNT | None = _validate_account(account)
+        self.resource: RSRC | None = _validate_rsrc(resource)
+        self.periods: list[TRSRCFIN] = []
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
         return (
@@ -137,3 +126,33 @@ class TASKRSRC(BaseModel):
         if self.restart_date:
             return self.restart_date
         raise ValueError(f"Could not find start date for taskrsrc {self.uid}")
+
+
+def _str_or_none(value: str) -> str | None:
+    return (value, None)[value == ""]
+
+
+def _datetime_or_none(value: str) -> datetime | None:
+    if value == "":
+        return None
+    return datetime.strptime(value, DATE_FMT)
+
+
+def _validate_account(acct: ACCOUNT | None) -> ACCOUNT | None:
+    if acct is None:
+        return None
+
+    if not isinstance(acct, ACCOUNT):
+        raise ValueError(f"ValueError: cannot validate account type {type(acct)}")
+
+    return acct
+
+
+def _validate_rsrc(rsrc: RSRC | None) -> RSRC | None:
+    if rsrc is None:
+        return None
+
+    if not isinstance(rsrc, RSRC):
+        raise ValueError("ValueError: cannot validate rsrc type")
+
+    return rsrc

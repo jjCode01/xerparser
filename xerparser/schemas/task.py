@@ -4,7 +4,8 @@
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from pydantic import BaseModel, Field, validator
+
+# from pydantic import BaseModel, Field, validator
 
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -14,35 +15,10 @@ from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
 
-
-# Passed to pydantic validator to convert any emtpy strings to None
-field_can_be_none = (
-    "total_float_hr_cnt",
-    "free_float_hr_cnt",
-    "remain_drtn_hr_cnt",
-    "cstr_date",
-    "act_start_date",
-    "act_end_date",
-    "late_start_date",
-    "late_end_date",
-    "expect_end_date",
-    "early_start_date",
-    "early_end_date",
-    "restart_date",
-    "reend_date",
-    "rem_late_start_date",
-    "rem_late_end_date",
-    "cstr_type",
-    "suspend_date",
-    "resume_date",
-    "float_path",
-    "float_path_order",
-    "cstr_date2",
-    "cstr_type2",
-)
+DATE_FMT = "%Y-%m-%d %H:%M"
 
 
-class TASK(BaseModel):
+class TASK:
     """
     A class to represent a scehdule activity.
     """
@@ -112,93 +88,93 @@ class TASK(BaseModel):
         def is_task(self) -> bool:
             return self is self.TT_Task
 
-    uid: str = Field(alias="task_id")
+    def __init__(self, calendar: CALENDAR | None, wbs: PROJWBS, **data) -> None:
 
-    # Foreign keys
-    proj_id: str
-    wbs_id: str
-    clndr_id: str
+        self.uid: str = data["task_id"]
 
-    # General Task info
-    phys_complete_pct: float
-    complete_pct_type: str
-    type: TaskType = Field(alias="task_type")
-    status: TaskStatus = Field(alias="status_code")
-    task_code: str
-    name: str = Field(alias="task_name")
+        # Foreign keys
+        self.proj_id: str = data["proj_id"]
+        self.wbs_id: str = data["wbs_id"]
+        self.clndr_id: str = data["clndr_id"]
 
-    # Durations and float
-    duration_type: str
-    total_float_hr_cnt: float | None
-    free_float_hr_cnt: float | None
-    remain_drtn_hr_cnt: float | None
-    target_drtn_hr_cnt: float
-    float_path: int | None
-    float_path_order: int | None
-    is_longest_path: bool = Field(alias="driving_path_flag")
+        # General Task info
+        self.phys_complete_pct: float = float(data["phys_complete_pct"])
+        self.complete_pct_type: str = data["complete_pct_type"]
+        self.type: TASK.TaskType = TASK.TaskType[data["task_type"]]
+        self.status: TASK.TaskStatus = TASK.TaskStatus[data["status_code"]]
+        self.task_code: str = data["task_code"]
+        self.name: str = data["task_name"]
 
-    # Dates
-    act_start_date: datetime | None
-    act_end_date: datetime | None
-    late_start_date: datetime | None
-    late_end_date: datetime | None
-    expect_end_date: datetime | None
-    early_start_date: datetime | None
-    early_end_date: datetime | None
-    rem_late_start_date: datetime | None
-    rem_late_end_date: datetime | None
-    restart_date: datetime | None
-    reend_date: datetime | None
-    target_start_date: datetime
-    target_end_date: datetime
-    suspend_date: datetime | None
-    resume_date: datetime | None
-    create_date: datetime
-    update_date: datetime
+        # Durations and float
+        self.duration_type: str = data["duration_type"]
+        self.total_float_hr_cnt: float | None = _float_or_none(
+            data["total_float_hr_cnt"]
+        )
+        self.free_float_hr_cnt: float | None = _float_or_none(data["free_float_hr_cnt"])
+        self.remain_drtn_hr_cnt: float | None = _float_or_none(
+            data["remain_drtn_hr_cnt"]
+        )
+        self.target_drtn_hr_cnt: float = float(data["target_drtn_hr_cnt"])
+        self.float_path: int | None = _int_or_none(data["float_path"])
+        self.float_path_order: int | None = _int_or_none(data["float_path_order"])
+        self.is_longest_path: bool = data["driving_path_flag"] == "Y"
 
-    # Constraints
-    cstr_date: datetime | None
-    cstr_type: str | None
-    cstr_date2: datetime | None
-    cstr_type2: str | None
+        # Dates
+        self.act_start_date: datetime | None = _datetime_or_none(data["act_start_date"])
+        self.act_end_date: datetime | None = _datetime_or_none(data["act_end_date"])
+        self.late_start_date: datetime | None = _datetime_or_none(
+            data["late_start_date"]
+        )
+        self.late_end_date: datetime | None = _datetime_or_none(data["late_end_date"])
+        self.expect_end_date: datetime | None = _datetime_or_none(
+            data["expect_end_date"]
+        )
+        self.early_start_date: datetime | None = _datetime_or_none(
+            data["early_start_date"]
+        )
+        self.early_end_date: datetime | None = _datetime_or_none(data["early_end_date"])
+        self.rem_late_start_date: datetime | None = _datetime_or_none(
+            data["rem_late_start_date"]
+        )
+        self.rem_late_end_date: datetime | None = _datetime_or_none(
+            data["rem_late_end_date"]
+        )
+        self.restart_date: datetime | None = _datetime_or_none(data["restart_date"])
+        self.reend_date: datetime | None = _datetime_or_none(data["reend_date"])
+        self.target_start_date: datetime = datetime.strptime(
+            data["target_start_date"], DATE_FMT
+        )
+        self.target_end_date: datetime = datetime.strptime(
+            data["target_end_date"], DATE_FMT
+        )
+        self.suspend_date: datetime | None = _datetime_or_none(data["suspend_date"])
+        self.resume_date: datetime | None = _datetime_or_none(data["resume_date"])
+        self.create_date: datetime = datetime.strptime(data["create_date"], DATE_FMT)
+        self.update_date: datetime = datetime.strptime(data["update_date"], DATE_FMT)
 
-    # Unit quantities
-    target_work_qty: float
-    act_work_qty: float
-    target_equip_qty: float
-    act_equip_qty: float
+        # Constraints
+        self.cstr_date: datetime | None = _datetime_or_none(data["cstr_date"])
+        self.cstr_type: str | None = _str_or_none(data["cstr_type"])
+        self.cstr_date2: datetime | None = _datetime_or_none(data["cstr_date2"])
+        self.cstr_type2: str | None = _str_or_none(data["cstr_type2"])
 
-    # calendar is optional None type for occurances when the
-    # xer file is corrupted and task clndr_id references a
-    # non-existent calendar.
-    activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
-    calendar: CALENDAR | None = None
-    wbs: PROJWBS
-    memos: list[TASKMEMO] = []
-    resources: dict[str, TASKRSRC] = {}
-    predecessors: list["LinkToTask"] = []
-    successors: list["LinkToTask"] = []
-    periods: list[TASKFIN] = []
+        # Unit quantities
+        self.target_work_qty: float = float(data["target_work_qty"])
+        self.act_work_qty: float = float(data["act_work_qty"])
+        self.target_equip_qty: float = float(data["target_equip_qty"])
+        self.act_equip_qty: float = float(data["act_equip_qty"])
 
-    class Config:
-        arbitrary_types_allowed = True
-        keep_untouched = (cached_property,)
-
-    @validator("is_longest_path", pre=True)
-    def flag_to_bool(cls, value):
-        return value == "Y"
-
-    @validator(*field_can_be_none, pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
-
-    @validator("type", pre=True)
-    def type_to_tasktype(cls, value):
-        return TASK.TaskType[value]
-
-    @validator("status", pre=True)
-    def status_to_taskstatus(cls, value):
-        return TASK.TaskStatus[value]
+        # calendar is optional None type for occurances when the
+        # xer file is corrupted and task clndr_id references a
+        # non-existent calendar.
+        self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
+        self.calendar: CALENDAR | None = calendar
+        self.wbs: PROJWBS = wbs
+        self.memos: list[TASKMEMO] = []
+        self.resources: dict[str, TASKRSRC] = {}
+        self.predecessors: list["LinkToTask"] = []
+        self.successors: list["LinkToTask"] = []
+        self.periods: list[TASKFIN] = []
 
     def __eq__(self, __o: "TASK") -> bool:
         return self.task_code == __o.task_code
@@ -357,3 +333,25 @@ class LinkToTask:
 
     def __hash__(self) -> int:
         return hash((self.task, self.link))
+
+
+def _str_or_none(value: str) -> str | None:
+    return (value, None)[value == ""]
+
+
+def _datetime_or_none(value: str) -> datetime | None:
+    if value == "":
+        return None
+    return datetime.strptime(value, "%Y-%m-%d %H:%M")
+
+
+def _float_or_none(value: str) -> float | None:
+    if value == "":
+        return None
+    return float(value)
+
+
+def _int_or_none(value: str) -> int | None:
+    if value == "":
+        return None
+    return int(value)

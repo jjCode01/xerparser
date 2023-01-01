@@ -1,11 +1,10 @@
 # xerparser
 # projwbs.py
 
-from pydantic import BaseModel, Field, validator
 from typing import Optional
 
 
-class PROJWBS(BaseModel):
+class PROJWBS:
     """
     A class to represent a schedule WBS node.
 
@@ -38,27 +37,20 @@ class PROJWBS(BaseModel):
 
     """
 
-    uid: str = Field(alias="wbs_id")
-    assignments: int = 0
-    code: str = Field(alias="wbs_short_name")
-    is_proj_node: bool = Field(alias="proj_node_flag")
-    name: str = Field(alias="wbs_name")
-    parent: Optional["PROJWBS"] = None
-    parent_wbs_id: str
-    proj_id: str
-    seq_num: int | None
-    status_code: str
+    def __init__(self, **data) -> None:
+        self.uid: str = data["wbs_id"]
+        self.code: str = data["wbs_short_name"]
+        self.is_proj_node: bool = data["proj_node_flag"] == "Y"
+        self.name: str = data["wbs_name"]
+        self.parent_wbs_id: str = data["parent_wbs_id"]
+        self.proj_id: str = data["proj_id"]
+        self.seq_num: int | None = (
+            None if data["seq_num"] == "" else int(data["seq_num"])
+        )
+        self.status_code: str = data["status_code"]
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    @validator("is_proj_node", pre=True)
-    def flag_to_bool(cls, value):
-        return value == "Y"
-
-    @validator("seq_num", pre=True)
-    def empty_str_to_none(cls, value):
-        return (value, None)[value == ""]
+        self.assignments: int = 0
+        self.parent: Optional["PROJWBS"] = None
 
     def __eq__(self, __o: "PROJWBS") -> bool:
         return self.full_code == __o.full_code

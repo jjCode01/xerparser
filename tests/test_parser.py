@@ -71,7 +71,7 @@ def process_planned_progress(progress: dict) -> dict[str, int]:
 def process_calendar(calendar: CALENDAR):
     return {
         "name": calendar.name,
-        "type": calendar.type,
+        "type": calendar.type.value,
         "workdays": [weekday for weekday, day in calendar.work_week.items() if day],
         "workweek_hours": sum([day.hours for day in calendar.work_week.values()]),
         "holiday_count": len(calendar.holidays),
