@@ -6,6 +6,11 @@
 * Added testing of `errors` attribute of `Xer` class.
 ### Changed
 * Moved functions `is_workday`, `iter_holidays`, and `iter_workdays` to be methods of the `CALENDAR` class.
+* The `budgeted_cost`, `actual_cost`, `this_period_cost`, and `remaining_cost` properties of the `TASK` class now return float values rounded to two decimal places. **Warning**: this may cause the `PROJECT` level values to be off by .01 from what was previously reported; you will need to recreate test data.  
+### Removed
+* Removed `has_predecessor`, `has_successor`, `has_finish_successor`, and `has_start_successor` of `TASK` class. These analyses can be done in the users program.
+### In Development
+* Continue working on Warnings class.
 ---
 ## 0.5.1 - 2022-12-31
 ### General Notes
