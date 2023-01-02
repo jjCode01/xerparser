@@ -3,6 +3,7 @@
 
 from datetime import datetime
 from xerparser.schemas.task import TASK
+from xerparser.scripts.validators import int_or_none, datetime_or_none
 
 
 class TASKPRED:
@@ -17,11 +18,9 @@ class TASKPRED:
         self.pred_proj_id: str = data["pred_proj_id"]
         self.pred_type: str = data["pred_type"]
         self.lag_hr_cnt: int = int(data["lag_hr_cnt"])
-        self.float_path: int | None = (
-            None if data["float_path"] == "" else int(data["float_path"])
-        )
-        self.aref: datetime | None = _datetime_or_none(data["aref"])
-        self.arls: datetime | None = _datetime_or_none(data["arls"])
+        self.float_path: int | None = int_or_none(data["float_path"])
+        self.aref: datetime | None = datetime_or_none(data["aref"])
+        self.arls: datetime | None = datetime_or_none(data["arls"])
         self.predecessor: TASK = predecessor
         self.successor: TASK = successor
 
@@ -42,9 +41,3 @@ class TASKPRED:
     @property
     def link(self) -> str:
         return self.pred_type[-2:]
-
-
-def _datetime_or_none(value: str) -> datetime | None:
-    if value == "":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M")

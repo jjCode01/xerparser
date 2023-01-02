@@ -1,4 +1,12 @@
 # Change Log  
+## 0.5.2 - 2023-01-02
+### General Notes  
+* Removed dependency on `Pydantic`. Speeds up code by ~25%.
+### Added
+* Added testing of `errors` attribute of `Xer` class.
+### Changed
+* Moved functions `is_workday`, `iter_holidays`, and `iter_workdays` to be methods of the `CALENDAR` class.
+---
 ## 0.5.1 - 2022-12-31
 ### General Notes
 * Updated tests.  

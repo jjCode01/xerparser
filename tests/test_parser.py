@@ -12,7 +12,6 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import tests.config as config
-
 from xerparser.src.xer import CALENDAR, PROJECT, Xer
 
 DATE_FORMAT = "%Y-%m-%d %M:%S"  # format datetime objects to strings
@@ -34,6 +33,7 @@ def process_xer(file: Path):
         "file": str(file.absolute()),
         "version": xer.export_info.version,
         "export_date": xer.export_info.date.strftime(DATE_FORMAT),
+        "errors": xer.errors,
         **xer_data,
     }
 
@@ -113,7 +113,7 @@ class TestParser(unittest.TestCase):
         if not Path.is_file(xer_data_file):
             if not Path.exists(Path(config.directory)):
                 raise FileNotFoundError(
-                    "Could not find the directory in the config.py file."
+                    f"Could not find the directory in the config.py file {config.directory}"
                 )
 
             create_data = input(
@@ -153,6 +153,8 @@ class TestParser(unittest.TestCase):
                 file_contents = f.read()
 
             xer = Xer(file_contents)
+
+            self.assertEqual(xer.errors, file["errors"])
 
             for project in xer.projects.values():
                 self.assertEqual(

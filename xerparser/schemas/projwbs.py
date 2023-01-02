@@ -2,6 +2,7 @@
 # projwbs.py
 
 from typing import Optional
+from xerparser.scripts.validators import int_or_none
 
 
 class PROJWBS:
@@ -44,13 +45,11 @@ class PROJWBS:
         self.name: str = data["wbs_name"]
         self.parent_wbs_id: str = data["parent_wbs_id"]
         self.proj_id: str = data["proj_id"]
-        self.seq_num: int | None = (
-            None if data["seq_num"] == "" else int(data["seq_num"])
-        )
+        self.seq_num: int | None = int_or_none(data["seq_num"])
         self.status_code: str = data["status_code"]
 
         self.assignments: int = 0
-        self.parent: Optional["PROJWBS"] = None
+        self._parent: Optional["PROJWBS"] = None
 
     def __eq__(self, __o: "PROJWBS") -> bool:
         return self.full_code == __o.full_code
@@ -70,3 +69,19 @@ class PROJWBS:
             node = node.parent
 
         return ".".join(reversed(path))
+
+    @property
+    def parent(self) -> Optional["PROJWBS"]:
+        return self._parent
+
+    @parent.setter
+    def parent(self, value: Optional["PROJWBS"]) -> None:
+        if value is None:
+            self._parent = None
+        else:
+            if not isinstance(value, PROJWBS):
+                raise ValueError(
+                    f"ValueError: expected <class PROJWBS> for parent, got {type(value)}."
+                )
+
+            self._parent = value

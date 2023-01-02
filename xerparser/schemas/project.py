@@ -4,17 +4,14 @@
 from collections import Counter
 from datetime import datetime
 from functools import cached_property
-
-# from pydantic import BaseModel, Field, validator
 from statistics import mean
+
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
-
-# field_can_be_none = ("last_fin_dates_id", "last_schedule_date", "must_finish_date")
-DATE_FMT = "%Y-%m-%d %H:%M"
+from xerparser.scripts.validators import datetime_or_none, str_or_none, date_format
 
 
 class PROJECT:
@@ -68,19 +65,21 @@ class PROJECT:
 
         # table fields from .xer file
         self.uid: str = data["proj_id"]
-        self.add_date: datetime = datetime.strptime(data["add_date"], DATE_FMT)
-        self.data_date: datetime = datetime.strptime(data["last_recalc_date"], DATE_FMT)
+        self.add_date: datetime = datetime.strptime(data["add_date"], date_format)
+        self.data_date: datetime = datetime.strptime(
+            data["last_recalc_date"], date_format
+        )
         self.export_flag: bool = data["export_flag"] == "Y"
-        self.finish_date: datetime = datetime.strptime(data["scd_end_date"], DATE_FMT)
-        self.last_fin_dates_id: str | None = _str_or_none(data["last_fin_dates_id"])
-        self.last_schedule_date: datetime | None = _datetime_or_none(
+        self.finish_date: datetime = datetime.strptime(
+            data["scd_end_date"], date_format
+        )
+        self.last_fin_dates_id: str | None = str_or_none(data["last_fin_dates_id"])
+        self.last_schedule_date: datetime | None = datetime_or_none(
             data.get("last_schedule_date", "")
         )
-        self.must_finish_date: datetime | None = _datetime_or_none(
-            data["plan_end_date"]
-        )
+        self.must_finish_date: datetime | None = datetime_or_none(data["plan_end_date"])
         self.plan_start_date: datetime = datetime.strptime(
-            data["plan_start_date"], DATE_FMT
+            data["plan_start_date"], date_format
         )
         self.short_name: str = data["proj_short_name"]
 
@@ -213,13 +212,3 @@ class PROJECT:
                     progress["late_finish"].append(task)
 
         return progress
-
-
-def _str_or_none(value: str) -> str | None:
-    return (value, None)[value == ""]
-
-
-def _datetime_or_none(value: str) -> datetime | None:
-    if value == "":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M")

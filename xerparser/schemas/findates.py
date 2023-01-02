@@ -2,8 +2,7 @@
 # findates.py
 
 from datetime import datetime
-
-DATE_FMT = "%Y-%m-%d %H:%M"
+from xerparser.scripts.validators import date_format
 
 
 class FINDATES:
@@ -12,8 +11,8 @@ class FINDATES:
     def __init__(self, **data) -> None:
         self.uid: str = data["fin_dates_id"]  # Unique ID
         self.name: str = data["fin_dates_name"]  # Period Name
-        self.start_date: datetime = datetime.strptime(data["start_date"], DATE_FMT)
-        self.end_date: datetime = datetime.strptime(data["end_date"], DATE_FMT)
+        self.start_date: datetime = datetime.strptime(data["start_date"], date_format)
+        self.end_date: datetime = datetime.strptime(data["end_date"], date_format)
 
     def __eq__(self, __o: "FINDATES") -> bool:
         return all(

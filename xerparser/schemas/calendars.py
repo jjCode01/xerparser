@@ -2,20 +2,20 @@
 # calendars.py
 
 
-from datetime import datetime, timedelta, time
-from enum import Enum
-from functools import cached_property
-
 import re
 from dataclasses import dataclass, field
+from datetime import datetime, time, timedelta
+from enum import Enum
+from functools import cached_property
 from typing import Iterator
+
 from xerparser.scripts.dates import (
     calc_time_var_hrs,
-    conv_time,
-    clean_dates,
     clean_date,
+    clean_dates,
+    conv_time,
 )
-
+from xerparser.scripts.validators import datetime_or_none, str_or_none
 
 WEEKDAYS = (
     "Sunday",
@@ -27,14 +27,17 @@ WEEKDAYS = (
     "Saturday",
 )
 
-# Regular Expressions used to parse the Calendar Data
-REGEX_WEEKDAYS = re.compile(
-    r"(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
-)
-REGEX_SHIFT = re.compile(r"[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d")
-REGEX_HOUR = re.compile(r"[0-2]?\d:[0-5]\d")
-REGEX_HOL = re.compile(r"(?<=d\|)\d{5}(?=\)\(\))")
-REGEX_EXCEPT = re.compile(r"(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)")
+
+class ClndrRegEx(Enum):
+    """Regular Expressions used to parse the Calendar Data"""
+
+    weekdays = re.compile(
+        r"(?<=0\|\|)[1-7]\(\).+?(?=\(0\|\|[1-7]\(\)|\(0\|\|VIEW|\(0\|\|Exceptions|\)$)"
+    )
+    shifts = re.compile(r"[sf]\|[0-2]?\d:[0-5]\d\|[sf]\|[0-2]?\d:[0-5]\d")
+    shift_hours = re.compile(r"[0-2]?\d:[0-5]\d")
+    holidays = re.compile(r"(?<=d\|)\d{5}(?=\)\(\))")
+    exceptions = re.compile(r"(?<=d\|)\d{5}\)\([^\)]{1}.+?\(\)\)\)")
 
 
 @dataclass(frozen=True)
@@ -121,9 +124,9 @@ class CALENDAR:
         self.uid: str = data["clndr_id"]
         self.data: str = data["clndr_data"]
         self.is_default: bool = data["default_flag"] == "Y"
-        self.last_chng_date: datetime | None = _datetime_or_none(data["last_chng_date"])
+        self.last_chng_date: datetime | None = datetime_or_none(data["last_chng_date"])
         self.name: str = data["clndr_name"]
-        self.proj_id: str | None = _str_or_none(data["proj_id"])
+        self.proj_id: str | None = str_or_none(data["proj_id"])
         self.type: CALENDAR.CalendarType = CALENDAR.CalendarType[data["clndr_type"]]
 
     def __eq__(self, __o: "CALENDAR") -> bool:
@@ -137,15 +140,7 @@ class CALENDAR:
 
     @staticmethod
     def conv_excel_date(ordinal: int, _epoch0=datetime(1899, 12, 31)) -> datetime:
-        """Convert Excel date format to datetime object
-
-        Args:
-            ordinal (str): Excel date format
-            _epoch0 (datetime, optional): Start date for conversion. Defaults to datetime(1899, 12, 31).
-
-        Returns:
-            datetime: Excel date format converted to datetime object
-        """
+        """Convert Excel date format to datetime object"""
         if ordinal < 0 or not isinstance(ordinal, int):
             raise ValueError("Innappropiate value passed, should be positive integer.")
 
@@ -161,7 +156,7 @@ class CALENDAR:
     def holidays(self) -> list[datetime]:
         """Parse non-workday exceptions from Calendar data field."""
         nonwork_days = []
-        for e in _parse_clndr_data(self.data, REGEX_HOL):
+        for e in _parse_clndr_data(self.data, ClndrRegEx.holidays.value):
             _date = self.conv_excel_date(int(e))
 
             # Verify exception is not already a non-work day on the standard calendar
@@ -170,11 +165,53 @@ class CALENDAR:
 
         return nonwork_days
 
+    def is_workday(self, date_to_check: datetime) -> bool:
+        """Checks if a date is a workday in a Calendar object"""
+
+        if not isinstance(date_to_check, datetime):
+            raise ValueError("Argument date_to_check must be a datetime object")
+
+        _date = clean_date(date_to_check)
+        if _date in self.holidays:
+            return False
+        if _date in self.work_exceptions.keys():
+            return True
+        return bool(self.work_week[f"{date_to_check:%A}"])
+
+    def iter_holidays(self, start: datetime, end: datetime) -> Iterator[datetime]:
+        """Yields nonwork exceptions (i.e. holidays) between 2 dates."""
+        if not isinstance(start, datetime) or not isinstance(end, datetime):
+            raise ValueError("Arguments must be a datetime object")
+
+        # Clean start and end dates to remove time values
+        cl_dates = clean_dates(start, end)
+
+        check_date = min(cl_dates)
+        while check_date <= max(cl_dates):
+            if check_date in self.holidays:
+                yield check_date
+            check_date += timedelta(days=1)
+
+    def iter_workdays(self, start: datetime, end: datetime) -> Iterator[datetime]:
+        """Yields valid workdays between 2 dates"""
+
+        if not isinstance(start, datetime) or not isinstance(end, datetime):
+            raise ValueError("Arguments must be a datetime object")
+
+        # Clean start and end dates to remove time values
+        _dates = clean_dates(start, end)
+
+        check_date = min(_dates)
+        while check_date <= max(_dates):
+            if self.is_workday(check_date):
+                yield check_date
+            check_date += timedelta(days=1)
+
     @cached_property
     def work_exceptions(self) -> dict[datetime, WeekDay]:
         """Parse work-day exceptions from Calendar data field."""
         exception_dict = {}
-        for exception in _parse_clndr_data(self.data, REGEX_EXCEPT):
+        for exception in _parse_clndr_data(self.data, ClndrRegEx.exceptions.value):
             _date = self.conv_excel_date(int(exception[:5]))
             _day = _parse_work_day(exception)
 
@@ -189,7 +226,7 @@ class CALENDAR:
         """Parse work week from Calendar data field."""
         return {
             WEEKDAYS[int(day[0]) - 1]: _parse_work_day(day)
-            for day in _parse_clndr_data(self.data, REGEX_WEEKDAYS)
+            for day in _parse_clndr_data(self.data, ClndrRegEx.weekdays.value)
         }
 
 
@@ -264,107 +301,15 @@ def _parse_work_day(day: str) -> WeekDay:
     Parse WeekDay objects from string representing a work day.
     """
     weekday = WEEKDAYS[int(day[0]) - 1]
-    shift_hours = sorted([conv_time(hr) for hr in re.findall(REGEX_HOUR, day)])
+    shift_hours = sorted(
+        [conv_time(hr) for hr in re.findall(ClndrRegEx.shift_hours.value, day)]
+    )
 
     shift_hours_tuple: list[tuple[time, time]] = []
     for hr in range(0, len(shift_hours), 2):
         shift_hours_tuple.append((shift_hours[hr], shift_hours[hr + 1]))
 
     return WeekDay(weekday, shift_hours_tuple)
-
-
-def is_workday(clndr: CALENDAR, date_to_check: datetime) -> bool:
-    """Checks if a date is a workday in a Calendar object
-
-    Args:
-        clndr (Calendar): Calendar used to determine workdays and hours
-        date_obj (datetime): date to check
-
-    Raises:
-        ValueError: argument is not a datetime object
-
-    Returns:
-        bool: [True] is a workday [False] is not a workday
-    """
-
-    if not isinstance(date_to_check, datetime):
-        raise ValueError("Argument date_to_check must be a datetime object")
-
-    # Clean date to match format stored in holidays and work_exceptions
-    _date = clean_date(date_to_check)
-
-    # date is set as a non-workday in the calendar
-    if _date in clndr.holidays:
-        return False
-
-    # date is set as workday exception in the calendar
-    if _date in clndr.work_exceptions.keys():
-        return True
-
-    return bool(clndr.work_week[f"{date_to_check:%A}"])
-
-
-def iter_nonwork_exceptions(
-    clndr: CALENDAR, start: datetime, end: datetime
-) -> Iterator[datetime]:
-    """Iterate through nonwork exceptions (i.e. holidays) between two dates.
-
-    This is useful for getting nonwork exceptions during the projects period of performance.
-
-    Args:
-        clndr (Calendar): Calendar used to determine workdays and hours
-        start (datetime): start date
-        end (datetime): end date
-
-    Raises:
-        ValueError: argument is not a dateime object
-
-    Yields:
-        Iterator[datetime]: Valid workday
-    """
-    if not isinstance(start, datetime) or not isinstance(end, datetime):
-        raise ValueError("Arguments must be a datetime object")
-
-    # Clean start and end dates to remove time values
-    cl_dates = clean_dates(start, end)
-
-    check_date = min(cl_dates)
-    while check_date <= max(cl_dates):
-        if check_date in clndr.holidays:
-            yield check_date
-
-        check_date += timedelta(days=1)
-
-
-def iter_workdays(
-    clndr: CALENDAR, start_date: datetime, end_date: datetime
-) -> Iterator[datetime]:
-    """Yields valid workdays between 2 dates
-
-    Args:
-        clndr (Calendar): Calendar used to determine workdays and hours
-        start (datetime): start date
-        end (datetime): end date
-
-    Raises:
-        ValueError: argument is not a dateime object
-
-    Yields:
-        Iterator[datetime]: Valid workdays between 2 dates
-    """
-
-    if not isinstance(start_date, datetime) or not isinstance(end_date, datetime):
-        raise ValueError("Arguments must be a datetime object")
-
-    # Clean start and end dates to remove time values
-    _dates = clean_dates(start_date, end_date)
-
-    check_date = min(_dates)
-    while check_date <= max(_dates):
-        if is_workday(clndr, check_date):
-            yield check_date
-
-        check_date += timedelta(days=1)
 
 
 def rem_hours_per_day(
@@ -406,7 +351,7 @@ def rem_hours_per_day(
         return [(clean_date(start_date), round(work_hrs, 3))]
 
     # Get a list of all workdays between the start and end dates
-    date_range = list(iter_workdays(clndr, start_date, end_date))
+    date_range = list(clndr.iter_workdays(start_date, end_date))
 
     # edge cases that only 1 valid workday between start date and end date
     # these may never actually occur since the dates are pulled directly from the schedule
@@ -469,13 +414,3 @@ def rem_hours_per_day(
     )
 
     return rem_hrs
-
-
-def _str_or_none(value: str) -> str | None:
-    return (value, None)[value == ""]
-
-
-def _datetime_or_none(value: str) -> datetime | None:
-    if value == "":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M")

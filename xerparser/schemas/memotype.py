@@ -1,8 +1,6 @@
 # xerparser
 # memotype.py
 
-from typing import Any
-
 
 class MEMOTYPE:
     """
@@ -18,7 +16,7 @@ class MEMOTYPE:
         Notebook Topic [memo_type]
     """
 
-    def __init__(self, **data: Any) -> None:
+    def __init__(self, **data) -> None:
         self.uid: str = data["memo_type_id"]
         self.topic: str = data["memo_type"]
 

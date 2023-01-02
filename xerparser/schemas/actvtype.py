@@ -5,15 +5,13 @@
 class ACTVTYPE:
     """A class representing Activity Codes"""
 
-    def __init__(self, **kwargs) -> None:
-        self.uid: str = kwargs["actv_code_type_id"]
-        self.max_length: int = int(kwargs["actv_short_len"])
-        self.name: str = kwargs["actv_code_type"]
-        self.proj_id: str = kwargs["proj_id"]
-        self.scope: str = _check_scope(kwargs["actv_code_type_scope"])
-        self.seq_num: int | None = (
-            None if kwargs["seq_num"] == "" else int(kwargs["seq_num"])
-        )
+    def __init__(self, **data) -> None:
+        self.uid: str = data["actv_code_type_id"]
+        self.max_length: int = int(data["actv_short_len"])
+        self.name: str = data["actv_code_type"]
+        self.proj_id: str = data["proj_id"]
+        self.scope: str = _check_scope(data["actv_code_type_scope"])
+        self.seq_num: int | None = None if (seq := data["seq_num"]) == "" else int(seq)
 
     def __eq__(self, __o: "ACTVTYPE") -> bool:
         return all(

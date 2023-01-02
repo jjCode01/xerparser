@@ -7,8 +7,13 @@ from datetime import datetime
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
-
-DATE_FMT = "%Y-%m-%d %H:%M"
+from xerparser.scripts.validators import (
+    account_or_none,
+    date_format,
+    datetime_or_none,
+    rsrc_or_none,
+    str_or_none,
+)
 
 
 class TASKRSRC:
@@ -18,7 +23,7 @@ class TASKRSRC:
         self.uid: str = data["taskrsrc_id"]
         self.task_id: str = data["task_id"]
         self.proj_id: str = data["proj_id"]
-        self.acct_id: str | None = _str_or_none(data["acct_id"])
+        self.acct_id: str | None = str_or_none(data["acct_id"])
         self.rsrc_id: str = data["rsrc_id"]
         self.remain_qty: float = float(data["remain_qty"])
         self.target_qty: float = float(data["target_qty"])
@@ -28,28 +33,28 @@ class TASKRSRC:
         self.act_reg_cost: float = float(data["act_reg_cost"])
         self.act_ot_cost: float = float(data["act_ot_cost"])
         self.remain_cost: float = float(data["remain_cost"])
-        self.act_start_date: datetime | None = _datetime_or_none(data["act_start_date"])
-        self.act_end_date: datetime | None = _datetime_or_none(data["act_end_date"])
-        self.restart_date: datetime | None = _datetime_or_none(data["restart_date"])
-        self.reend_date: datetime | None = _datetime_or_none(data["reend_date"])
+        self.act_start_date: datetime | None = datetime_or_none(data["act_start_date"])
+        self.act_end_date: datetime | None = datetime_or_none(data["act_end_date"])
+        self.restart_date: datetime | None = datetime_or_none(data["restart_date"])
+        self.reend_date: datetime | None = datetime_or_none(data["reend_date"])
         self.target_start_date: datetime = datetime.strptime(
-            data["target_start_date"], DATE_FMT
+            data["target_start_date"], date_format
         )
         self.target_end_date: datetime = datetime.strptime(
-            data["target_end_date"], DATE_FMT
+            data["target_end_date"], date_format
         )
         self.target_lag_drtn_hr_cnt: int = int(data["target_lag_drtn_hr_cnt"])
-        self.rem_late_start_date: datetime | None = _datetime_or_none(
+        self.rem_late_start_date: datetime | None = datetime_or_none(
             data["rem_late_start_date"]
         )
-        self.rem_late_end_date: datetime | None = _datetime_or_none(
+        self.rem_late_end_date: datetime | None = datetime_or_none(
             data["rem_late_end_date"]
         )
         self.act_this_per_cost: float = float(data["act_this_per_cost"])
         self.act_this_per_qty: float = float(data["act_this_per_qty"])
         self.rsrc_type: str = data["rsrc_type"]
-        self.account: ACCOUNT | None = _validate_account(account)
-        self.resource: RSRC | None = _validate_rsrc(resource)
+        self.account: ACCOUNT | None = account_or_none(account)
+        self.resource: RSRC | None = rsrc_or_none(resource)
         self.periods: list[TRSRCFIN] = []
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
@@ -126,33 +131,3 @@ class TASKRSRC:
         if self.restart_date:
             return self.restart_date
         raise ValueError(f"Could not find start date for taskrsrc {self.uid}")
-
-
-def _str_or_none(value: str) -> str | None:
-    return (value, None)[value == ""]
-
-
-def _datetime_or_none(value: str) -> datetime | None:
-    if value == "":
-        return None
-    return datetime.strptime(value, DATE_FMT)
-
-
-def _validate_account(acct: ACCOUNT | None) -> ACCOUNT | None:
-    if acct is None:
-        return None
-
-    if not isinstance(acct, ACCOUNT):
-        raise ValueError(f"ValueError: cannot validate account type {type(acct)}")
-
-    return acct
-
-
-def _validate_rsrc(rsrc: RSRC | None) -> RSRC | None:
-    if rsrc is None:
-        return None
-
-    if not isinstance(rsrc, RSRC):
-        raise ValueError("ValueError: cannot validate rsrc type")
-
-    return rsrc

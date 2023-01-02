@@ -5,8 +5,6 @@ from datetime import datetime
 from enum import Enum
 from functools import cached_property
 
-# from pydantic import BaseModel, Field, validator
-
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
@@ -14,8 +12,13 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
-
-DATE_FMT = "%Y-%m-%d %H:%M"
+from xerparser.scripts.validators import (
+    datetime_or_none,
+    date_format,
+    float_or_none,
+    int_or_none,
+    str_or_none,
+)
 
 
 class TASK:
@@ -107,56 +110,56 @@ class TASK:
 
         # Durations and float
         self.duration_type: str = data["duration_type"]
-        self.total_float_hr_cnt: float | None = _float_or_none(
+        self.total_float_hr_cnt: float | None = float_or_none(
             data["total_float_hr_cnt"]
         )
-        self.free_float_hr_cnt: float | None = _float_or_none(data["free_float_hr_cnt"])
-        self.remain_drtn_hr_cnt: float | None = _float_or_none(
+        self.free_float_hr_cnt: float | None = float_or_none(data["free_float_hr_cnt"])
+        self.remain_drtn_hr_cnt: float | None = float_or_none(
             data["remain_drtn_hr_cnt"]
         )
         self.target_drtn_hr_cnt: float = float(data["target_drtn_hr_cnt"])
-        self.float_path: int | None = _int_or_none(data["float_path"])
-        self.float_path_order: int | None = _int_or_none(data["float_path_order"])
+        self.float_path: int | None = int_or_none(data["float_path"])
+        self.float_path_order: int | None = int_or_none(data["float_path_order"])
         self.is_longest_path: bool = data["driving_path_flag"] == "Y"
 
         # Dates
-        self.act_start_date: datetime | None = _datetime_or_none(data["act_start_date"])
-        self.act_end_date: datetime | None = _datetime_or_none(data["act_end_date"])
-        self.late_start_date: datetime | None = _datetime_or_none(
+        self.act_start_date: datetime | None = datetime_or_none(data["act_start_date"])
+        self.act_end_date: datetime | None = datetime_or_none(data["act_end_date"])
+        self.late_start_date: datetime | None = datetime_or_none(
             data["late_start_date"]
         )
-        self.late_end_date: datetime | None = _datetime_or_none(data["late_end_date"])
-        self.expect_end_date: datetime | None = _datetime_or_none(
+        self.late_end_date: datetime | None = datetime_or_none(data["late_end_date"])
+        self.expect_end_date: datetime | None = datetime_or_none(
             data["expect_end_date"]
         )
-        self.early_start_date: datetime | None = _datetime_or_none(
+        self.early_start_date: datetime | None = datetime_or_none(
             data["early_start_date"]
         )
-        self.early_end_date: datetime | None = _datetime_or_none(data["early_end_date"])
-        self.rem_late_start_date: datetime | None = _datetime_or_none(
+        self.early_end_date: datetime | None = datetime_or_none(data["early_end_date"])
+        self.rem_late_start_date: datetime | None = datetime_or_none(
             data["rem_late_start_date"]
         )
-        self.rem_late_end_date: datetime | None = _datetime_or_none(
+        self.rem_late_end_date: datetime | None = datetime_or_none(
             data["rem_late_end_date"]
         )
-        self.restart_date: datetime | None = _datetime_or_none(data["restart_date"])
-        self.reend_date: datetime | None = _datetime_or_none(data["reend_date"])
+        self.restart_date: datetime | None = datetime_or_none(data["restart_date"])
+        self.reend_date: datetime | None = datetime_or_none(data["reend_date"])
         self.target_start_date: datetime = datetime.strptime(
-            data["target_start_date"], DATE_FMT
+            data["target_start_date"], date_format
         )
         self.target_end_date: datetime = datetime.strptime(
-            data["target_end_date"], DATE_FMT
+            data["target_end_date"], date_format
         )
-        self.suspend_date: datetime | None = _datetime_or_none(data["suspend_date"])
-        self.resume_date: datetime | None = _datetime_or_none(data["resume_date"])
-        self.create_date: datetime = datetime.strptime(data["create_date"], DATE_FMT)
-        self.update_date: datetime = datetime.strptime(data["update_date"], DATE_FMT)
+        self.suspend_date: datetime | None = datetime_or_none(data["suspend_date"])
+        self.resume_date: datetime | None = datetime_or_none(data["resume_date"])
+        self.create_date: datetime = datetime.strptime(data["create_date"], date_format)
+        self.update_date: datetime = datetime.strptime(data["update_date"], date_format)
 
         # Constraints
-        self.cstr_date: datetime | None = _datetime_or_none(data["cstr_date"])
-        self.cstr_type: str | None = _str_or_none(data["cstr_type"])
-        self.cstr_date2: datetime | None = _datetime_or_none(data["cstr_date2"])
-        self.cstr_type2: str | None = _str_or_none(data["cstr_type2"])
+        self.cstr_date: datetime | None = datetime_or_none(data["cstr_date"])
+        self.cstr_type: str | None = str_or_none(data["cstr_type"])
+        self.cstr_date2: datetime | None = datetime_or_none(data["cstr_date2"])
+        self.cstr_type2: str | None = str_or_none(data["cstr_type2"])
 
         # Unit quantities
         self.target_work_qty: float = float(data["target_work_qty"])
@@ -169,7 +172,7 @@ class TASK:
         # non-existent calendar.
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
         self.calendar: CALENDAR | None = calendar
-        self.wbs: PROJWBS = wbs
+        self.wbs: PROJWBS = valid_projwbs(wbs)
         self.memos: list[TASKMEMO] = []
         self.resources: dict[str, TASKRSRC] = {}
         self.predecessors: list["LinkToTask"] = []
@@ -335,23 +338,7 @@ class LinkToTask:
         return hash((self.task, self.link))
 
 
-def _str_or_none(value: str) -> str | None:
-    return (value, None)[value == ""]
-
-
-def _datetime_or_none(value: str) -> datetime | None:
-    if value == "":
-        return None
-    return datetime.strptime(value, "%Y-%m-%d %H:%M")
-
-
-def _float_or_none(value: str) -> float | None:
-    if value == "":
-        return None
-    return float(value)
-
-
-def _int_or_none(value: str) -> int | None:
-    if value == "":
-        return None
-    return int(value)
+def valid_projwbs(value: PROJWBS) -> PROJWBS:
+    if not isinstance(value, PROJWBS):
+        raise ValueError(f"ValueError: expected <class PROJWBS>; got {type(value)}")
+    return value

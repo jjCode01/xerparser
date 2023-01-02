@@ -5,7 +5,9 @@
 class ACCOUNT:
     """
     A class to represent a cost account.
+
     ...
+
     Attributes
     ----------
     uid: str
