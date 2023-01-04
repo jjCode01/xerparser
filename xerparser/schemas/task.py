@@ -12,6 +12,7 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
+from xerparser.scripts.decorators import rounded
 from xerparser.scripts.validators import (
     datetime_or_none,
     date_format,
@@ -195,24 +196,25 @@ class TASK:
         return f"{self.task_code} - {self.name}"
 
     @property
+    @rounded()
     def actual_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return round(sum((res.act_total_cost for res in self.resources.values())), 2)
+        return sum((res.act_total_cost for res in self.resources.values()))
 
     @property
+    @rounded()
     def at_completion_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return round(
-            sum((res.at_completion_cost for res in self.resources.values())), 2
-        )
+        return sum((res.at_completion_cost for res in self.resources.values()))
 
     @property
+    @rounded()
     def budgeted_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return round(sum((res.target_cost for res in self.resources.values())), 2)
+        return sum((res.target_cost for res in self.resources.values()))
 
     @property
     def constraints(self) -> dict:
@@ -254,9 +256,10 @@ class TASK:
         return int(self.target_drtn_hr_cnt / 8)
 
     @cached_property
+    @rounded(ndigits=4)
     def percent_complete(self) -> float:
         if self.percent_type is TASK.PercentType.CP_Phys:
-            return round(self.phys_complete_pct / 100, 4)
+            return self.phys_complete_pct / 100
 
         elif self.percent_type is TASK.PercentType.CP_Drtn:
             if self.remain_drtn_hr_cnt is None or self.status.is_completed:
@@ -266,7 +269,7 @@ class TASK:
             if self.remain_drtn_hr_cnt >= self.target_drtn_hr_cnt:
                 return 0.0
 
-            return round(1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt, 4)
+            return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
 
         elif self.percent_type is TASK.PercentType.CP_Units:
             target_units = self.target_work_qty + self.target_equip_qty
@@ -284,10 +287,11 @@ class TASK:
         return TASK.PercentType[self.complete_pct_type]
 
     @property
+    @rounded()
     def remaining_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return round(sum((res.remain_cost for res in self.resources.values())), 2)
+        return sum((res.remain_cost for res in self.resources.values()))
 
     @property
     def remaining_duration(self) -> int:
@@ -305,10 +309,11 @@ class TASK:
         raise ValueError(f"Could not find start date for task {self.task_code}")
 
     @property
+    @rounded()
     def this_period_cost(self) -> float:
         if not self.resources:
             return 0.0
-        return round(sum((res.act_this_per_cost for res in self.resources.values())), 2)
+        return sum((res.act_this_per_cost for res in self.resources.values()))
 
     @property
     def total_float(self) -> int | None:

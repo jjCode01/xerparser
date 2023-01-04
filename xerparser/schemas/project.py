@@ -11,6 +11,7 @@ from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
+from xerparser.scripts.decorators import rounded
 from xerparser.scripts.validators import datetime_or_none, str_or_none, date_format
 
 
@@ -92,9 +93,10 @@ class PROJECT:
         self.wbs_nodes: list[PROJWBS] = []
 
     @cached_property
+    @rounded()
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
-        return round(sum(task.actual_cost for task in self.tasks), 2)
+        return sum(task.actual_cost for task in self.tasks)
 
     @cached_property
     def actual_start(self) -> datetime:
@@ -104,11 +106,13 @@ class PROJECT:
         return min((task.start for task in self.tasks))
 
     @cached_property
+    @rounded()
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
-        return round(sum(task.budgeted_cost for task in self.tasks), 2)
+        return sum(task.budgeted_cost for task in self.tasks)
 
     @property
+    @rounded(ndigits=4)
     def duration_percent(self) -> float:
         """Project duration percent complete"""
         if self.original_duration == 0:
@@ -117,7 +121,7 @@ class PROJECT:
         if self.data_date >= self.finish_date:
             return 1.0
 
-        return round(1 - self.remaining_duration / self.original_duration, 4)
+        return 1 - self.remaining_duration / self.original_duration
 
     @cached_property
     def finish_constraints(self) -> list[tuple[TASK, str]]:
@@ -142,9 +146,10 @@ class PROJECT:
         return {hash(rel): rel for rel in self.relationships}
 
     @cached_property
+    @rounded()
     def remaining_cost(self) -> float:
         """Sum of task resource remaining costs"""
-        return round(sum(task.remaining_cost for task in self.tasks), 2)
+        return sum(task.remaining_cost for task in self.tasks)
 
     @property
     def remaining_duration(self) -> int:
@@ -152,6 +157,7 @@ class PROJECT:
         return max((0, (self.finish_date - self.data_date).days))
 
     @cached_property
+    @rounded(ndigits=4)
     def task_percent(self) -> float:
         """Calculated Project percent complete based on task updates"""
         if not self.tasks:
@@ -167,16 +173,17 @@ class PROJECT:
             + status_cnt[TASK.TaskStatus.TK_Complete]
         ) / len(self.tasks)
 
-        return round(mean([task_dur_percent, status_percent]), 4)
+        return mean([task_dur_percent, status_percent])
 
     @cached_property
     def tasks_by_code(self) -> dict[str, TASK]:
         return {task.task_code: task for task in self.tasks}
 
     @cached_property
+    @rounded()
     def this_period_cost(self) -> float:
         """Sum of task resource this period costs"""
-        return round(sum(task.this_period_cost for task in self.tasks), 2)
+        return sum(task.this_period_cost for task in self.tasks)
 
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:

@@ -7,6 +7,7 @@ from datetime import datetime
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
+from xerparser.scripts.decorators import rounded
 from xerparser.scripts.validators import (
     account_or_none,
     date_format,
@@ -78,10 +79,12 @@ class TASKRSRC:
         )
 
     @property
+    @rounded()
     def act_total_cost(self) -> float:
         return self.act_reg_cost + self.act_ot_cost
 
     @property
+    @rounded()
     def act_total_qty(self) -> float:
         return self.act_reg_qty + self.act_ot_qty
 
@@ -94,14 +97,14 @@ class TASKRSRC:
         return self.act_total_qty + self.remain_qty
 
     @property
+    @rounded(ndigits=4)
     def cost_percent(self) -> float:
-        return (
-            0.0 if self.target_cost == 0.0 else self.act_total_cost / self.target_cost
-        )
+        return self.act_total_cost / self.target_cost if self.target_cost else 0.0
 
     @property
+    @rounded()
     def cost_variance(self) -> float:
-        return round(self.at_completion_cost - self.target_cost, 2)
+        return self.at_completion_cost - self.target_cost
 
     @property
     def finish(self) -> datetime:
@@ -119,9 +122,7 @@ class TASKRSRC:
     @property
     def resource_type(self) -> str | None:
         """Resource type (Labor, Material, Non-Labor)"""
-        if not self.resource:
-            return
-        return self.resource.type[3:]
+        return self.resource.type[3:] if self.resource else None
 
     @property
     def start(self) -> datetime:
