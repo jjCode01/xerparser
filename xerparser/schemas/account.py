@@ -32,6 +32,12 @@ class ACCOUNT:
     def __hash__(self) -> int:
         return hash((self.name, self.code))
 
+    def __gt__(self, __o: "ACCOUNT") -> bool:
+        return self.code > __o.code
+
+    def __lt__(self, __o: "ACCOUNT") -> bool:
+        return self.code < __o.code
+
 
 def _check_description(value: str) -> str:
     return (value, "")[value == "" or value == "ï»¿"]
