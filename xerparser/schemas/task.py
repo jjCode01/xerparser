@@ -13,7 +13,7 @@ from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.scripts.decorators import rounded
-from xerparser.scripts.validators import (
+from xerparser.src.validators import (
     datetime_or_none,
     date_format,
     float_or_none,

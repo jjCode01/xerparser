@@ -2,7 +2,7 @@
 # trsrcfin.py
 
 from xerparser.schemas.findates import FINDATES
-from xerparser.scripts.validators import float_or_zero
+from xerparser.src.validators import float_or_zero
 
 
 class TRSRCFIN:

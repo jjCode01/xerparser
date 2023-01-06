@@ -15,7 +15,7 @@ from xerparser.scripts.dates import (
     clean_dates,
     conv_time,
 )
-from xerparser.scripts.validators import datetime_or_none, str_or_none
+from xerparser.src.validators import datetime_or_none, str_or_none
 
 WEEKDAYS = (
     "Sunday",
@@ -131,6 +131,16 @@ class CALENDAR:
 
     def __eq__(self, __o: "CALENDAR") -> bool:
         return self.name == __o.name and self.type == __o.type
+
+    def __gt__(self, __o: "CALENDAR") -> bool:
+        if self.name == __o.name:
+            return self.type.value > __o.type.value
+        return self.name > __o.name
+
+    def __lt__(self, __o: "CALENDAR") -> bool:
+        if self.name == __o.name:
+            return self.type.value < __o.type.value
+        return self.name < __o.name
 
     def __hash__(self) -> int:
         return hash((self.name, self.type))

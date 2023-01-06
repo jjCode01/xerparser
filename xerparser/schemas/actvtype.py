@@ -22,6 +22,12 @@ class ACTVTYPE:
             )
         )
 
+    def __gt__(self, __o: "ACTVTYPE") -> bool:
+        return self.name > __o.name
+
+    def __lt__(self, __o: "ACTVTYPE") -> bool:
+        return self.name < __o.name
+
     def __hash__(self) -> int:
         return hash((self.max_length, self.name, self.scope))
 

@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from xerparser.schemas.task import TASK
-from xerparser.scripts.validators import int_or_none, datetime_or_none
+from xerparser.src.validators import int_or_none, datetime_or_none
 
 
 class TASKPRED:
@@ -30,6 +30,20 @@ class TASKPRED:
             and self.successor == __o.successor
             and self.link == __o.link
         )
+
+    def __gt__(self, __o: "TASKPRED") -> bool:
+        if self.predecessor == __o.predecessor:
+            if self.successor == __o.successor:
+                return self.link > __o.link
+            return self.successor > __o.successor
+        return self.predecessor > __o.predecessor
+
+    def __lt__(self, __o: "TASKPRED") -> bool:
+        if self.predecessor == __o.predecessor:
+            if self.successor == __o.successor:
+                return self.link < __o.link
+            return self.successor < __o.successor
+        return self.predecessor < __o.predecessor
 
     def __hash__(self) -> int:
         return hash((self.predecessor, self.successor, self.link))

@@ -8,7 +8,7 @@ from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
 from xerparser.scripts.decorators import rounded
-from xerparser.scripts.validators import (
+from xerparser.src.validators import (
     account_or_none,
     date_format,
     datetime_or_none,

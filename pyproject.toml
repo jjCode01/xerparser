@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xerparser"
-version = "0.5.2"
+version = "0.5.3"
 description = "Parse a P6 .xer file to a Python object."
 authors = ["Jesse <code@seqmanagement.com>"]
 license = "GPL-3.0-only"
@@ -17,7 +17,7 @@ tqdm = "^4.64.1"
 python-dateutil = "^2.8.2"
 
 [tool.poetry.scripts]
-test = 'xerparser.scripts.scripts:test'
+test = 'scripts:test'
 
 
 [build-system]

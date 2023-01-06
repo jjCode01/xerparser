@@ -2,7 +2,7 @@
 # projwbs.py
 
 from typing import Optional
-from xerparser.scripts.validators import int_or_none
+from xerparser.src.validators import int_or_none
 
 
 class PROJWBS:
@@ -54,8 +54,17 @@ class PROJWBS:
     def __eq__(self, __o: "PROJWBS") -> bool:
         return self.full_code == __o.full_code
 
+    def __gt__(self, __o: "PROJWBS") -> bool:
+        return self.full_code > __o.full_code
+
+    def __lt__(self, __o: "PROJWBS") -> bool:
+        return self.full_code < __o.full_code
+
     def __hash__(self) -> int:
         return hash(self.full_code)
+
+    def __str__(self) -> str:
+        return f"{self.full_code} - {self.name}"
 
     @property
     def full_code(self) -> str:

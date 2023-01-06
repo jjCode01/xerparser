@@ -1,4 +1,10 @@
 # Change Log  
+## 0.5.3 - 2023-01-05
+### General Notes
+* Small amount of refactoring and moving around files.
+* Added gt and lt dunder methods to some of the classes.
+* Using decorator to round any class method that returns a float. Just playing with decorators, may switch back to rounding directly in the method.
+---
 ## 0.5.2 - 2023-01-02
 ### General Notes  
 * Removed dependency on `Pydantic`. Speeds up code by ~25%.

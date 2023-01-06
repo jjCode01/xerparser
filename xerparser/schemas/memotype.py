@@ -23,5 +23,14 @@ class MEMOTYPE:
     def __eq__(self, __o: "MEMOTYPE") -> bool:
         return self.topic == __o.topic
 
+    def __gt__(self, __o: "MEMOTYPE") -> bool:
+        return self.topic > __o.topic
+
+    def __lt__(self, __o: "MEMOTYPE") -> bool:
+        return self.topic < __o.topic
+
     def __hash__(self) -> int:
         return hash(self.topic)
+
+    def __str__(self) -> str:
+        return self.topic

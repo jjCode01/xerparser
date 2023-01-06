@@ -22,6 +22,12 @@ class ACTVCODE:
     def __eq__(self, __o: "ACTVCODE") -> bool:
         return self.code == __o.code and self.code_type == __o.code_type
 
+    def __gt__(self, __o: "ACTVCODE") -> bool:
+        return self.code > __o.code
+
+    def __lt__(self, __o: "ACTVCODE") -> bool:
+        return self.code < __o.code
+
     def __hash__(self) -> int:
         return hash((self.code, self.code_type))
 

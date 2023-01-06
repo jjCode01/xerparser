@@ -12,7 +12,7 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.scripts.decorators import rounded
-from xerparser.scripts.validators import datetime_or_none, str_or_none, date_format
+from xerparser.src.validators import datetime_or_none, str_or_none, date_format
 
 
 class PROJECT:
