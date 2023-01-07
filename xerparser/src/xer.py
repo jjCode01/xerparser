@@ -41,6 +41,10 @@ class Xer:
         self.accounts = {
             acct["acct_id"]: ACCOUNT(**acct) for acct in _xer.get("ACCOUNT", [])
         }
+        for account in self.accounts.values():
+            if account.parent_acct_id:
+                account.parent = self.accounts.get(account.parent_acct_id)
+
         self.activity_code_types = {
             code_type["actv_code_type_id"]: ACTVTYPE(**code_type)
             for code_type in _xer.get("ACTVTYPE", [])

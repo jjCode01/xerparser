@@ -9,7 +9,6 @@ from xerparser.schemas.rsrc import RSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
-    account_or_none,
     date_format,
     datetime_or_none,
     rsrc_or_none,
@@ -132,3 +131,11 @@ class TASKRSRC:
         if self.restart_date:
             return self.restart_date
         raise ValueError(f"Could not find start date for taskrsrc {self.uid}")
+
+
+def account_or_none(value: ACCOUNT | None) -> ACCOUNT | None:
+    if value is None:
+        return None
+    if not isinstance(value, ACCOUNT):
+        raise ValueError(f"ValueError: expected <class ACCOUNT>; got {type(value)}")
+    return value

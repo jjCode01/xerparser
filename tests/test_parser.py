@@ -34,6 +34,7 @@ def process_xer(file: Path):
         "version": xer.export_info.version,
         "export_date": xer.export_info.date.strftime(DATE_FORMAT),
         "errors": xer.errors,
+        "accounts": len(xer.accounts),
         **xer_data,
     }
 
@@ -155,6 +156,8 @@ class TestParser(unittest.TestCase):
             xer = Xer(file_contents)
 
             self.assertEqual(xer.errors, file["errors"])
+
+            self.assertEqual(len(xer.accounts), file["accounts"])
 
             for project in xer.projects.values():
                 self.assertEqual(

@@ -1,4 +1,11 @@
 # Change Log  
+## 0.5.4 - 2023-01-07
+### General Notes
+* Small amount of code cleanup and refactoring.
+### Added  
+* Added `parent_acct_id` and `seq_num` attributes to `ACCOUNT` class.
+* Added `parent` property to `ACCOUNT` class.
+---  
 ## 0.5.3 - 2023-01-05
 ### General Notes
 * Small amount of refactoring and moving around files.

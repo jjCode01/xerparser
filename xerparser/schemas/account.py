@@ -1,6 +1,9 @@
 # xerparser
 # account.py
 
+from xerparser.src.validators import int_or_none, str_or_none
+from typing import Optional
+
 
 class ACCOUNT:
     """
@@ -18,6 +21,12 @@ class ACCOUNT:
         Cost Account Description [acct_desc]
     name: str
         Cost Account Name [acct_name]
+    parent_acct_id: str | None
+        Parent Cost Account Unique ID
+    seq_num: int | None
+        Sequence Number for sorting [acct_seq_num]
+    parent: ACCOUNT | None
+        Cost Account Parent
     """
 
     def __init__(self, **data) -> None:
@@ -25,6 +34,9 @@ class ACCOUNT:
         self.code: str = data["acct_short_name"]
         self.description: str = _check_description(data["acct_descr"])
         self.name: str = data["acct_name"]
+        self.parent_acct_id: str | None = str_or_none(data["parent_acct_id"])
+        self.seq_num: int | None = int_or_none(data["acct_seq_num"])
+        self._parent: Optional["ACCOUNT"] = None
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
         return self.name == __o.name and self.code == __o.code
@@ -37,6 +49,32 @@ class ACCOUNT:
 
     def __lt__(self, __o: "ACCOUNT") -> bool:
         return self.code < __o.code
+
+    def __str__(self) -> str:
+        return f"{self.code} - {self.name}"
+
+    @property
+    def parent(self) -> Optional["ACCOUNT"]:
+        """Parent Cost Account"""
+        return self._parent
+
+    @parent.setter
+    def parent(self, value: Optional["ACCOUNT"]) -> None:
+        """Parent Cost Account"""
+        if value is None:
+            self._parent = None
+
+        elif isinstance(value, ACCOUNT):
+            if value.uid != self.parent_acct_id:
+                raise ValueError(
+                    f"ValueError: value ID {value.uid} does not match parent ID {self.parent_acct_id}"
+                )
+            self._parent = value
+
+        else:
+            raise ValueError(
+                f"ValueError: expected <class ACCOUNT> for parent; got {type(value)}"
+            )
 
 
 def _check_description(value: str) -> str:

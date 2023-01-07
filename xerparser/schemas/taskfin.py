@@ -17,7 +17,7 @@ class TASKFIN:
         self.bcwp: float = float_or_zero(data["bcwp"])
         self.bcws: float = float_or_zero(data["bcws"])
         self.fin_dates_id: str = data["fin_dates_id"]
-        self.c: float = float_or_zero(data["perfm_work_qty"])
+        self.perfm_work_qty: float = float_or_zero(data["perfm_work_qty"])
         self.proj_id: str = data["proj_id"]
         self.sched_work_qty: float = float_or_zero(data.get("sched_work_qty", ""))
         self.task_id: str = data["task_id"]

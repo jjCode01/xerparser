@@ -3,18 +3,9 @@
 # Functions to validate data during object initialization
 
 from datetime import datetime
-from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.rsrc import RSRC
 
 date_format = "%Y-%m-%d %H:%M"
-
-
-def account_or_none(value: ACCOUNT | None) -> ACCOUNT | None:
-    if value is None:
-        return None
-    if not isinstance(value, ACCOUNT):
-        raise ValueError(f"ValueError: expected <class ACCOUNT>; got {type(value)}")
-    return value
 
 
 def datetime_or_none(value: str) -> datetime | None:

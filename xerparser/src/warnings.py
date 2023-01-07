@@ -11,10 +11,10 @@ from xerparser.schemas.taskpred import TASKPRED
 
 major_holidays_us = {
     "New Years Day": (1, 1),
-    "Memorial Day": (5, 1, -1),
+    "Memorial Day": (5, 1, -1),  # Last Monday in May
     "Independence Day": (7, 4),
-    "Labor Day": (9, 1, 0),
-    "Thanksgiving": (11, 5, 3),
+    "Labor Day": (9, 1, 0),  # First Monday in September
+    "Thanksgiving": (11, 5, 3),  # Fourth Thursday in November
     # "Day after Thanksgiving"
     "Christmas": (12, 25),
 }
