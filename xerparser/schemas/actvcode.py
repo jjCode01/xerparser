@@ -7,7 +7,30 @@ from xerparser.schemas.actvtype import ACTVTYPE
 
 
 class ACTVCODE:
-    """A class to represent an Activity Code Value"""
+    """
+    A class to represent an Activity Code Value
+
+    ...
+
+    Attributes
+    ----------
+    uid: str
+        Unique ID [actv_code_id]
+    actv_code_type_id: str
+        Foreign key for ACTVTYPE
+    code: str
+        Activity Code Value [short_name]
+    description: str
+        Activity Code Description [actv_code_name]
+    parent_actv_code_id: str
+        Unique ID of Parent Activity Code Value [parent_actv_code_id]
+    seq_num: int
+        Sort Order
+    code_type: ACTVTYPE
+        Activity Code Type
+    parent: ACTVCODE | None
+        Parent Activity Code Value
+    """
 
     def __init__(self, code_type: ACTVTYPE, **data) -> None:
         self.uid: str = data["actv_code_id"]
@@ -16,7 +39,7 @@ class ACTVCODE:
         self.description: str = data["actv_code_name"]
         self.parent_actv_code_id: str = data["parent_actv_code_id"]
         self.seq_num: int = int(data["seq_num"])
-        self.code_type: ACTVTYPE = valid_actvtype(code_type)
+        self.code_type: ACTVTYPE = self._valid_actvtype(code_type)
         self._parent: "ACTVCODE" | None = None
 
     def __eq__(self, __o: "ACTVCODE") -> bool:
@@ -33,6 +56,7 @@ class ACTVCODE:
 
     @property
     def parent(self) -> Optional["ACTVCODE"]:
+        """Parent Activity Code Value. Can be None."""
         return self._parent
 
     @parent.setter
@@ -44,11 +68,21 @@ class ACTVCODE:
                 raise ValueError(
                     f"ValueError: expected <class ACTVCODE> for parent, got {type(value)}."
                 )
+            if value.uid != self.parent_actv_code_id:
+                raise ValueError(
+                    f"ValueError: Parent ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
+                )
 
             self._parent = value
 
-
-def valid_actvtype(value: ACTVTYPE) -> ACTVTYPE:
-    if not isinstance(value, ACTVTYPE):
-        raise ValueError(f"ValueError: expected <class ACTVTYPE>; got {type(value)}")
-    return value
+    def _valid_actvtype(self, value: ACTVTYPE) -> ACTVTYPE:
+        """Validate Activity Code Type"""
+        if not isinstance(value, ACTVTYPE):
+            raise ValueError(
+                f"ValueError: expected <class ACTVTYPE>; got {type(value)}"
+            )
+        if value.uid != self.actv_code_type_id:
+            raise ValueError(
+                f"ValueError: Unique ID {value.uid} does not match act_code_type_id {self.actv_code_type_id}"
+            )
+        return value

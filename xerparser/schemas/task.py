@@ -173,7 +173,7 @@ class TASK:
         # non-existent calendar.
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
         self.calendar: CALENDAR | None = calendar
-        self.wbs: PROJWBS = valid_projwbs(wbs)
+        self.wbs: PROJWBS = self._valid_projwbs(wbs)
         self.memos: list[TASKMEMO] = []
         self.resources: dict[str, TASKRSRC] = {}
         self.predecessors: list["LinkToTask"] = []
@@ -198,22 +198,16 @@ class TASK:
     @property
     @rounded()
     def actual_cost(self) -> float:
-        if not self.resources:
-            return 0.0
         return sum((res.act_total_cost for res in self.resources.values()))
 
     @property
     @rounded()
     def at_completion_cost(self) -> float:
-        if not self.resources:
-            return 0.0
         return sum((res.at_completion_cost for res in self.resources.values()))
 
     @property
     @rounded()
     def budgeted_cost(self) -> float:
-        if not self.resources:
-            return 0.0
         return sum((res.target_cost for res in self.resources.values()))
 
     @property
@@ -289,8 +283,6 @@ class TASK:
     @property
     @rounded()
     def remaining_cost(self) -> float:
-        if not self.resources:
-            return 0.0
         return sum((res.remain_cost for res in self.resources.values()))
 
     @property
@@ -311,8 +303,6 @@ class TASK:
     @property
     @rounded()
     def this_period_cost(self) -> float:
-        if not self.resources:
-            return 0.0
         return sum((res.act_this_per_cost for res in self.resources.values()))
 
     @property
@@ -320,6 +310,15 @@ class TASK:
         if self.total_float_hr_cnt is None:
             return
         return int(self.total_float_hr_cnt / 8)
+
+    def _valid_projwbs(self, value: PROJWBS) -> PROJWBS:
+        if not isinstance(value, PROJWBS):
+            raise ValueError(f"ValueError: expected <class PROJWBS>; got {type(value)}")
+        if value.uid != self.wbs_id:
+            raise ValueError(
+                f"ValueError: WBS unique id {value.uid} does not match wbs_id {self.wbs_id}"
+            )
+        return value
 
 
 class LinkToTask:
@@ -341,9 +340,3 @@ class LinkToTask:
 
     def __hash__(self) -> int:
         return hash((self.task, self.link))
-
-
-def valid_projwbs(value: PROJWBS) -> PROJWBS:
-    if not isinstance(value, PROJWBS):
-        raise ValueError(f"ValueError: expected <class PROJWBS>; got {type(value)}")
-    return value

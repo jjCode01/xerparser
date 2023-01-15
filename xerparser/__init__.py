@@ -2,6 +2,7 @@ __version__ = "0.5.4"
 
 from xerparser.src.parser import xer_to_dict
 from xerparser.src.xer import Xer
+from xerparser.src.warnings import ScheduleWarnings
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR

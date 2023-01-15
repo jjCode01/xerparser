@@ -22,7 +22,10 @@ major_holidays_us = {
 
 class ScheduleWarnings:
     def __init__(
-        self, project: PROJECT, long_duration_value: int = 20, long_lag_value: int = 10
+        self,
+        project: PROJECT,
+        long_duration_value: int = 20,
+        long_lag_value: int = 10,
     ) -> None:
 
         if not isinstance(project, PROJECT):
@@ -64,20 +67,20 @@ class ScheduleWarnings:
             if not task.predecessors:
                 self.open_predecessors.append(task)
             else:
-                for succ in task.successors:
-                    if succ.link in ("FS", "FF"):
-                        break
-                else:
-                    self.open_finishes.append(task)
-
-            if not task.successors:
-                self.open_successors.append(task)
-            else:
                 for pred in task.predecessors:
                     if pred.link in ("FS", "SS"):
                         break
                 else:
                     self.open_starts.append(task)
+
+            if not task.successors:
+                self.open_successors.append(task)
+            else:
+                for succ in task.successors:
+                    if succ.link in ("FS", "FF"):
+                        break
+                else:
+                    self.open_finishes.append(task)
 
             if task.act_start_date and task.act_start_date >= project.data_date:
                 self.invalid_start.append(task)
@@ -128,7 +131,7 @@ class ScheduleWarnings:
 
 
 def _validate_positive_integer(**kwargs) -> None:
-    for key, value in kwargs:
+    for key, value in kwargs.items():
         if not isinstance(value, int):
             raise TypeError(f"{key} agrgument must be type 'int'; got {type(value)}")
 

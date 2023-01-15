@@ -8,6 +8,8 @@ def rounded(ndigits: int = 2):
             value = function(*args, **kwargs)
             if isinstance(value, float):
                 value = round(value, ndigits)
+            elif isinstance(value, int):
+                value = float(value)
             return value
 
         return wrapper

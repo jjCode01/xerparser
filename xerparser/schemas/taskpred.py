@@ -7,7 +7,10 @@ from xerparser.src.validators import int_or_none, datetime_or_none
 
 
 class TASKPRED:
-    """A class to represent a relationship between two activities."""
+    """
+    A class to represent a relationship between two activities.
+
+    """
 
     def __init__(self, predecessor: TASK, successor: TASK, **data) -> None:
 

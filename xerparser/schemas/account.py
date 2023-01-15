@@ -39,19 +39,29 @@ class ACCOUNT:
         self._parent: Optional["ACCOUNT"] = None
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
-        return self.name == __o.name and self.code == __o.code
+        return self.name == __o.name and self.full_code == __o.full_code
 
     def __hash__(self) -> int:
         return hash((self.name, self.code))
 
     def __gt__(self, __o: "ACCOUNT") -> bool:
-        return self.code > __o.code
+        return self.full_code > __o.full_code
 
     def __lt__(self, __o: "ACCOUNT") -> bool:
-        return self.code < __o.code
+        return self.full_code < __o.full_code
 
     def __str__(self) -> str:
-        return f"{self.code} - {self.name}"
+        return f"{self.full_code} - {self.name}"
+
+    @property
+    def full_code(self) -> str:
+        """Cost code including parent codes"""
+        acct = self
+        codes = []
+        while acct:
+            codes.append(acct.code)
+            acct = acct.parent
+        return ".".join(reversed(codes))
 
     @property
     def parent(self) -> Optional["ACCOUNT"]:

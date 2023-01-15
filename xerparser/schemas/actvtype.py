@@ -3,7 +3,26 @@
 
 
 class ACTVTYPE:
-    """A class representing Activity Codes"""
+    """
+    A class representing Activity Codes Types
+
+    ...
+
+    Attributes
+    ----------
+    uid: str
+        Unique ID [actv_code_type_id]
+    max_length: int
+        Max Code Length [actv_short_len]
+    name: str
+        Activity Code [actv_code_type]
+    proj_id: str
+        Foreign Key for PROJECT
+    scope: str
+        Activity Code Type Scope [actv_code_type_scope]
+    seq_num: int | None
+        Sort Order
+    """
 
     def __init__(self, **data) -> None:
         self.uid: str = data["actv_code_type_id"]

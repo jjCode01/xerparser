@@ -1,25 +1,34 @@
 # xerparser
 
 A simple Python package that reads the contents of a P6 .xer file and converts it into a Python object.  
-<br>
+
 *Disclaimers:  
-It's helpfull if you are already familiar with the mapping and schemas used by P6 during the export process. 
+It's helpfull if you are already familiar with the mapping and schemas used by P6 during the export process.
 Refer to the [Oracle Documentation]( https://docs.oracle.com/cd/F25600_01/English/Mapping_and_Schema/xer_import_export_data_map_project/index.htm) for more information regarding how data is mapped to the XER format.  
 Tested on .xer files exported as versions 15.2 through 19.12.*  
-<br>
+
+<br/>
+
 ## Install
+
 **Windows**:
+
 ```bash
 pip install xerparser
 ```
-**Linux/Mac**: 
+
+**Linux/Mac**:
+
 ```bash
 pip3 install xerparser
 ```
-<br>  
+
+<br/>  
 
 ## Usage  
+
 Import the `Xer` class from `xerparser`  and pass the contents of a .xer file as an argument. Use the `Xer` class variable `CODEC` to set the proper encoding to decode the file.
+
 ```python
 from xerparser import Xer
 
@@ -28,11 +37,17 @@ with open(file, encoding=Xer.CODEC, errors="ignore") as f:
     file_contents = f.read()
 xer = Xer(file_contents)
 ```
+
 *Note: do not pass the the .xer file directly as an argument. The file must be decoded and read into a string, which can then be passed as an argument.*  
-<br>
-## Attributes 
+
+<br/>
+
+## Attributes
+
 The tables stored in the .xer file are accessable as either Global , Project specific, Task specific, or Resource specific:
-###  Global
+
+### Global
+
   ```python
   xer.export_info           # export data
   xer.errors                # list of potential errors in export process
@@ -47,7 +62,9 @@ The tables stored in the .xer file are accessable as either Global , Project spe
   xer.resources             # dict of RSRC objects
   xer.wbs_nodes             # dict of all PROJWBS objects
   ```  
+
 ### Project Specific
+
 ```python
 # Get first project
 project = xer.projects.values()[0]
@@ -58,7 +75,9 @@ project.tasks           # list of project specific TASK objects
 project.relationships   # list of project specific TASKPRED objects
 project.wbs_nodes       # list of project specific PROJWBS objects
 ```
+
 ### Task Specific
+
 ```python
 # Get first task
 task = project.tasks[0]
@@ -68,7 +87,9 @@ task.memos            # list of TASKMEMO objects
 task.resources        # dict of TASKRSRC objects
 task.periods          # list of TASKFIN objects
 ```
+
 ### Resource Specific
+
 ```python
 # Get first task resource
 resource = task.resources.values()[0]
@@ -76,10 +97,12 @@ resource = task.resources.values()[0]
 resource.periods  # list of TRSRCFIN objects
 ```
 
-<br>
+<br/>
 
 ## Error Checking
+
 Sometimes the xer file is corrupted during the export process. A list of potential errors is generated based on common issues encountered when analyzing .xer files:  
+
 - Minimum required tables - an error is recorded if one of the following tables is missing:
   - CALENDAR
   - PROJECT

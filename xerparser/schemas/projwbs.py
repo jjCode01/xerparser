@@ -92,5 +92,9 @@ class PROJWBS:
                 raise ValueError(
                     f"ValueError: expected <class PROJWBS> for parent, got {type(value)}."
                 )
+            if value.uid != self.parent_wbs_id:
+                raise ValueError(
+                    f"ValueError: Parent Unique ID {value.uid} does not match {self.parent_wbs_id}"
+                )
 
             self._parent = value
