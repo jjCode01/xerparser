@@ -36,12 +36,14 @@ class ScheduleWarnings:
         _validate_positive_integer(
             long_duration_value=long_duration_value, long_lag_value=long_lag_value
         )
+        self.long_duration_value = long_duration_value
+        self.long_lag_value = long_lag_value
         self.open_predecessors: list[TASK] = []  # DONE
         self.open_successors: list[TASK] = []  # DONE
         self.open_finishes: list[TASK] = []  # DONE
         self.open_starts: list[TASK] = []  # DONE
 
-        self.long_durations: list[TASK] = []  # *****DONE BUT NEEDS WORK******
+        self.long_durations: list[TASK] = []  # ***** NEEDS WORK******
         self.invalid_start: list[TASK] = []  # DONE
         self.invalid_finish: list[TASK] = []  # DONE
 
@@ -52,7 +54,7 @@ class ScheduleWarnings:
         self.fs_with_lag: list[TASKPRED] = []  # Done
         self.lag_gt_duration: list[TASKPRED] = []  # DONE
 
-        self.cost_variance: list[TASK]  # Done
+        self.cost_variance: list[TASK] = []  # Done
 
         self.calendar_missing_holidays: dict[CALENDAR, list[datetime]] = {}
 
@@ -89,7 +91,7 @@ class ScheduleWarnings:
                 self.invalid_finish.append(task)
 
             # TODO: Check if task is a submittal before adding to long durations
-            if task.original_duration > long_duration_value:
+            if not task.type.is_loe and task.original_duration > long_duration_value:
                 self.long_durations.append(task)
 
             if task.at_completion_cost != task.budgeted_cost:
