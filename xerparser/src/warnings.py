@@ -64,8 +64,9 @@ class ScheduleWarnings:
         self.duplicate_names: list[tuple[TASK]] = [
             tasks for _, grp in dup_name_grp if len(tasks := tuple(grp)) > 1
         ]
+        self.duplicate_names_cnt: int = sum(len(grp) for grp in self.duplicate_names)
 
-        for task in project.tasks:
+        for task in sorted(project.tasks):
             if not task.predecessors:
                 self.open_predecessors.append(task)
             else:
