@@ -1,6 +1,17 @@
 
 # Change Log  
 
+## 0.5.5 - 2023-01-21
+
+### General Notes
+
+* Added docstrings to more classes.
+* Improved type validation.
+
+### Added
+
+* Added `full_code` property to `ACCOUNT` class. This property returns the full path to the cost code including any parent codes. This property is now the basis for comparing `ACCOUNT` objects.
+
 ## 0.5.4 - 2023-01-07
 
 ### General Notes
