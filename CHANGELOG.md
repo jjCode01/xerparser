@@ -1,6 +1,10 @@
 
 # Change Log  
 
+## 0.5.6 - 2023-01-24
+
+Fixed bug where the `start` property of the `TASK` class will return the early finish date rather than early start date if task is not started. [Issue #1](https://github.com/jjCode01/xerparser/issues/1)
+
 ## 0.5.5 - 2023-01-21
 
 ### General Notes

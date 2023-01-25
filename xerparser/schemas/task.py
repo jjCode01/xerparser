@@ -296,8 +296,8 @@ class TASK:
         """Calculated activity start date (Actual Start or Early Start)"""
         if self.act_start_date:
             return self.act_start_date
-        if self.early_end_date:
-            return self.early_end_date
+        if self.early_start_date:
+            return self.early_start_date
         raise ValueError(f"Could not find start date for task {self.task_code}")
 
     @property
