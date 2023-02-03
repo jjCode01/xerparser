@@ -226,6 +226,20 @@ class TASK:
         }
 
     @property
+    def duration(self) -> int:
+        """
+        Returns remaining duration if task is not started; otherwise, returns original duration.
+        """
+        # This is usefull when the remaining duration is unlinked from the
+        # original duration in the project settings
+        # In these cases, the remaining duration can be different to the
+        # original duration in tasks that have not started.
+
+        if self.status.is_not_started:
+            return self.remaining_duration
+        return self.original_duration
+
+    @property
     def finish(self) -> datetime:
         """Calculated activity finish date (Actual Finish or Early Finish)"""
         if self.act_end_date:

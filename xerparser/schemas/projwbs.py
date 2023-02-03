@@ -67,7 +67,7 @@ class PROJWBS:
         return f"{self.full_code} - {self.name}"
 
     @property
-    def full_path(self) -> list["PROJWBS"]:
+    def lineage(self) -> list["PROJWBS"]:
         if self.is_proj_node:
             return []
 
@@ -81,16 +81,7 @@ class PROJWBS:
 
     @property
     def full_code(self) -> str:
-        # if self.is_proj_node:
-        #     return ""
-
-        # path = []
-        # node = self
-        # while node and not node.is_proj_node:
-        #     path.append(node.code)
-        #     node = node.parent
-
-        return ".".join(reversed([node.code for node in self.full_path]))
+        return ".".join(reversed([node.code for node in self.lineage]))
 
     @property
     def parent(self) -> Optional["PROJWBS"]:

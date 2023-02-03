@@ -46,6 +46,7 @@ class ScheduleWarnings:
         self.long_durations: list[TASK] = []  # ***** NEEDS WORK******
         self.invalid_start: list[TASK] = []  # DONE
         self.invalid_finish: list[TASK] = []  # DONE
+        self.no_progress: list[TASK] = []
 
         self.duplicate_logic: list[tuple[TASK, tuple[LinkToTask]]] = []  # DONE
         self.start_finish_links: list[TASKPRED] = []  # DONE
@@ -95,6 +96,13 @@ class ScheduleWarnings:
             if not task.type.is_loe and task.original_duration > long_duration_value:
                 self.long_durations.append(task)
 
+            if (
+                task.status.is_in_progress
+                and task.percent_complete == 0
+                and task.remaining_duration == task.original_duration
+            ):
+                self.no_progress.append(task)
+
             if task.at_completion_cost != task.budgeted_cost:
                 self.cost_variance.append(task)
 
@@ -107,7 +115,7 @@ class ScheduleWarnings:
                     if "FS" in [succ.link for succ in succs]:
                         self.duplicate_logic.append((task, succs))
 
-        for relationship in project.relationships:
+        for relationship in sorted(project.relationships):
             if relationship.lag < 0:
                 self.negative_lags.append(relationship)
 
@@ -122,13 +130,13 @@ class ScheduleWarnings:
 
             if (
                 relationship.link == "SS"
-                and 0 < relationship.predecessor.original_duration <= relationship.lag
+                and 0 < relationship.predecessor.duration <= relationship.lag
             ):
                 self.lag_gt_duration.append(relationship)
 
             if (
                 relationship.link == "FF"
-                and 0 < relationship.successor.original_duration <= relationship.lag
+                and 0 < relationship.successor.duration <= relationship.lag
             ):
                 self.lag_gt_duration.append(relationship)
 
