@@ -9,6 +9,7 @@ from statistics import mean
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
+from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.scripts.decorators import rounded
@@ -62,7 +63,9 @@ class PROJECT:
 
     """
 
-    def __init__(self, **data) -> None:
+    def __init__(self, sched_options: SCHEDOPTIONS, **data) -> None:
+
+        self.options: SCHEDOPTIONS = sched_options
 
         # table fields from .xer file
         self.uid: str = data["proj_id"]

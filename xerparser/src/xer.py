@@ -16,6 +16,7 @@ from xerparser.schemas.memotype import MEMOTYPE
 from xerparser.schemas.project import PROJECT
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.rsrc import RSRC
+from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK, LinkToTask
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
@@ -72,8 +73,12 @@ class Xer:
             topic["memo_type_id"]: MEMOTYPE(**topic)
             for topic in _xer.get("MEMOTYPE", [])
         }
+        self.sched_options = {
+            opts["proj_id"]: SCHEDOPTIONS(**opts)
+            for opts in _xer.get("SCHEDOPTIONS", [])
+        }
         self.projects = {
-            proj["proj_id"]: PROJECT(**proj)
+            proj["proj_id"]: PROJECT(self.sched_options[proj["proj_id"]], **proj)
             for proj in _xer.get("PROJECT", [])
             if proj["export_flag"] == "Y"
         }

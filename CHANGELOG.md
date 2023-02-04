@@ -1,6 +1,13 @@
 
 # Change Log  
 
+## 0.5.8 - 
+
+### Added
+
+* Added `SCHEDOPTIONS` class.
+* Added `options` attribute the `PROJECT` class, which is a `SCHEDOPTIONS` object.
+
 ## 0.5.7 - 2023-02-03
 
 ### General Notes
