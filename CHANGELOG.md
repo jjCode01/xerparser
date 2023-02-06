@@ -1,12 +1,19 @@
 
 # Change Log  
 
-## 0.5.8 - 
+## 0.5.8 - 2023-02-05
 
 ### Added
 
 * Added `SCHEDOPTIONS` class.
-* Added `options` attribute the `PROJECT` class, which is a `SCHEDOPTIONS` object.
+* Added `options` attribute the `PROJECT` class, which is a `SCHEDOPTIONS` object.`
+* Added `lineage` and `full_code` properties to the `ACTVCODE` class. [Issue #2](https://github.com/jjCode01/xerparser/issues/2)
+
+### Changes
+
+* Comparison operators for `ACTVCODE` are now based on `full_code` property rather than `code` property.
+
+---
 
 ## 0.5.7 - 2023-02-03
 
@@ -19,9 +26,13 @@ Added some additional features noted below, and continue working on `Warnings` c
 * Added `lineage` property to `PROJWBS` class. Returns list of all ancestor `PROJWBS` objects, including self.
 * Added `duration` property to `TASK` class. This will return `remaining_duration` if the task is not started; otherwise, it returns `original_duration`. This is usefull when the remaining duration is unlinked from the original duration in the project settings - in these cases, the remaining duration can be different to the original duration in tasks that have not started.
 
+---
+
 ## 0.5.6 - 2023-01-24
 
 Fixed bug where the `start` property of the `TASK` class will return the early finish date rather than early start date if task is not started. [Issue #1](https://github.com/jjCode01/xerparser/issues/1)
+
+---
 
 ## 0.5.5 - 2023-01-21
 

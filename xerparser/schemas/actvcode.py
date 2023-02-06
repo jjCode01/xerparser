@@ -1,6 +1,7 @@
 # xerparser
 # actvcode.py
 
+from functools import cached_property
 from typing import Optional
 
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -43,16 +44,30 @@ class ACTVCODE:
         self._parent: "ACTVCODE" | None = None
 
     def __eq__(self, __o: "ACTVCODE") -> bool:
-        return self.code == __o.code and self.code_type == __o.code_type
+        return self.full_code == __o.full_code and self.code_type == __o.code_type
 
     def __gt__(self, __o: "ACTVCODE") -> bool:
-        return self.code > __o.code
+        return self.full_code > __o.full_code
 
     def __lt__(self, __o: "ACTVCODE") -> bool:
-        return self.code < __o.code
+        return self.full_code < __o.full_code
 
     def __hash__(self) -> int:
-        return hash((self.code, self.code_type))
+        return hash((self.full_code, self.code_type))
+
+    @property
+    def lineage(self) -> list["ACTVCODE"]:
+        path = []
+        actv_code = self
+        while actv_code:
+            path.append(actv_code)
+            actv_code = actv_code.parent
+
+        return path
+
+    @cached_property
+    def full_code(self) -> str:
+        return ".".join(reversed([actv_code.code for actv_code in self.lineage]))
 
     @property
     def parent(self) -> Optional["ACTVCODE"]:
