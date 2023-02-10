@@ -86,10 +86,10 @@ class ScheduleWarnings:
                 else:
                     self.open_finishes.append(task)
 
-            if task.act_start_date and task.act_start_date >= project.data_date:
+            if task.act_start_date and task.act_start_date > project.data_date:
                 self.invalid_start.append(task)
 
-            if task.act_end_date and task.act_end_date >= project.data_date:
+            if task.act_end_date and task.act_end_date > project.data_date:
                 self.invalid_finish.append(task)
 
             # TODO: Check if task is a submittal before adding to long durations
