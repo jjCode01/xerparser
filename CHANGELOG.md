@@ -1,7 +1,9 @@
 
 # Change Log  
 
-## 0.5.9
+## 0.5.9 - 2023-02-12
+
+* Added `default_calendar` attribute to `PROJECT` class.
 
 ## 0.5.8 - 2023-02-05
 

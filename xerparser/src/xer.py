@@ -78,7 +78,11 @@ class Xer:
             for opts in _xer.get("SCHEDOPTIONS", [])
         }
         self.projects = {
-            proj["proj_id"]: PROJECT(self.sched_options[proj["proj_id"]], **proj)
+            proj["proj_id"]: PROJECT(
+                self.sched_options[proj["proj_id"]],
+                self.calendars.get(proj["clndr_id"]),
+                **proj,
+            )
             for proj in _xer.get("PROJECT", [])
             if proj["export_flag"] == "Y"
         }

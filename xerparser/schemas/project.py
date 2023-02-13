@@ -63,13 +63,19 @@ class PROJECT:
 
     """
 
-    def __init__(self, sched_options: SCHEDOPTIONS, **data) -> None:
+    def __init__(
+        self,
+        sched_options: SCHEDOPTIONS,
+        default_calendar: CALENDAR | None = None,
+        **data
+    ) -> None:
 
         self.options: SCHEDOPTIONS = sched_options
 
         # table fields from .xer file
         self.uid: str = data["proj_id"]
         self.add_date: datetime = datetime.strptime(data["add_date"], date_format)
+        self.default_calendar: CALENDAR | None = default_calendar
         self.data_date: datetime = datetime.strptime(
             data["last_recalc_date"], date_format
         )
