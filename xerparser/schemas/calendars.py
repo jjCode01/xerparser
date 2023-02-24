@@ -142,6 +142,9 @@ class CALENDAR:
             return self.type.value < __o.type.value
         return self.name < __o.name
 
+    def __len__(self) -> int:
+        return sum(day.hours > 0 for day in self.work_week.values())
+
     def __hash__(self) -> int:
         return hash((self.name, self.type))
 

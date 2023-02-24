@@ -1,6 +1,10 @@
 
 # Change Log  
 
+## 0.5.10
+
+* Added `__len__` method to `CALENDAR` class. Returns number of workdays in a week.
+
 ## 0.5.9 - 2023-02-12
 
 * Added `default_calendar` attribute to `PROJECT` class.
