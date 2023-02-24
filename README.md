@@ -9,6 +9,12 @@ Tested on .xer files exported as versions 15.2 through 19.12.*
 
 <br/>
 
+## Changelog
+
+See [changelog](./CHANGELOG.md).  
+
+<br/>
+
 ## Install
 
 **Windows**:
@@ -44,7 +50,7 @@ xer = Xer(file_contents)
 
 ## Attributes
 
-The tables stored in the .xer file are accessable as either Global , Project specific, Task specific, or Resource specific:
+The tables stored in the .xer file are accessable as either Global, Project specific, Task specific, or Resource specific:
 
 ### Global
 

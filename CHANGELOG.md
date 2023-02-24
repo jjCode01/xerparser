@@ -1,13 +1,27 @@
 
-# Change Log  
+# Changelog - xerparser 
 
-## 0.5.10
+## 0.6.0 - 2023-02-24
+
+### General Notes
+
+The `ScheduleWarnings` class will no longer be developed under this project. This is a breaking change if you were using the `ScheduleWarnings` class.
+
+### Added
 
 * Added `__len__` method to `CALENDAR` class. Returns number of workdays in a week.
+
+### Removed
+
+* Removed `warnings.py` from project. This may become a seperate project.
+
+---
 
 ## 0.5.9 - 2023-02-12
 
 * Added `default_calendar` attribute to `PROJECT` class.
+
+---
 
 ## 0.5.8 - 2023-02-05
 
