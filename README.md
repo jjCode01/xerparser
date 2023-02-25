@@ -124,5 +124,6 @@ Sometimes the xer file is corrupted during the export process. A list of potenti
   | TASKACTV | ACTVCODE | *Activity Code Data* |
   | PCATVAL | PCATTYPE | *Project Code Data* |
   | PROJPCAT | PCATVAL | *Project Code Data* |
+  | UDFVALUE | UDFTYPE | *User Defined Field Data* |
 
 - Non-existent calendars assigned to activities.

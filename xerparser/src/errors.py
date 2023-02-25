@@ -9,6 +9,7 @@ REQUIRED_TABLE_PAIRS = {
     ("TASKACTV", "ACTVCODE"),
     ("PCATVAL", "PCATTYPE"),
     ("PROJPCAT", "PCATVAL"),
+    ("UDFVALUE", "UDFTYPE"),
 }
 
 
