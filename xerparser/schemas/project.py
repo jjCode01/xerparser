@@ -5,6 +5,7 @@ from collections import Counter
 from datetime import datetime
 from functools import cached_property
 from statistics import mean
+from typing import Any
 
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
@@ -14,6 +15,7 @@ from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
+from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import datetime_or_none, str_or_none, date_format
 
@@ -103,6 +105,7 @@ class PROJECT:
         self.tasks: list[TASK] = []
         self.relationships: list[TASKPRED] = []
         self.wbs_nodes: list[PROJWBS] = []
+        self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     @cached_property
     @rounded()

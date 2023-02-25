@@ -1,7 +1,8 @@
 # xerparser
 # projwbs.py
 
-from typing import Optional
+from typing import Any, Optional
+from xerparser.schemas.udftype import UDFTYPE
 from xerparser.src.validators import int_or_none
 
 
@@ -50,6 +51,7 @@ class PROJWBS:
 
         self.assignments: int = 0
         self._parent: Optional["PROJWBS"] = None
+        self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     def __eq__(self, __o: "PROJWBS") -> bool:
         return self.full_code == __o.full_code

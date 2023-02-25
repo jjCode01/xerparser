@@ -26,6 +26,7 @@ from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
 from xerparser.schemas.ermhdr import ERMHDR
+from xerparser.schemas.udftype import UDFTYPE
 
 
 class Xer:
@@ -95,6 +96,9 @@ class Xer:
             opts["proj_id"]: SCHEDOPTIONS(**opts)
             for opts in _xer.get("SCHEDOPTIONS", [])
         }
+        self.udf_types = {
+            udf["udf_type_id"]: UDFTYPE(**udf) for udf in _xer.get("UDFTYPE", [])
+        }
         self.projects = {
             proj["proj_id"]: PROJECT(
                 self.sched_options[proj["proj_id"]],
@@ -134,6 +138,18 @@ class Xer:
                     act_code["actv_code_id"]
                 ):
                     task.activity_codes.update({code_value.code_type: code_value})
+
+        for udf in _xer.get("UDFVALUE", []):
+            udf_type = self.udf_types[udf["udf_type_id"]]
+            udf_value = UDFTYPE.get_udf_value(udf_type, **udf)
+            if udf_type.table == "TASK":
+                self.tasks[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
+            elif udf_type.table == "PROJECT":
+                self.projects[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
+            elif udf_type.table == "PROJWBS":
+                self.wbs_nodes[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
+            elif udf_type.table == "RSRC":
+                self.resources[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
 
         self._set_project_attrs(_xer)
         self._set_task_attrs(_xer)

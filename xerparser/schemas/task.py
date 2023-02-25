@@ -4,6 +4,7 @@
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
+from typing import Any
 
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -12,6 +13,7 @@ from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
+from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
     datetime_or_none,
@@ -172,6 +174,7 @@ class TASK:
         # xer file is corrupted and task clndr_id references a
         # non-existent calendar.
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
+        self.user_defined_fields: dict[UDFTYPE, Any] = {}
         self.calendar: CALENDAR | None = calendar
         self.wbs: PROJWBS = self._valid_projwbs(wbs)
         self.memos: list[TASKMEMO] = []

@@ -1,4 +1,4 @@
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 from xerparser.src.parser import xer_to_dict
 from xerparser.src.xer import Xer
@@ -18,3 +18,4 @@ from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
+from xerparser.schemas.udftype import UDFTYPE

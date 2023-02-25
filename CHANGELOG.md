@@ -1,6 +1,19 @@
 
 # Changelog - xerparser 
 
+## 0.8.0
+
+### General Notes
+
+Added parsing of User Defined Fields (UDF). [Issue #4](https://github.com/jjCode01/xerparser/issues/4)
+
+### Added
+
+* Added class `UDFTYPE` which represents a User Defined Field.
+* Added attribute `user_defined_fields` to `PROJECT`, `PROJWBS`, `RSRC`, and `TASK` classes, which hold a dictionary of `UDFTYPE`: `UDF Value` key value pairs.
+
+---
+
 ## 0.7.0 - 2023-02-25
 
 ### General Notes
