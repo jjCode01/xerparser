@@ -62,6 +62,7 @@ The tables stored in the .xer file are accessable as either Global, Project spec
   xer.tasks                 # dict of all TASK objects
   xer.relationships         # dict of all TASKPRED objects
   xer.resources             # dict of RSRC objects
+  xer.udf_types             # dict of UDFTYPE objects
   xer.wbs_nodes             # dict of all PROJWBS objects
   ```  
 
@@ -71,12 +72,13 @@ The tables stored in the .xer file are accessable as either Global, Project spec
 # Get first project
 project = xer.projects.values()[0]
 
-project.activity_codes  # list of project specific ACTVTYPE objects
-project.calendars       # list of project specific CALENDAR objects
-project.project_codes   # dict of PCATTYPE: PCATVAL objects
-project.tasks           # list of project specific TASK objects
-project.relationships   # list of project specific TASKPRED objects
-project.wbs_nodes       # list of project specific PROJWBS objects
+project.activity_codes        # list of project specific ACTVTYPE objects
+project.calendars             # list of project specific CALENDAR objects
+project.project_codes         # dict of PCATTYPE: PCATVAL objects
+project.tasks                 # list of project specific TASK objects
+project.relationships         # list of project specific TASKPRED objects
+project.user_defined_fields   # dict of `UDFTYPE`: `UDF Value` pairs  
+project.wbs_nodes             # list of project specific PROJWBS objects
 ```
 
 ### Task Specific
@@ -85,10 +87,11 @@ project.wbs_nodes       # list of project specific PROJWBS objects
 # Get first task
 task = project.tasks[0]
 
-task.activity_codes   # dict of ACTVTYPE: ACTVCODE objects
-task.memos            # list of TASKMEMO objects
-task.resources        # dict of TASKRSRC objects
-task.periods          # list of TASKFIN objects
+task.activity_codes       # dict of ACTVTYPE: ACTVCODE objects
+task.memos                # list of TASKMEMO objects
+task.periods              # list of TASKFIN objects
+task.resources            # dict of TASKRSRC objects
+task.user_defined_fields  # dict of `UDFTYPE`: `UDF Value` pairs 
 ```
 
 ### Resource Specific
@@ -97,7 +100,8 @@ task.periods          # list of TASKFIN objects
 # Get first task resource
 resource = task.resources.values()[0]
 
-resource.periods  # list of TRSRCFIN objects
+resource.periods              # list of TRSRCFIN objects
+resource.user_defined_fields  # dict of `UDFTYPE`: `UDF Value` pairs 
 ```
 
 <br/>
