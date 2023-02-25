@@ -54,6 +54,9 @@ def process_project(project: PROJECT) -> dict[str, Any]:
                 project.data_date + relativedelta(days=PLANNED_DAYS)
             )
         ),
+        "project_codes": {
+            code.name: val.code for code, val in project.project_codes.items()
+        },
         "relationship_count": len(project.relationships),
         "remaining_cost": project.remaining_cost,
         "remaining_duration": project.remaining_duration,
@@ -184,6 +187,14 @@ class TestParser(unittest.TestCase):
                     [code.name for code in project.activity_codes],
                     file[project.short_name]["activity_codes"],
                     f"{project.short_name} Activity Codes",
+                )
+                self.assertEqual(
+                    {
+                        code.name: val.code
+                        for code, val in project.project_codes.items()
+                    },
+                    file[project.short_name]["project_codes"],
+                    f"{project.short_name} Project Codes",
                 )
                 self.assertEqual(
                     project.actual_start.strftime(DATE_FORMAT),

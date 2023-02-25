@@ -9,6 +9,8 @@ from statistics import mean
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.projwbs import PROJWBS
+from xerparser.schemas.pcattype import PCATTYPE
+from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
@@ -97,6 +99,7 @@ class PROJECT:
         self.activity_codes: list[ACTVTYPE] = []
         self.calendars: list[CALENDAR] = []
         self.name: str = ""
+        self.project_codes: dict[PCATTYPE, PCATVAL] = {}
         self.tasks: list[TASK] = []
         self.relationships: list[TASKPRED] = []
         self.wbs_nodes: list[PROJWBS] = []

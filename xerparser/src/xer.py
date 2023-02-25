@@ -13,6 +13,8 @@ from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.findates import FINDATES
 from xerparser.schemas.memotype import MEMOTYPE
+from xerparser.schemas.pcattype import PCATTYPE
+from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.project import PROJECT
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.rsrc import RSRC
@@ -45,6 +47,22 @@ class Xer:
         for account in self.accounts.values():
             if account.parent_acct_id:
                 account.parent = self.accounts.get(account.parent_acct_id)
+
+        self.project_code_types = {
+            code_type["proj_catg_type_id"]: PCATTYPE(**code_type)
+            for code_type in _xer.get("PCATTYPE", [])
+        }
+        self.project_code_values = {
+            code_val["proj_catg_id"]: PCATVAL(
+                code_type=self.project_code_types[code_val["proj_catg_type_id"]],
+                **code_val,
+            )
+            for code_val in _xer.get("PCATVAL", [])
+        }
+        for proj_code in self.project_code_values.values():
+            proj_code.parent = self.project_code_values.get(
+                proj_code.parent_proj_catg_id
+            )
 
         self.activity_code_types = {
             code_type["actv_code_type_id"]: ACTVTYPE(**code_type)
@@ -102,6 +120,13 @@ class Xer:
             rel["task_pred_id"]: self._set_taskpred(**rel)
             for rel in _xer.get("TASKPRED", [])
         }
+
+        for proj_code in _xer.get("PROJPCAT", []):
+            if proj := self.projects.get(proj_code["proj_id"]):
+                if code_value := self.project_code_values.get(
+                    proj_code["proj_catg_id"]
+                ):
+                    proj.project_codes.update({code_value.code_type: code_value})
 
         for act_code in _xer.get("TASKACTV", []):
             if task := self.tasks.get(act_code["task_id"]):
