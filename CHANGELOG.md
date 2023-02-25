@@ -1,6 +1,22 @@
 
 # Changelog - xerparser 
 
+## 0.7.0 - 2023-02-25
+
+### General Notes
+
+Added parsing of Project Codes. [Issue #3](https://github.com/jjCode01/xerparser/issues/3).
+
+### Added
+
+* Added class `PCATTYPE` which represents a Project Code Type.
+* Added class `PCATVAL` which represents a Project Code Value.
+* Added attribute `project_code_types` to `Xer` class, which holds a dictionary of `PCATTYPE` objects.
+* Added attribute `project_code_values` to `Xer` class, which holds a dictionary of `PCATVAL` objects.
+* Added attribute `project_codes` to `PROJECT` class, which holds a dictionary of `PCATTYPE`: `PCATVAL` key value pairs assigned to a project.
+
+---
+
 ## 0.6.0 - 2023-02-24
 
 ### General Notes

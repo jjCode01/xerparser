@@ -9,12 +9,6 @@ Tested on .xer files exported as versions 15.2 through 19.12.*
 
 <br/>
 
-## Changelog
-
-See [changelog](./CHANGELOG.md).  
-
-<br/>
-
 ## Install
 
 **Windows**:
@@ -63,6 +57,8 @@ The tables stored in the .xer file are accessable as either Global, Project spec
   xer.financial_periods     # dict of FINDATES objects
   xer.notebook_topics       # dict of MEMOTYPE objects
   xer.projects              # dict of PROJECT objects
+  xer.project_code_types    # dict of PCATTYPE objects
+  xer.project_code_values   # dict of PCATVAL objects
   xer.tasks                 # dict of all TASK objects
   xer.relationships         # dict of all TASKPRED objects
   xer.resources             # dict of RSRC objects
@@ -77,6 +73,7 @@ project = xer.projects.values()[0]
 
 project.activity_codes  # list of project specific ACTVTYPE objects
 project.calendars       # list of project specific CALENDAR objects
+project.project_codes   # dict of PCATTYPE: PCATVAL objects
 project.tasks           # list of project specific TASK objects
 project.relationships   # list of project specific TASKPRED objects
 project.wbs_nodes       # list of project specific PROJWBS objects
@@ -125,5 +122,7 @@ Sometimes the xer file is corrupted during the export process. A list of potenti
   | TASKMEMO | MEMOTYPE | *Notebook Data* |
   | ACTVCODE | ACTVTYPE | *Activity Code Data* |
   | TASKACTV | ACTVCODE | *Activity Code Data* |
+  | PCATVAL | PCATTYPE | *Project Code Data* |
+  | PROJPCAT | PCATVAL | *Project Code Data* |
 
 - Non-existent calendars assigned to activities.

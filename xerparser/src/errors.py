@@ -7,6 +7,8 @@ REQUIRED_TABLE_PAIRS = {
     ("TASKMEMO", "MEMOTYPE"),
     ("ACTVCODE", "ACTVTYPE"),
     ("TASKACTV", "ACTVCODE"),
+    ("PCATVAL", "PCATTYPE"),
+    ("PROJPCAT", "PCATVAL"),
 }
 
 

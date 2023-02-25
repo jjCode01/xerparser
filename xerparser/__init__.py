@@ -1,4 +1,4 @@
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 from xerparser.src.parser import xer_to_dict
 from xerparser.src.xer import Xer
@@ -7,6 +7,8 @@ from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
 from xerparser.schemas.ermhdr import ERMHDR
 from xerparser.schemas.findates import FINDATES
+from xerparser.schemas.pcattype import PCATTYPE
+from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.project import PROJECT
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.rsrc import RSRC
