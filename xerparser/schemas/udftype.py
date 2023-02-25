@@ -16,6 +16,12 @@ class UDFTYPE:
         FT_STATICTYPE = "Indicator"
         FT_TEXT = "Text"
 
+    class Indicators(Enum):
+        UDF_G1 = "🛑"
+        UDF_G2 = "⚠️"
+        UDF_G3 = "✅"
+        UDF_G4 = "⭐"
+
     def __init__(self, **data) -> None:
         self.uid: str = data["udf_type_id"]
         self.table: str = data["table_name"]
@@ -39,5 +45,8 @@ class UDFTYPE:
 
         if udf_type.type is UDFTYPE.FieldType.FT_INT:
             return int(data["udf_number"])
+
+        if udf_type.type is UDFTYPE.FieldType.FT_STATICTYPE:
+            return UDFTYPE.Indicators[data["udf_text"]].value
 
         return data["udf_text"]
