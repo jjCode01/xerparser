@@ -219,6 +219,9 @@ class PROJECT:
             return progress
 
         for task in self.tasks:
+            if task.status.is_completed:
+                continue
+
             if task.status.is_not_started:
                 if task.start < before_date:
                     progress["start"].append(task)
@@ -226,11 +229,10 @@ class PROJECT:
                 if task.late_start_date and task.late_start_date < before_date:
                     progress["late_start"].append(task)
 
-            if not task.status.is_completed:
-                if task.finish < before_date:
-                    progress["finish"].append(task)
+            if task.finish < before_date:
+                progress["finish"].append(task)
 
-                if task.late_end_date and task.late_end_date < before_date:
-                    progress["late_finish"].append(task)
+            if task.late_end_date and task.late_end_date < before_date:
+                progress["late_finish"].append(task)
 
         return progress
