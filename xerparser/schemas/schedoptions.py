@@ -27,3 +27,41 @@ class SCHEDOPTIONS:
         self.use_total_float_multiple_longest_paths: bool = (
             data["use_total_float_multiple_longest_paths"] == "Y"
         )
+
+    def __eq__(self, __o: "SCHEDOPTIONS") -> bool:
+        return all(
+            (
+                self.max_multiple_longest_path == __o.max_multiple_longest_path,
+                self.calendar_on_relationship_lag == __o.calendar_on_relationship_lag,
+                self.float_type == __o.float_type,
+                self.lag_early_start_flag == __o.lag_early_start_flag,
+                self.open_critical_flag == __o.open_critical_flag,
+                self.outer_depend_type == __o.outer_depend_type,
+                self.progress_override == __o.progress_override,
+                self.retained_logic == __o.retained_logic,
+                self.setplantoforecast == __o.setplantoforecast,
+                self.use_expect_end_flag == __o.use_expect_end_flag,
+                self.use_project_end_date_for_float
+                == __o.use_project_end_date_for_float,
+                self.use_total_float_multiple_longest_paths
+                == __o.use_total_float_multiple_longest_paths,
+            )
+        )
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.max_multiple_longest_path,
+                self.calendar_on_relationship_lag,
+                self.float_type,
+                self.lag_early_start_flag,
+                self.open_critical_flag,
+                self.outer_depend_type,
+                self.progress_override,
+                self.retained_logic,
+                self.setplantoforecast,
+                self.use_expect_end_flag,
+                self.use_project_end_date_for_float,
+                self.use_total_float_multiple_longest_paths,
+            )
+        )
