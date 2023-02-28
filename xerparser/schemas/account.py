@@ -42,7 +42,7 @@ class ACCOUNT:
         return self.name == __o.name and self.full_code == __o.full_code
 
     def __hash__(self) -> int:
-        return hash((self.name, self.code))
+        return hash((self.name, self.full_code))
 
     def __gt__(self, __o: "ACCOUNT") -> bool:
         return self.full_code > __o.full_code
