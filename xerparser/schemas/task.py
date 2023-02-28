@@ -187,9 +187,17 @@ class TASK:
         return self.task_code == __o.task_code
 
     def __lt__(self, __o: "TASK") -> bool:
+        if self == __o:
+            if self.start == __o.start:
+                return self.finish < __o.finish
+            return self.start < __o.start
         return self.task_code < __o.task_code
 
     def __gt__(self, __o: "TASK") -> bool:
+        if self == __o:
+            if self.start == __o.start:
+                return self.finish > __o.finish
+            return self.start > __o.start
         return self.task_code > __o.task_code
 
     def __hash__(self) -> int:
