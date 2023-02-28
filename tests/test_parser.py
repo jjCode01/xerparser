@@ -64,8 +64,15 @@ def process_project(project: PROJECT) -> dict[str, Any]:
         "relationship_count": len(project.relationships),
         "remaining_cost": project.remaining_cost,
         "remaining_duration": project.remaining_duration,
+        "task_activity_code_count": sum(
+            len(task.activity_codes) for task in project.tasks
+        ),
         "task_count": len(project.tasks),
+        "task_memo_count": sum(len(task.memos) for task in project.tasks),
+        "task_period_count": sum(len(task.periods) for task in project.tasks),
+        "task_resource_count": sum(len(task.resources) for task in project.tasks),
         "task_percent": project.task_percent,
+        "task_udf_count": sum(len(task.user_defined_fields) for task in project.tasks),
         "this_period_cost": project.this_period_cost,
         "wbs_count": len(project.wbs_nodes),
     }
@@ -245,7 +252,42 @@ class TestParser(unittest.TestCase):
                 self.assertEqual(
                     project.task_percent,
                     file[project.short_name]["task_percent"],
-                    f"{project.short_name} Project Task Percent Completew",
+                    f"{project.short_name} Project Task Percent Complete",
+                )
+                self.assertEqual(
+                    sum(len(task.memos) for task in project.tasks),
+                    file[project.short_name]["task_memo_count"],
+                    f"{project.short_name} Project Task Memo Count",
+                )
+                self.assertEqual(
+                    sum(len(task.periods) for task in project.tasks),
+                    file[project.short_name]["task_period_count"],
+                    f"{project.short_name} Project Task Period Count",
+                )
+                self.assertEqual(
+                    sum(len(task.resources) for task in project.tasks),
+                    file[project.short_name]["task_resource_count"],
+                    f"{project.short_name} Project Task Resource Count",
+                )
+                self.assertEqual(
+                    sum(len(task.activity_codes) for task in project.tasks),
+                    file[project.short_name]["task_activity_code_count"],
+                    f"{project.short_name} Project Task Activity Code Count",
+                )
+                self.assertEqual(
+                    sum(len(task.user_defined_fields) for task in project.tasks),
+                    file[project.short_name]["task_udf_count"],
+                    f"{project.short_name} Project Task UDF Count",
+                )
+                self.assertEqual(
+                    sum(len(task.predecessors) for task in project.tasks),
+                    file[project.short_name]["relationship_count"],
+                    f"{project.short_name} Project Task Predecessor Count",
+                )
+                self.assertEqual(
+                    sum(len(task.successors) for task in project.tasks),
+                    file[project.short_name]["relationship_count"],
+                    f"{project.short_name} Project Task Successor Count",
                 )
                 for calendar in project.calendars:
                     self.assertEqual(
