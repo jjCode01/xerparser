@@ -1,11 +1,13 @@
 
 # Changelog - xerparser 
 
-## 0.8.0
+## 0.8.0 - 2023-02-28
 
 ### General Notes
 
-Added parsing of User Defined Fields (UDF). [Issue #4](https://github.com/jjCode01/xerparser/issues/4)
+Added parsing of User Defined Fields (UDF). [Issue #4](https://github.com/jjCode01/xerparser/issues/4)  
+Expanded testing for more coverage.  
+Refactor / clean up code for initialization of `XER` class.
 
 ### Added
 
