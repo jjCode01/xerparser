@@ -74,7 +74,7 @@ class Xer:
         self._set_task_actv_codes()
         self._set_task_memos()
         self._set_task_resources()
-        self._set_financial_periods(self.data)
+        self._set_financial_periods()
 
         self._set_udf_values()
 
@@ -206,13 +206,13 @@ class Xer:
             elif udf_type.table == "RSRC":
                 self.resources[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
 
-    def _set_financial_periods(self, xer: dict) -> None:
-        for task_fin in xer.get("TASKFIN", []):
+    def _set_financial_periods(self) -> None:
+        for task_fin in self.data.get("TASKFIN", []):
             self.tasks[task_fin["task_id"]].periods.append(
                 self._set_taskfin(**task_fin)
             )
 
-        for rsrc_fin in xer.get("TRSRCFIN", []):
+        for rsrc_fin in self.data.get("TRSRCFIN", []):
             self.tasks[rsrc_fin["task_id"]].resources[
                 rsrc_fin["taskrsrc_id"]
             ].periods.append(self._set_taskrsrc_fin(**rsrc_fin))
