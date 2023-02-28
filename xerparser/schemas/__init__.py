@@ -1,0 +1,17 @@
+TABLE_UID_MAP = {
+    "ACCOUNT": "acct_id",
+    "ACTVCODE": "actv_code_id",
+    "ACTVTYPE": "actv_code_type_id",
+    "CALENDAR": "clndr_id",
+    "FINDATES": "fin_dates_id",
+    "MEMOTYPE": "memo_type_id",
+    "PCATTYPE": "proj_catg_type_id",
+    "PCATVAL": "proj_catg_id",
+    "PROJECT": "proj_id",
+    "PROJWBS": "wbs_id",
+    "RSRC": "rsrc_id",
+    "SCHEDOPTIONS": "proj_id",
+    "TASK": "task_id",
+    "TASKPRED": "task_pred_id",
+    "UDFTYPE": "udf_type_id",
+}

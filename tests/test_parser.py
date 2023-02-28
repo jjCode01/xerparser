@@ -35,6 +35,10 @@ def process_xer(file: Path):
         "export_date": xer.export_info.date.strftime(DATE_FORMAT),
         "errors": xer.errors,
         "accounts": len(xer.accounts),
+        "udf_types": [
+            {"label": udf.label, "table": udf.table, "type": udf.type.value}
+            for udf in xer.udf_types.values()
+        ],
         **xer_data,
     }
 
@@ -162,7 +166,20 @@ class TestParser(unittest.TestCase):
 
             self.assertEqual(len(xer.accounts), file["accounts"])
 
+            self.assertEqual(
+                [
+                    {"label": udf.label, "table": udf.table, "type": udf.type.value}
+                    for udf in xer.udf_types.values()
+                ],
+                file["udf_types"],
+            )
+
             for project in xer.projects.values():
+                self.assertEqual(
+                    project.name,
+                    file[project.short_name]["name"],
+                    f"{project.short_name} Name",
+                )
                 self.assertEqual(
                     project.budgeted_cost,
                     file[project.short_name]["budget_cost"],
