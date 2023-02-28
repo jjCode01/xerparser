@@ -53,29 +53,18 @@ class Xer:
         self.resources: dict[str, RSRC] = self._get_attr("RSRC")
         self.sched_options: dict[str, SCHEDOPTIONS] = self._get_attr("SCHEDOPTIONS")
         self.udf_types: dict[str, UDFTYPE] = self._get_attr("UDFTYPE")
-
         self.projects = self._get_projects()
         self.wbs_nodes: dict[str, PROJWBS] = self._get_wbs_nodes()
-        self.tasks: dict[str, TASK] = {
-            task["task_id"]: self._set_task(**task)
-            for task in self.data.get("TASK", [])
-        }
-        self.relationships: dict[str, TASKPRED] = {
-            rel["task_pred_id"]: self._set_taskpred(**rel)
-            for rel in self.data.get("TASKPRED", [])
-        }
+        self.tasks: dict[str, TASK] = self._get_tasks()
+        self.relationships: dict[str, TASKPRED] = self._get_relationships()
 
         self._set_proj_activity_codes()
         self._set_proj_codes()
         self._set_proj_calendars()
-        self._set_proj_relationships()
-        self._set_proj_tasks()
-        self._set_proj_wbs_nodes()
         self._set_task_actv_codes()
         self._set_task_memos()
         self._set_task_resources()
         self._set_financial_periods()
-
         self._set_udf_values()
 
     def _get_accounts(self) -> dict[str, ACCOUNT]:
@@ -83,7 +72,6 @@ class Xer:
         for account in accounts.values():
             if account.parent_acct_id:
                 account.parent = accounts.get(account.parent_acct_id)
-
         return accounts
 
     def _get_activity_code_values(self) -> dict[str, ACTVCODE]:
@@ -129,12 +117,26 @@ class Xer:
 
         return project_code_values
 
+    def _get_relationships(self) -> dict[str, TASKPRED]:
+        return {
+            rel["task_pred_id"]: self._set_taskpred(**rel)
+            for rel in self.data.get("TASKPRED", [])
+        }
+
+    def _get_tasks(self) -> dict[str, TASK]:
+        return {
+            task["task_id"]: self._set_task(**task)
+            for task in self.data.get("TASK", [])
+        }
+
     def _get_wbs_nodes(self) -> dict[str, PROJWBS]:
         nodes: dict[str, PROJWBS] = self._get_attr("PROJWBS")
         for node in nodes.values():
             node.parent = nodes.get(node.parent_wbs_id)
-            if node.is_proj_node and (proj := self.projects.get(node.proj_id)):
-                proj.name = node.name
+            if proj := self.projects.get(node.proj_id):
+                proj.wbs_nodes.append(node)
+                if node.is_proj_node:
+                    proj.name = node.name
         return nodes
 
     def _set_proj_activity_codes(self) -> None:
@@ -158,26 +160,6 @@ class Xer:
             if proj and code:
                 proj.project_codes.update({code.code_type: code})
 
-    def _set_proj_relationships(self) -> None:
-        rel_group = groupby(sorted(self.relationships.values(), key=proj_key), proj_key)
-        for proj_id, rels in rel_group:
-            if proj := self.projects.get(proj_id):
-                proj.relationships = [
-                    rel for rel in list(rels) if rel.pred_proj_id == proj.uid
-                ]
-
-    def _set_proj_tasks(self) -> None:
-        task_group = groupby(sorted(self.tasks.values(), key=proj_key), proj_key)
-        for proj_id, tasks in task_group:
-            if proj := self.projects.get(proj_id):
-                proj.tasks = list(tasks)
-
-    def _set_proj_wbs_nodes(self) -> None:
-        wbs_group = groupby(sorted(self.wbs_nodes.values(), key=proj_key), proj_key)
-        for proj_id, wbs_nodes in wbs_group:
-            if proj := self.projects.get(proj_id):
-                proj.wbs_nodes = list(wbs_nodes)
-
     def _set_task_actv_codes(self) -> None:
         for act_code in self.data.get("TASKACTV", []):
             task = self.tasks.get(act_code["task_id"])
@@ -186,7 +168,7 @@ class Xer:
                 task.activity_codes.update({code_value.code_type: code_value})
 
     def _set_task_memos(self) -> None:
-        for memo in self.data.get("TASKMEM", []):
+        for memo in self.data.get("TASKMEMO", []):
             self._set_memo(**memo)
 
     def _set_task_resources(self) -> None:
@@ -208,14 +190,10 @@ class Xer:
 
     def _set_financial_periods(self) -> None:
         for task_fin in self.data.get("TASKFIN", []):
-            self.tasks[task_fin["task_id"]].periods.append(
-                self._set_taskfin(**task_fin)
-            )
+            self._set_taskfin(**task_fin)
 
         for rsrc_fin in self.data.get("TRSRCFIN", []):
-            self.tasks[rsrc_fin["task_id"]].resources[
-                rsrc_fin["taskrsrc_id"]
-            ].periods.append(self._set_taskrsrc_fin(**rsrc_fin))
+            self._set_taskrsrc_fin(**rsrc_fin)
 
     def _set_memo(self, **kwargs) -> None:
         topic = self.notebook_topics[kwargs["memo_type_id"]].topic
@@ -227,6 +205,7 @@ class Xer:
         wbs = self.wbs_nodes[kwargs["wbs_id"]]
         wbs.assignments += 1
         task = TASK(calendar=calendar, wbs=wbs, **kwargs)
+        self.projects[task.proj_id].tasks.append(task)
         return task
 
     def _set_taskpred(self, **kwargs) -> TASKPRED:
@@ -235,6 +214,7 @@ class Xer:
         task_pred = TASKPRED(predecessor=pred, successor=succ, **kwargs)
         pred.successors.append(LinkToTask(succ, task_pred.link, task_pred.lag))
         succ.predecessors.append(LinkToTask(pred, task_pred.link, task_pred.lag))
+        self.projects[task_pred.proj_id].relationships.append(task_pred)
         return task_pred
 
     def _set_taskrsrc(self, **kwargs) -> None:
@@ -244,13 +224,17 @@ class Xer:
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)
         task.resources.update({taskrsrc.uid: taskrsrc})
 
-    def _set_taskfin(self, **kwargs) -> TASKFIN:
+    def _set_taskfin(self, **kwargs) -> None:
         period = self.financial_periods[kwargs["fin_dates_id"]]
-        return TASKFIN(period=period, **kwargs)
+        task_fin = TASKFIN(period=period, **kwargs)
+        self.tasks[task_fin.task_id].periods.append(task_fin)
 
-    def _set_taskrsrc_fin(self, **kwargs) -> TRSRCFIN:
+    def _set_taskrsrc_fin(self, **kwargs) -> None:
         period = self.financial_periods[kwargs["fin_dates_id"]]
-        return TRSRCFIN(period=period, **kwargs)
+        rsrc_fin = TRSRCFIN(period=period, **kwargs)
+        self.tasks[rsrc_fin.task_id].resources[rsrc_fin.taskrsrc_id].periods.append(
+            rsrc_fin
+        )
 
 
 def proj_key(obj: Any) -> str:
