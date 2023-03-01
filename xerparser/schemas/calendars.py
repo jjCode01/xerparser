@@ -210,7 +210,13 @@ class CALENDAR:
 
         check_date = min(cl_dates)
         while check_date <= max(cl_dates):
-            if check_date in self.holidays:
+            if self.holidays and check_date in self.holidays:
+                yield check_date
+            if (
+                not self.holidays
+                and self.base_calendar
+                and check_date in self.base_calendar.holidays
+            ):
                 yield check_date
             check_date += timedelta(days=1)
 
