@@ -1,7 +1,7 @@
 
 # Changelog - xerparser 
 
-## 0.8.1
+## 0.8.1 - 2023-02-28
 
 ### General Notes
 
