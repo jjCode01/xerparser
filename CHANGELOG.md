@@ -1,6 +1,25 @@
 
 # Changelog - xerparser 
 
+## 0.8.1
+
+### General Notes
+
+Refactor / cleanup code.
+Working on functionality to generate cost loading projections.
+
+### Added
+
+* Added `rem_hours_per_day` method to `TASK` class. This return a dict with date: workhour key value pairs. This function was originally contained within the `calendar.py` module, but was not being used. Makes more sense to have it as a `TASK` method.
+* Added `base_calendar` attribute to `CALENDAR` class. The `is_workday` function will now search the `base_calendar` for holidays when determining if a date is a workday.
+
+### Changed
+
+* `remain_drtn_hr_cnt` attribute of `TASK` no longer allows `None` type.
+* `finish` property of `TASK` will now check for `reend_date` and return it before it returns `early_end_date`
+
+---
+
 ## 0.8.0 - 2023-02-28
 
 ### General Notes

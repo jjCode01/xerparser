@@ -22,6 +22,7 @@ from xerparser.src.validators import (
     int_or_none,
     str_or_none,
 )
+from xerparser.scripts.dates import clean_date
 
 
 class TASK:
@@ -117,9 +118,7 @@ class TASK:
             data["total_float_hr_cnt"]
         )
         self.free_float_hr_cnt: float | None = float_or_none(data["free_float_hr_cnt"])
-        self.remain_drtn_hr_cnt: float | None = float_or_none(
-            data["remain_drtn_hr_cnt"]
-        )
+        self.remain_drtn_hr_cnt: float = float(data["remain_drtn_hr_cnt"])
         self.target_drtn_hr_cnt: float = float(data["target_drtn_hr_cnt"])
         self.float_path: int | None = int_or_none(data["float_path"])
         self.float_path_order: int | None = int_or_none(data["float_path_order"])
@@ -255,6 +254,8 @@ class TASK:
         """Calculated activity finish date (Actual Finish or Early Finish)"""
         if self.act_end_date:
             return self.act_end_date
+        if self.reend_date:
+            return self.reend_date
         if self.early_end_date:
             return self.early_end_date
         raise ValueError(f"Could not find finish date for task {self.task_code}")
@@ -315,6 +316,88 @@ class TASK:
         if self.remain_drtn_hr_cnt is None:
             return 0
         return int(self.remain_drtn_hr_cnt / 8)
+
+    def rem_hours_per_day(self) -> dict[datetime, float]:
+        """
+        Calculate the remaining workhours per day for a task.
+        Will only return valid workdays in a list of tuples containing the date and workhour values.
+        This is usefull for calculating projections like cash flow.
+
+        Raises:
+            ValueError: datetime objects are not passed in as arguments
+
+        Returns:
+            list[tuple[datetime, float]]: date and workhour pairs
+        """
+        if self.status.is_completed or not self.restart_date or not self.calendar:
+            return {}
+
+        start_date = self.restart_date
+        end_date = self.finish
+
+        # edge case that start and end dates are equal
+        if start_date.date() == end_date.date():
+            work_hrs = self.calendar._calc_work_hours(
+                start_date, start_date.time(), end_date.time()
+            )
+            return {clean_date(start_date): round(work_hrs, 3)}
+
+        # Get a list of all workdays between the start and end dates
+        date_range = list(self.calendar.iter_workdays(start_date, end_date))
+
+        # edge cases that only 1 valid workday between start date and end date
+        # these may never actually occur since the dates are pulled directly from the schedule
+        # did not find any case where these occur in testing, but leaving it just in case
+        if len(date_range) == 1 and end_date.date() > start_date.date():
+            if start_date.date() == date_range[0].date():
+                work_day = self.calendar._get_workday(start_date)
+                work_hrs = self.calendar._calc_work_hours(
+                    start_date, start_date.time(), work_day.finish
+                )
+                return {clean_date(start_date): round(work_hrs, 3)}
+
+            if end_date.date() == date_range[0].date():
+                work_day = self.calendar._get_workday(end_date)
+                work_hrs = self.calendar._calc_work_hours(
+                    end_date, work_day.start, end_date.time()
+                )
+                return {clean_date(end_date): round(work_hrs, 3)}
+
+            work_day = self.calendar._get_workday(date_range[0])
+            return {clean_date(date_range[0]): round(work_day.hours, 3)}
+
+        # cases were multiple valid workdays between start and end date
+        # initialize hours with start date
+        rem_hrs = {
+            clean_date(start_date): round(
+                self.calendar._calc_work_hours(
+                    date_to_calc=start_date,
+                    start_time=start_date.time(),
+                    end_time=self.calendar._get_workday(start_date).finish,
+                ),
+                3,
+            ),
+        }
+
+        # loop through 2nd to 2nd to last day in date range
+        # these would be a full workday
+        for dt in date_range[1 : len(date_range) - 1]:
+            if not self.calendar.is_workday(dt):
+                continue
+            if wd := self.calendar._get_workday(dt):
+                rem_hrs[dt] = round(wd.hours, 3)
+
+        # calculate work hours for the last day
+        rem_hrs[clean_date(end_date)] = round(
+            self.calendar._calc_work_hours(
+                date_to_calc=end_date,
+                start_time=self.calendar._get_workday(end_date).start,
+                end_time=end_date.time(),
+            ),
+            3,
+        )
+
+        return rem_hrs
 
     @property
     def start(self) -> datetime:

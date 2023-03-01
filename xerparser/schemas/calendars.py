@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta
 from enum import Enum
 from functools import cached_property
-from typing import Iterator
+from typing import Iterator, Optional
 
 from xerparser.scripts.dates import (
     calc_time_var_hrs,
@@ -122,12 +122,14 @@ class CALENDAR:
 
     def __init__(self, **data) -> None:
         self.uid: str = data["clndr_id"]
+        self.base_clndr_id: str | None = str_or_none(data["base_clndr_id"])
         self.data: str = data["clndr_data"]
         self.is_default: bool = data["default_flag"] == "Y"
         self.last_chng_date: datetime | None = datetime_or_none(data["last_chng_date"])
         self.name: str = data["clndr_name"]
         self.proj_id: str | None = str_or_none(data["proj_id"])
         self.type: CALENDAR.CalendarType = CALENDAR.CalendarType[data["clndr_type"]]
+        self.base_calendar: Optional["CALENDAR"] = None
 
     def __eq__(self, __o: "CALENDAR") -> bool:
         return self.name == __o.name and self.type == __o.type
@@ -184,8 +186,15 @@ class CALENDAR:
         if not isinstance(date_to_check, datetime):
             raise ValueError("Argument date_to_check must be a datetime object")
 
+        # _date = date_to_check.date
         _date = clean_date(date_to_check)
         if _date in self.holidays:
+            return False
+        if (
+            not self.holidays
+            and self.base_calendar
+            and _date in self.base_calendar.holidays
+        ):
             return False
         if _date in self.work_exceptions.keys():
             return True
@@ -242,63 +251,61 @@ class CALENDAR:
             for day in _parse_clndr_data(self.data, ClndrRegEx.weekdays.value)
         }
 
+    def _calc_work_hours(
+        self, date_to_calc: datetime, start_time: time, end_time: time
+    ) -> float:
+        """
+        Calculate the work hours for a given day based on a start time, end time,
+        and work shifts apportioned for that day of the week.
+        """
+        work_day = self._get_workday(date_to_calc)
 
-def _calc_work_hours(
-    clndr: CALENDAR, date_to_calc: datetime, start_time: time, end_time: time
-) -> float:
-    """
-    Calculate the work hours for a given day based on a start time, end time,
-    and work shifts apportioned for that day of the week.
-    """
-    work_day = _get_workday(clndr, date_to_calc)
+        # date is not a workday
+        if not work_day:
+            return 0.0
 
-    # date is not a workday
-    if not work_day:
-        return 0.0
+        # reassign times if they were passed in the wrong order
+        start_time, end_time = min(start_time, end_time), max(start_time, end_time)
 
-    # reassign times if they were passed in the wrong order
-    start_time, end_time = min(start_time, end_time), max(start_time, end_time)
+        # ensure start and end times do not fall outside the workhours for the Week Day
+        start_time = max(start_time, work_day.start)
+        end_time = min(end_time, work_day.finish)
 
-    # ensure start and end times do not fall outside the workhours for the Week Day
-    start_time = max(start_time, work_day.start)
-    end_time = min(end_time, work_day.finish)
+        # date is a full day of work
+        if start_time == work_day.start and end_time == work_day.finish:
+            return round(work_day.hours, 3)
 
-    # date is a full day of work
-    if start_time == work_day.start and end_time == work_day.finish:
-        return round(work_day.hours, 3)
+        day_work_hrs = work_day.hours
 
-    day_work_hrs = work_day.hours
+        for shift in work_day.shifts:
+            # start time falls within this shift
+            if shift[0] <= start_time < shift[1]:
+                day_work_hrs -= calc_time_var_hrs(shift[0], start_time)
 
-    for shift in work_day.shifts:
-        # start time falls within this shift
-        if shift[0] <= start_time < shift[1]:
-            day_work_hrs -= calc_time_var_hrs(shift[0], start_time)
+                # end time also falls within this shift
+                if end_time < shift[1]:
+                    day_work_hrs -= calc_time_var_hrs(end_time, shift[1])
 
-            # end time also falls within this shift
-            if end_time < shift[1]:
+                continue
+
+            # only end time falls within this shift
+            if shift[0] <= end_time <= shift[1]:
                 day_work_hrs -= calc_time_var_hrs(end_time, shift[1])
+                continue
 
-            continue
+            # neither start nor end time falls within this shift
+            # deduct shift work hours from the day work hours
+            day_work_hrs -= calc_time_var_hrs(shift[0], shift[1])
 
-        # only end time falls within this shift
-        if shift[0] <= end_time <= shift[1]:
-            day_work_hrs -= calc_time_var_hrs(end_time, shift[1])
-            continue
+        return round(day_work_hrs, 3)
 
-        # neither start nor end time falls within this shift
-        # deduct shift work hours from the day work hours
-        day_work_hrs -= calc_time_var_hrs(shift[0], shift[1])
+    def _get_workday(self, date: datetime) -> WeekDay:
+        """Get the WeekDay object associated with a date."""
+        clean_date = date.replace(microsecond=0, second=0, minute=0, hour=0)
+        if clean_date in self.work_exceptions.keys():
+            return self.work_exceptions[clean_date]
 
-    return round(day_work_hrs, 3)
-
-
-def _get_workday(cldnr: CALENDAR, date: datetime) -> WeekDay:
-    """Get the WeekDay object associated with a date."""
-    clean_date = date.replace(microsecond=0, second=0, minute=0, hour=0)
-    if clean_date in cldnr.work_exceptions.keys():
-        return cldnr.work_exceptions[clean_date]
-
-    return cldnr.work_week[f"{clean_date:%A}"]
+        return self.work_week[f"{clean_date:%A}"]
 
 
 def _parse_clndr_data(clndr_data: str, reg_ex) -> list:
@@ -323,107 +330,3 @@ def _parse_work_day(day: str) -> WeekDay:
         shift_hours_tuple.append((shift_hours[hr], shift_hours[hr + 1]))
 
     return WeekDay(weekday, shift_hours_tuple)
-
-
-def rem_hours_per_day(
-    clndr: CALENDAR, start_date: datetime, end_date: datetime
-) -> list[tuple[datetime, float]]:
-    """
-    Calculate the remaining workhours per day in a given date range.
-    Will only return valid workdays in a list of tuples containing the date and workhour values.
-    This is usefull for calculating projections like cash flow.
-
-    Args:
-        clndr (Calendar): Calendar used to determine workdays and hours
-        start_date (datetime): start of date range (inclusive)
-        end_date (datetime): end of date range (inclusive)
-
-    Raises:
-        ValueError: datetime objects are not passed in as arguments
-
-    Returns:
-        list[tuple[datetime, float]]: date and workhour pairs
-    """
-    if not isinstance(start_date, datetime) or not isinstance(end_date, datetime):
-        raise ValueError("Arguments must be a datetime object")
-
-    # edge case start date and end date are equal
-    if start_date.replace(microsecond=0, second=0) == end_date.replace(
-        microsecond=0, second=0
-    ):
-        return [(clean_date(start_date), 0.0)]
-
-    # make sure dates were passed in the correct order
-    start_date, end_date = min(start_date, end_date), max(start_date, end_date)
-
-    # edge case that start and end dates are equal
-    if start_date.date() == end_date.date():
-        work_hrs = _calc_work_hours(
-            clndr, start_date, start_date.time(), end_date.time()
-        )
-        return [(clean_date(start_date), round(work_hrs, 3))]
-
-    # Get a list of all workdays between the start and end dates
-    date_range = list(clndr.iter_workdays(start_date, end_date))
-
-    # edge cases that only 1 valid workday between start date and end date
-    # these may never actually occur since the dates are pulled directly from the schedule
-    # did not find any case where these occur in testing, but leaving it just in case
-    if len(date_range) == 1 and end_date.date() > start_date.date():
-        if start_date.date() == date_range[0].date():
-            work_day = _get_workday(clndr, start_date)
-            work_hrs = _calc_work_hours(
-                clndr, start_date, start_date.time(), work_day.finish
-            )
-            return [(clean_date(start_date), round(work_hrs, 3))]
-
-        if end_date.date() == date_range[0].date():
-            work_day = _get_workday(clndr, end_date)
-            work_hrs = _calc_work_hours(
-                clndr, end_date, work_day.start, end_date.time()
-            )
-            return [(clean_date(end_date), round(work_hrs, 3))]
-
-        work_day = _get_workday(clndr, date_range[0])
-        return [(clean_date(date_range[0]), round(work_day.hours, 3))]
-
-    # cases were multiple valid workdays between start and end date
-    # initialize hours with start date
-    rem_hrs = [
-        (
-            clean_date(start_date),
-            round(
-                _calc_work_hours(
-                    clndr,
-                    date_to_calc=start_date,
-                    start_time=start_date.time(),
-                    end_time=_get_workday(clndr, start_date).finish,
-                ),
-                3,
-            ),
-        )
-    ]
-
-    # loop through 2nd to 2nd to last day in date range
-    # these would be a full workday
-    for dt in date_range[1 : len(date_range) - 1]:
-        if wd := _get_workday(clndr, dt):
-            rem_hrs.append((dt, round(wd.hours, 3)))
-
-    # calculate work hours for the last day
-    rem_hrs.append(
-        (
-            clean_date(end_date),
-            round(
-                _calc_work_hours(
-                    clndr,
-                    date_to_calc=end_date,
-                    start_time=_get_workday(clndr, end_date).start,
-                    end_time=end_date.time(),
-                ),
-                3,
-            ),
-        )
-    )
-
-    return rem_hrs

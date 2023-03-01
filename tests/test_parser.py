@@ -160,7 +160,7 @@ class TestParser(unittest.TestCase):
         """Tests creation of Xer objects"""
 
         print(
-            f"Running tests on {len(self.valid_data)} of {len(self.test_data)} .xer files."
+            f"Running xer parser tests on {len(self.valid_data)} of {len(self.test_data)} .xer files."
         )
 
         for file in tqdm(self.valid_data):
@@ -235,12 +235,11 @@ class TestParser(unittest.TestCase):
                     file[project.short_name]["original_duration"],
                     f"{project.short_name} Project Duration Percent",
                 )
+                planned_progress = project.planned_progress(
+                    project.data_date + relativedelta(days=PLANNED_DAYS)
+                )
                 self.assertEqual(
-                    process_planned_progress(
-                        project.planned_progress(
-                            project.data_date + relativedelta(days=PLANNED_DAYS)
-                        )
-                    ),
+                    process_planned_progress(planned_progress),
                     file[project.short_name]["planned_progress"],
                     f"{project.short_name} Project Planned Progress Counts",
                 )
@@ -315,6 +314,35 @@ class TestParser(unittest.TestCase):
                             "work_exception_count"
                         ],
                         f"{project.short_name} - Calendar {calendar.uid} exception count",
+                    )
+
+    def test_rem_hour_calc(self):
+        """Tests calculation of task rem work hours"""
+
+        print(
+            f"Running calc remaining hours tests on {len(self.valid_data)} of {len(self.test_data)} .xer files."
+        )
+
+        for file in tqdm(self.valid_data):
+            with open(file["file"], encoding=Xer.CODEC, errors="ignore") as f:
+                file_contents = f.read()
+
+            xer = Xer(file_contents)
+
+            for project in xer.projects.values():
+                for task in project.tasks:
+                    if task.status.is_completed or not task.restart_date:
+                        continue
+                    if task.type.is_milestone:
+                        continue
+                    if not task.calendar:
+                        continue
+
+                    rem_hours = task.rem_hours_per_day()
+                    self.assertEqual(
+                        round(sum(day for day in rem_hours.values()), 2),
+                        round(task.remain_drtn_hr_cnt, 2),
+                        f"{project.short_name} - {project.name}\n{task}\nCalendar{task.calendar}\nStart: {task.restart_date}\nFinish: {task.reend_date}\nRem Hours: {task.remain_drtn_hr_cnt}\n{rem_hours}",
                     )
 
 

@@ -46,6 +46,11 @@ class Xer:
         self.activity_code_types: dict[str, ACTVTYPE] = self._get_attr("ACTVTYPE")
         self.activity_code_values = self._get_activity_code_values()
         self.calendars: dict[str, CALENDAR] = self._get_attr("CALENDAR")
+
+        for cal in self.calendars.values():
+            if cal.base_clndr_id:
+                cal.base_calendar = self.calendars.get(cal.base_clndr_id)
+
         self.financial_periods: dict[str, FINDATES] = self._get_attr("FINDATES")
         self.notebook_topics: dict[str, MEMOTYPE] = self._get_attr("MEMOTYPE")
         self.project_code_types: dict[str, PCATTYPE] = self._get_attr("PCATTYPE")
