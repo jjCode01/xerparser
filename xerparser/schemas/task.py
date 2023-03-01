@@ -242,7 +242,7 @@ class TASK:
         """
         # This is usefull when the remaining duration is unlinked from the
         # original duration in the project settings
-        # In these cases, the remaining duration can be different to the
+        # In these cases, the remaining duration can be different from the
         # original duration in tasks that have not started.
 
         if self.status.is_not_started:
@@ -323,11 +323,8 @@ class TASK:
         Will only return valid workdays in a list of tuples containing the date and workhour values.
         This is usefull for calculating projections like cash flow.
 
-        Raises:
-            ValueError: datetime objects are not passed in as arguments
-
         Returns:
-            list[tuple[datetime, float]]: date and workhour pairs
+            dict[datetime, float]: date and workhour pairs
         """
         if self.status.is_completed or not self.restart_date or not self.calendar:
             return {}
