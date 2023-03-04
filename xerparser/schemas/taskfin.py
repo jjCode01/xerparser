@@ -28,3 +28,12 @@ class TASKFIN:
 
     def __hash__(self) -> int:
         return hash(self.period)
+
+    @property
+    def actual_total_cost(self) -> float:
+        return (
+            self.act_equip_cost
+            + self.act_expense_cost
+            + self.act_mat_cost
+            + self.act_work_cost
+        )
