@@ -1,4 +1,4 @@
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 from xerparser.src.parser import xer_to_dict
 from xerparser.src.xer import Xer

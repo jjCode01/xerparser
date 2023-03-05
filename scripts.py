@@ -10,10 +10,12 @@ def test():
 
 
 def parse_test():
-    """
-    Run xer parser unittests. Equivalent to:
-    `poetry run python -u -m unittest discover`
-    """
     subprocess.run(
         ["python", "-m", "unittest", "tests.test_parser.TestParser.test_create_xer"]
+    )
+
+
+def rem_hours_per_day_test():
+    subprocess.run(
+        ["python", "-m", "unittest", "tests.test_parser.TestParser.test_rem_hour_calc"]
     )

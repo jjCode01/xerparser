@@ -1,6 +1,19 @@
 
 # Changelog - xerparser 
 
+## 0.8.2 - 2023-03-05
+
+### Added
+
+* Added `actual_total_cost` property to `TASKFIN` class
+* Added `late_start` property to `PROJECT` class
+
+### Changes
+
+* `TASK` method `rem_hours_per_day` can now accept a `late` flag (bool) to calculate late dates rather than early dates.
+
+---
+
 ## 0.8.1 - 2023-02-28
 
 ### General Notes

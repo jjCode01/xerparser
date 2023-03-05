@@ -121,6 +121,14 @@ class PROJECT:
         return min((task.start for task in self.tasks))
 
     @cached_property
+    def late_start(self) -> datetime:
+        if not self.tasks:
+            return self.plan_start_date
+        return min(
+            (task.late_start_date for task in self.tasks if task.late_start_date)
+        )
+
+    @cached_property
     @rounded()
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""

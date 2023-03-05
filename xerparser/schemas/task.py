@@ -317,7 +317,7 @@ class TASK:
             return 0
         return int(self.remain_drtn_hr_cnt / 8)
 
-    def rem_hours_per_day(self) -> dict[datetime, float]:
+    def rem_hours_per_day(self, late=False) -> dict[datetime, float]:
         """
         Calculate the remaining workhours per day for a task.
         Will only return valid workdays in a list of tuples containing the date and workhour values.
@@ -326,11 +326,21 @@ class TASK:
         Returns:
             dict[datetime, float]: date and workhour pairs
         """
+        if self.remain_drtn_hr_cnt == 0:
+            return {}
+
         if self.status.is_completed or not self.restart_date or not self.calendar:
             return {}
 
-        start_date = self.restart_date
-        end_date = self.finish
+        if late and (not self.rem_late_end_date or not self.rem_late_start_date):
+            return {}
+
+        if late and self.rem_late_end_date and self.rem_late_start_date:
+            start_date = self.rem_late_start_date
+            end_date = self.rem_late_end_date
+        else:
+            start_date = self.restart_date
+            end_date = self.finish
 
         # edge case that start and end dates are equal
         if start_date.date() == end_date.date():
