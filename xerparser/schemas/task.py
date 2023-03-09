@@ -208,17 +208,17 @@ class TASK:
     @property
     @rounded()
     def actual_cost(self) -> float:
-        return sum((res.act_total_cost for res in self.resources.values()))
+        return sum(res.act_total_cost for res in self.resources.values())
 
     @property
     @rounded()
     def at_completion_cost(self) -> float:
-        return sum((res.at_completion_cost for res in self.resources.values()))
+        return sum(res.at_completion_cost for res in self.resources.values())
 
     @property
     @rounded()
     def budgeted_cost(self) -> float:
-        return sum((res.target_cost for res in self.resources.values()))
+        return sum(res.target_cost for res in self.resources.values())
 
     @property
     def constraints(self) -> dict:
@@ -309,7 +309,7 @@ class TASK:
     @property
     @rounded()
     def remaining_cost(self) -> float:
-        return sum((res.remain_cost for res in self.resources.values()))
+        return sum(res.remain_cost for res in self.resources.values())
 
     @property
     def remaining_duration(self) -> int:
@@ -418,7 +418,7 @@ class TASK:
     @property
     @rounded()
     def this_period_cost(self) -> float:
-        return sum((res.act_this_per_cost for res in self.resources.values()))
+        return sum(res.act_this_per_cost for res in self.resources.values())
 
     @property
     def total_float(self) -> int | None:

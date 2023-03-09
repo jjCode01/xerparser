@@ -121,14 +121,6 @@ class PROJECT:
         return min((task.start for task in self.tasks))
 
     @cached_property
-    def late_start(self) -> datetime:
-        if not self.tasks:
-            return self.plan_start_date
-        return min(
-            (task.late_start_date for task in self.tasks if task.late_start_date)
-        )
-
-    @cached_property
     @rounded()
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
@@ -159,6 +151,15 @@ class PROJECT:
             key=lambda t: t[0].finish,
         )
 
+    @cached_property
+    def late_start(self) -> datetime:
+        """Earliest task late start date"""
+        if not self.tasks:
+            return self.plan_start_date
+        return min(
+            (task.late_start_date for task in self.tasks if task.late_start_date)
+        )
+
     @property
     def original_duration(self) -> int:
         "Project overall duration in calendar days from actual start date to finish date"
@@ -186,8 +187,8 @@ class PROJECT:
         if not self.tasks:
             return 0.0
 
-        orig_dur_sum = sum((task.original_duration for task in self.tasks))
-        rem_dur_sum = sum((task.remaining_duration for task in self.tasks))
+        orig_dur_sum = sum(task.original_duration for task in self.tasks)
+        rem_dur_sum = sum(task.remaining_duration for task in self.tasks)
         task_dur_percent = 1 - rem_dur_sum / orig_dur_sum if orig_dur_sum else 0.0
 
         status_cnt = Counter([t.status for t in self.tasks])
