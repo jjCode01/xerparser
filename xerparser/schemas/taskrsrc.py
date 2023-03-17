@@ -11,7 +11,6 @@ from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
     date_format,
     datetime_or_none,
-    rsrc_or_none,
     str_or_none,
 )
 
@@ -19,7 +18,7 @@ from xerparser.src.validators import (
 class TASKRSRC:
     """A class to represent a resource assigned to an activity."""
 
-    def __init__(self, account: ACCOUNT | None, resource: RSRC | None, **data) -> None:
+    def __init__(self, account: ACCOUNT | None, resource: RSRC, **data) -> None:
         self.uid: str = data["taskrsrc_id"]
         self.task_id: str = data["task_id"]
         self.proj_id: str = data["proj_id"]
@@ -54,7 +53,7 @@ class TASKRSRC:
         self.act_this_per_qty: float = float(data["act_this_per_qty"])
         self.rsrc_type: str = data["rsrc_type"]
         self.account: ACCOUNT | None = account_or_none(account)
-        self.resource: RSRC | None = rsrc_or_none(resource)
+        self.resource: RSRC = resource
         self.periods: list[TRSRCFIN] = []
 
     def __eq__(self, __o: "TASKRSRC") -> bool:

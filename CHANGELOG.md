@@ -1,5 +1,23 @@
 
 # Changelog - xerparser 
+## 0.9.0 - 2023-03-17
+
+### General Notes
+
+Remove `error` attribute from `xer` class. If the errors are encoutered during initialization of an `xer` object, then a `CorruptXerFile` Exception is raised.
+
+### Added
+
+* `find_xer_errors` function. Error checking for the file is now its own function that that can find errors in an xer file and povide the results in a list.
+* Error checking now looks for invalid `rsrc_id` assigned to a `TASKRSRC` object.
+
+### Removed
+
+The option for None type on the following items was originally done to avoid Exceptions being thrown if the file is corrupted. This created additional code to handle situations when the attributes equal None.
+* Removed option for `calendar` attribute of the `TASK` class to be type `None`; All `TASK` objects must have a `calendar` or the `CorruptXerFile` Exception is raised. 
+* Removed option for the `resource` attribute of the `TASKRSRC` class to be type `None`; all `TASKRSRC` objects must have a `resource` or the `CorruptXerFile` Exception is raised.
+
+---
 
 ## 0.8.2 - 2023-03-05
 

@@ -4,7 +4,7 @@
 from itertools import groupby
 from typing import Any
 
-from xerparser.src.errors import find_xer_errors
+from xerparser.src.errors import CorruptXerFile, find_xer_errors
 from xerparser.src.parser import xer_to_dict
 
 from xerparser.schemas import TABLE_UID_MAP
@@ -40,8 +40,9 @@ class Xer:
 
     def __init__(self, xer_file_contents: str) -> None:
         self.data = xer_to_dict(xer_file_contents)
+        if find_xer_errors(self.data):
+            raise CorruptXerFile
         self.export_info = ERMHDR(*self.data["ERMHDR"])
-        self.errors = find_xer_errors(self.data)
         self.accounts: dict[str, ACCOUNT] = self._get_accounts()
         self.activity_code_types: dict[str, ACTVTYPE] = self._get_attr("ACTVTYPE")
         self.activity_code_values = self._get_activity_code_values()
@@ -206,7 +207,7 @@ class Xer:
         task.memos.append(TASKMEMO(topic=topic, **kwargs))
 
     def _set_task(self, **kwargs) -> TASK:
-        calendar = self.calendars.get(kwargs["clndr_id"])
+        calendar = self.calendars[kwargs["clndr_id"]]
         wbs = self.wbs_nodes[kwargs["wbs_id"]]
         wbs.assignments += 1
         task = TASK(calendar=calendar, wbs=wbs, **kwargs)
@@ -223,7 +224,12 @@ class Xer:
         return task_pred
 
     def _set_taskrsrc(self, **kwargs) -> None:
-        rsrc = self.resources.get(kwargs["rsrc_id"])
+        # try:
+        rsrc = self.resources[kwargs["rsrc_id"]]
+        # except KeyError:
+        #     print(self.projects[kwargs["proj_id"]])
+        #     print(f"Contains RSRC table = {not self.data.get('RSRC')}")
+        #     raise CorruptXerFile
         account = self.accounts.get(kwargs["acct_id"])
         task = self.tasks[kwargs["task_id"]]
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)

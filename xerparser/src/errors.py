@@ -1,3 +1,5 @@
+from xerparser.src.parser import xer_to_dict
+
 REQUIRED_TABLES = {"CALENDAR", "PROJECT", "PROJWBS", "TASK", "TASKPRED"}
 
 REQUIRED_TABLE_PAIRS = {
@@ -13,6 +15,10 @@ REQUIRED_TABLE_PAIRS = {
 }
 
 
+class CorruptXerFile(Exception):
+    pass
+
+
 def find_xer_errors(tables: dict) -> list[str]:
     """
     Find issues with the xer file, including
@@ -21,6 +27,8 @@ def find_xer_errors(tables: dict) -> list[str]:
     """
     # This list of required tables may be subjective
     # TODO: Add ability to pass in your own list of required tables.
+
+    # tables: dict = xer_to_dict(xer_contents)
 
     errors = []
 
@@ -51,5 +59,17 @@ def find_xer_errors(tables: dict) -> list[str]:
         errors.append(
             f"XER is Missing {invalid_cal_count} Calendars Assigned to {len(tasks_with_invalid_calendar)} Tasks"
         )
-
+    rsrc_ids = [r["rsrc_id"] for r in tables.get("RSRC", [])]
+    task_rsrc_with_invalid_rsrc = [
+        res
+        for res in tables.get("TASKRSRC", [])
+        if not res["rsrc_id"] in rsrc_ids and res["proj_id"] in export_projects
+    ]
+    if task_rsrc_with_invalid_rsrc:
+        invalid_rsrc_count = len(
+            set([r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc])
+        )
+        errors.append(
+            f"XER is Missing {invalid_rsrc_count} Resources Assigned to {len(task_rsrc_with_invalid_rsrc)} Task Resources."
+        )
     return errors

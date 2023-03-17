@@ -50,7 +50,6 @@ The tables stored in the .xer file are accessable as either Global, Project spec
 
   ```python
   xer.export_info           # export data
-  xer.errors                # list of potential errors in export process
   xer.activity_code_types   # dict of ACTVTYPE objects
   xer.activity_code_values  # dict of ACTVCODE objects
   xer.calendars             # dict of all CALENDAR objects
@@ -108,7 +107,20 @@ resource.user_defined_fields  # dict of `UDFTYPE`: `UDF Value` pairs
 
 ## Error Checking
 
-Sometimes the xer file is corrupted during the export process. A list of potential errors is generated based on common issues encountered when analyzing .xer files:  
+Sometimes the xer file is corrupted during the export process. If this is the case, a `CorruptXerFile` Exception will be raised during initialization.  
+The `find_xer_errors` function can be used to get a list of the potential errors.
+
+```python
+from xerparser import Xer, xer_to_dict, find_xer_errors
+
+file = r"/path/to/file.xer"
+with open(file, encoding=Xer.CODEC, errors="ignore") as f:
+    file_contents = f.read()
+
+file_errors = find_xer_errors(xer_to_dict(file_contents))
+```
+
+### Errors
 
 - Minimum required tables - an error is recorded if one of the following tables is missing:
   - CALENDAR
@@ -130,4 +142,5 @@ Sometimes the xer file is corrupted during the export process. A list of potenti
   | PROJPCAT | PCATVAL | *Project Code Data* |
   | UDFVALUE | UDFTYPE | *User Defined Field Data* |
 
-- Non-existent calendars assigned to activities.
+- Non-existent calendars assigned to tasks.
+- Non-existent resources assigned to task resources.

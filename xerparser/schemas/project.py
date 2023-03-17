@@ -71,7 +71,7 @@ class PROJECT:
         self,
         sched_options: SCHEDOPTIONS,
         default_calendar: CALENDAR | None = None,
-        **data
+        **data,
     ) -> None:
 
         self.options: SCHEDOPTIONS = sched_options
@@ -106,6 +106,19 @@ class PROJECT:
         self.relationships: list[TASKPRED] = []
         self.wbs_nodes: list[PROJWBS] = []
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
+
+    def __str__(self) -> str:
+        return f"{self.short_name} - {self.name}"
+
+    def __getitem__(self, obj: Any):
+        if isinstance(obj, TASK):
+            return self.tasks_by_code.get(obj.task_code)
+
+        if isinstance(obj, TASKPRED):
+            return self.relationships_by_hash.get(hash(obj))
+
+        if isinstance(obj, PROJWBS):
+            return self.wbs_by_path.get(obj.full_code)
 
     @cached_property
     @rounded()

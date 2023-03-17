@@ -32,13 +32,5 @@ def int_or_none(value: str) -> int | None:
     return int(value)
 
 
-def rsrc_or_none(value: RSRC | None) -> RSRC | None:
-    if value is None:
-        return None
-    if not isinstance(value, RSRC):
-        raise ValueError(f"ValueError: expected <class RSRC>; got {type(value)}")
-    return value
-
-
 def str_or_none(value: str) -> str | None:
     return (value, None)[value == ""]

@@ -12,6 +12,7 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import tests.config as config
+from xerparser.src.errors import CorruptXerFile
 from xerparser.src.xer import CALENDAR, PROJECT, Xer
 
 DATE_FORMAT = "%Y-%m-%d %M:%S"  # format datetime objects to strings
@@ -19,11 +20,15 @@ PLANNED_DAYS = 14  # planned days ahead of data date for planned_progress testin
 MAX_TEST_FILES = 250  # maximum number of files to test
 
 
-def process_xer(file: Path):
+def process_xer(file: Path) -> dict | None:
     with open(file, encoding=Xer.CODEC, errors="ignore") as f:
         file_contents = f.read()
 
-    xer = Xer(file_contents)
+    try:
+        xer = Xer(file_contents)
+    except CorruptXerFile:
+        return
+
     xer_data = {
         project.short_name: process_project(project)
         for project in xer.projects.values()
@@ -33,7 +38,6 @@ def process_xer(file: Path):
         "file": str(file.absolute()),
         "version": xer.export_info.version,
         "export_date": xer.export_info.date.strftime(DATE_FORMAT),
-        "errors": xer.errors,
         "accounts": len(xer.accounts),
         "udf_types": [
             {"label": udf.label, "table": udf.table, "type": udf.type.value}
@@ -144,7 +148,7 @@ class TestParser(unittest.TestCase):
             self.test_data: dict = json.load(f)
 
         self.valid_data = [
-            data for data in self.test_data if Path.is_file(Path(data["file"]))
+            data for data in self.test_data if data and Path.is_file(Path(data["file"]))
         ]
 
         if not self.valid_data:
@@ -168,8 +172,6 @@ class TestParser(unittest.TestCase):
                 file_contents = f.read()
 
             xer = Xer(file_contents)
-
-            self.assertEqual(xer.errors, file["errors"])
 
             self.assertEqual(len(xer.accounts), file["accounts"])
 

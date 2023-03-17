@@ -95,7 +95,7 @@ class TASK:
         def is_task(self) -> bool:
             return self is self.TT_Task
 
-    def __init__(self, calendar: CALENDAR | None, wbs: PROJWBS, **data) -> None:
+    def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data) -> None:
 
         self.uid: str = data["task_id"]
 
@@ -169,12 +169,9 @@ class TASK:
         self.target_equip_qty: float = float(data["target_equip_qty"])
         self.act_equip_qty: float = float(data["act_equip_qty"])
 
-        # calendar is optional None type for occurances when the
-        # xer file is corrupted and task clndr_id references a
-        # non-existent calendar.
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
-        self.calendar: CALENDAR | None = calendar
+        self.calendar: CALENDAR = calendar
         self.wbs: PROJWBS = self._valid_projwbs(wbs)
         self.memos: list[TASKMEMO] = []
         self.resources: dict[str, TASKRSRC] = {}
@@ -329,7 +326,7 @@ class TASK:
         if self.remain_drtn_hr_cnt == 0:
             return {}
 
-        if self.status.is_completed or not self.restart_date or not self.calendar:
+        if self.status.is_completed or not self.restart_date:
             return {}
 
         if late_dates and (not self.rem_late_end_date or not self.rem_late_start_date):
