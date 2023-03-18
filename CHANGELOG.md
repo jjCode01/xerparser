@@ -1,5 +1,20 @@
 
 # Changelog - xerparser 
+
+## 0.9.1 - 2023-03-18
+
+Updated `CorruptXerFile` Exception to receive the list of errors and print them out when the exception is raised. The errors can now be accessed from the Exception when using `try` `except`.
+
+```python
+try:
+    xer = Xer(file_contents)
+except CorruptXerFile as e:
+    for error in e.errors:
+        print(error)
+```
+
+---
+
 ## 0.9.0 - 2023-03-17
 
 ### General Notes

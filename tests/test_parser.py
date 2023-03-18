@@ -26,8 +26,8 @@ def process_xer(file: Path) -> dict | None:
 
     try:
         xer = Xer(file_contents)
-    except CorruptXerFile:
-        return
+    except CorruptXerFile as e:
+        return {"file": str(file.absolute()), "errors": e.errors}
 
     xer_data = {
         project.short_name: process_project(project)
@@ -171,152 +171,157 @@ class TestParser(unittest.TestCase):
             with open(file["file"], encoding=Xer.CODEC, errors="ignore") as f:
                 file_contents = f.read()
 
-            xer = Xer(file_contents)
+            try:
+                xer = Xer(file_contents)
+            except CorruptXerFile as e:
+                self.assertEqual(e.errors, file["errors"])
+            else:
+                self.assertEqual(len(xer.accounts), file["accounts"])
 
-            self.assertEqual(len(xer.accounts), file["accounts"])
+                self.assertEqual(
+                    [
+                        {"label": udf.label, "table": udf.table, "type": udf.type.value}
+                        for udf in xer.udf_types.values()
+                    ],
+                    file["udf_types"],
+                )
 
-            self.assertEqual(
-                [
-                    {"label": udf.label, "table": udf.table, "type": udf.type.value}
-                    for udf in xer.udf_types.values()
-                ],
-                file["udf_types"],
-            )
-
-            for project in xer.projects.values():
-                self.assertEqual(
-                    project.name,
-                    file[project.short_name]["name"],
-                    f"{project.short_name} Name",
-                )
-                self.assertEqual(
-                    project.budgeted_cost,
-                    file[project.short_name]["budget_cost"],
-                    f"{project.short_name} Budgeted Cost",
-                )
-                self.assertEqual(
-                    project.actual_cost,
-                    file[project.short_name]["actual_cost"],
-                    f"{project.short_name} Actual Cost",
-                )
-                self.assertEqual(
-                    project.this_period_cost,
-                    file[project.short_name]["this_period_cost"],
-                    f"{project.short_name} This Period Cost",
-                )
-                self.assertEqual(
-                    project.remaining_cost,
-                    file[project.short_name]["remaining_cost"],
-                    f"{project.short_name} Remaining Cost",
-                )
-                self.assertEqual(
-                    [code.name for code in project.activity_codes],
-                    file[project.short_name]["activity_codes"],
-                    f"{project.short_name} Activity Codes",
-                )
-                self.assertEqual(
-                    {
-                        code.name: val.code
-                        for code, val in project.project_codes.items()
-                    },
-                    file[project.short_name]["project_codes"],
-                    f"{project.short_name} Project Codes",
-                )
-                self.assertEqual(
-                    project.actual_start.strftime(DATE_FORMAT),
-                    file[project.short_name]["actual_start_date"],
-                    f"{project.short_name} Project Acutal Start",
-                )
-                self.assertEqual(
-                    project.duration_percent,
-                    file[project.short_name]["duration_percent"],
-                    f"{project.short_name} Project Duration Percent",
-                )
-                self.assertEqual(
-                    project.original_duration,
-                    file[project.short_name]["original_duration"],
-                    f"{project.short_name} Project Duration Percent",
-                )
-                planned_progress = project.planned_progress(
-                    project.data_date + relativedelta(days=PLANNED_DAYS)
-                )
-                self.assertEqual(
-                    process_planned_progress(planned_progress),
-                    file[project.short_name]["planned_progress"],
-                    f"{project.short_name} Project Planned Progress Counts",
-                )
-                self.assertEqual(
-                    project.remaining_duration,
-                    file[project.short_name]["remaining_duration"],
-                    f"{project.short_name} Project Remaining Duration",
-                )
-                self.assertEqual(
-                    project.task_percent,
-                    file[project.short_name]["task_percent"],
-                    f"{project.short_name} Project Task Percent Complete",
-                )
-                self.assertEqual(
-                    sum(len(task.memos) for task in project.tasks),
-                    file[project.short_name]["task_memo_count"],
-                    f"{project.short_name} Project Task Memo Count",
-                )
-                self.assertEqual(
-                    sum(len(task.periods) for task in project.tasks),
-                    file[project.short_name]["task_period_count"],
-                    f"{project.short_name} Project Task Period Count",
-                )
-                self.assertEqual(
-                    sum(len(task.resources) for task in project.tasks),
-                    file[project.short_name]["task_resource_count"],
-                    f"{project.short_name} Project Task Resource Count",
-                )
-                self.assertEqual(
-                    sum(len(task.activity_codes) for task in project.tasks),
-                    file[project.short_name]["task_activity_code_count"],
-                    f"{project.short_name} Project Task Activity Code Count",
-                )
-                self.assertEqual(
-                    sum(len(task.user_defined_fields) for task in project.tasks),
-                    file[project.short_name]["task_udf_count"],
-                    f"{project.short_name} Project Task UDF Count",
-                )
-                self.assertEqual(
-                    sum(len(task.predecessors) for task in project.tasks),
-                    file[project.short_name]["relationship_count"],
-                    f"{project.short_name} Project Task Predecessor Count",
-                )
-                self.assertEqual(
-                    sum(len(task.successors) for task in project.tasks),
-                    file[project.short_name]["relationship_count"],
-                    f"{project.short_name} Project Task Successor Count",
-                )
-                for calendar in project.calendars:
+                for project in xer.projects.values():
                     self.assertEqual(
-                        [day for day, work in calendar.work_week.items() if work],
-                        file[project.short_name]["calendars"][calendar.uid]["workdays"],
-                        f"{project.short_name} - Calendar {calendar.uid} work week",
+                        project.name,
+                        file[project.short_name]["name"],
+                        f"{project.short_name} Name",
                     )
                     self.assertEqual(
-                        sum((day.hours for day in calendar.work_week.values())),
-                        file[project.short_name]["calendars"][calendar.uid][
-                            "workweek_hours"
-                        ],
-                        f"{project.short_name} - Calendar {calendar.uid} work week hoursr",
+                        project.budgeted_cost,
+                        file[project.short_name]["budget_cost"],
+                        f"{project.short_name} Budgeted Cost",
                     )
                     self.assertEqual(
-                        len(calendar.holidays),
-                        file[project.short_name]["calendars"][calendar.uid][
-                            "holiday_count"
-                        ],
-                        f"{project.short_name} - Calendar {calendar.uid} holiday count",
+                        project.actual_cost,
+                        file[project.short_name]["actual_cost"],
+                        f"{project.short_name} Actual Cost",
                     )
                     self.assertEqual(
-                        len(calendar.work_exceptions),
-                        file[project.short_name]["calendars"][calendar.uid][
-                            "work_exception_count"
-                        ],
-                        f"{project.short_name} - Calendar {calendar.uid} exception count",
+                        project.this_period_cost,
+                        file[project.short_name]["this_period_cost"],
+                        f"{project.short_name} This Period Cost",
                     )
+                    self.assertEqual(
+                        project.remaining_cost,
+                        file[project.short_name]["remaining_cost"],
+                        f"{project.short_name} Remaining Cost",
+                    )
+                    self.assertEqual(
+                        [code.name for code in project.activity_codes],
+                        file[project.short_name]["activity_codes"],
+                        f"{project.short_name} Activity Codes",
+                    )
+                    self.assertEqual(
+                        {
+                            code.name: val.code
+                            for code, val in project.project_codes.items()
+                        },
+                        file[project.short_name]["project_codes"],
+                        f"{project.short_name} Project Codes",
+                    )
+                    self.assertEqual(
+                        project.actual_start.strftime(DATE_FORMAT),
+                        file[project.short_name]["actual_start_date"],
+                        f"{project.short_name} Project Acutal Start",
+                    )
+                    self.assertEqual(
+                        project.duration_percent,
+                        file[project.short_name]["duration_percent"],
+                        f"{project.short_name} Project Duration Percent",
+                    )
+                    self.assertEqual(
+                        project.original_duration,
+                        file[project.short_name]["original_duration"],
+                        f"{project.short_name} Project Duration Percent",
+                    )
+                    planned_progress = project.planned_progress(
+                        project.data_date + relativedelta(days=PLANNED_DAYS)
+                    )
+                    self.assertEqual(
+                        process_planned_progress(planned_progress),
+                        file[project.short_name]["planned_progress"],
+                        f"{project.short_name} Project Planned Progress Counts",
+                    )
+                    self.assertEqual(
+                        project.remaining_duration,
+                        file[project.short_name]["remaining_duration"],
+                        f"{project.short_name} Project Remaining Duration",
+                    )
+                    self.assertEqual(
+                        project.task_percent,
+                        file[project.short_name]["task_percent"],
+                        f"{project.short_name} Project Task Percent Complete",
+                    )
+                    self.assertEqual(
+                        sum(len(task.memos) for task in project.tasks),
+                        file[project.short_name]["task_memo_count"],
+                        f"{project.short_name} Project Task Memo Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.periods) for task in project.tasks),
+                        file[project.short_name]["task_period_count"],
+                        f"{project.short_name} Project Task Period Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.resources) for task in project.tasks),
+                        file[project.short_name]["task_resource_count"],
+                        f"{project.short_name} Project Task Resource Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.activity_codes) for task in project.tasks),
+                        file[project.short_name]["task_activity_code_count"],
+                        f"{project.short_name} Project Task Activity Code Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.user_defined_fields) for task in project.tasks),
+                        file[project.short_name]["task_udf_count"],
+                        f"{project.short_name} Project Task UDF Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.predecessors) for task in project.tasks),
+                        file[project.short_name]["relationship_count"],
+                        f"{project.short_name} Project Task Predecessor Count",
+                    )
+                    self.assertEqual(
+                        sum(len(task.successors) for task in project.tasks),
+                        file[project.short_name]["relationship_count"],
+                        f"{project.short_name} Project Task Successor Count",
+                    )
+                    for calendar in project.calendars:
+                        self.assertEqual(
+                            [day for day, work in calendar.work_week.items() if work],
+                            file[project.short_name]["calendars"][calendar.uid][
+                                "workdays"
+                            ],
+                            f"{project.short_name} - Calendar {calendar.uid} work week",
+                        )
+                        self.assertEqual(
+                            sum((day.hours for day in calendar.work_week.values())),
+                            file[project.short_name]["calendars"][calendar.uid][
+                                "workweek_hours"
+                            ],
+                            f"{project.short_name} - Calendar {calendar.uid} work week hoursr",
+                        )
+                        self.assertEqual(
+                            len(calendar.holidays),
+                            file[project.short_name]["calendars"][calendar.uid][
+                                "holiday_count"
+                            ],
+                            f"{project.short_name} - Calendar {calendar.uid} holiday count",
+                        )
+                        self.assertEqual(
+                            len(calendar.work_exceptions),
+                            file[project.short_name]["calendars"][calendar.uid][
+                                "work_exception_count"
+                            ],
+                            f"{project.short_name} - Calendar {calendar.uid} exception count",
+                        )
 
     def test_rem_hour_calc(self):
         """Tests calculation of task rem work hours"""
@@ -328,8 +333,10 @@ class TestParser(unittest.TestCase):
         for file in tqdm(self.valid_data):
             with open(file["file"], encoding=Xer.CODEC, errors="ignore") as f:
                 file_contents = f.read()
-
-            xer = Xer(file_contents)
+            try:
+                xer = Xer(file_contents)
+            except CorruptXerFile:
+                continue
 
             for project in xer.projects.values():
                 for task in project.tasks:

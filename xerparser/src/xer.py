@@ -40,8 +40,8 @@ class Xer:
 
     def __init__(self, xer_file_contents: str) -> None:
         self.data = xer_to_dict(xer_file_contents)
-        if find_xer_errors(self.data):
-            raise CorruptXerFile
+        if errors := find_xer_errors(self.data):
+            raise CorruptXerFile(errors)
         self.export_info = ERMHDR(*self.data["ERMHDR"])
         self.accounts: dict[str, ACCOUNT] = self._get_accounts()
         self.activity_code_types: dict[str, ACTVTYPE] = self._get_attr("ACTVTYPE")
@@ -224,12 +224,7 @@ class Xer:
         return task_pred
 
     def _set_taskrsrc(self, **kwargs) -> None:
-        # try:
         rsrc = self.resources[kwargs["rsrc_id"]]
-        # except KeyError:
-        #     print(self.projects[kwargs["proj_id"]])
-        #     print(f"Contains RSRC table = {not self.data.get('RSRC')}")
-        #     raise CorruptXerFile
         account = self.accounts.get(kwargs["acct_id"])
         task = self.tasks[kwargs["task_id"]]
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)

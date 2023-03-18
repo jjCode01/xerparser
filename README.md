@@ -107,8 +107,7 @@ resource.user_defined_fields  # dict of `UDFTYPE`: `UDF Value` pairs
 
 ## Error Checking
 
-Sometimes the xer file is corrupted during the export process. If this is the case, a `CorruptXerFile` Exception will be raised during initialization.  
-The `find_xer_errors` function can be used to get a list of the potential errors.
+Sometimes the xer file is corrupted during the export process. If this is the case, a `CorruptXerFile` Exception will be raised during initialization.  A list of the errors can be accessed from the `CorruptXerFile` Exception, or by using the `find_xer_errors` function.
 
 ```python
 from xerparser import Xer, xer_to_dict, find_xer_errors
@@ -116,8 +115,22 @@ from xerparser import Xer, xer_to_dict, find_xer_errors
 file = r"/path/to/file.xer"
 with open(file, encoding=Xer.CODEC, errors="ignore") as f:
     file_contents = f.read()
+```  
+### Option 1 - `errors` attribute of `CorruptXerFile` exception  (preferred)
+```python
+try:
+    xer = Xer(file_contents)
+except CorruptXerFile as e:
+    for error in e.errors:
+        print(error)
+```  
 
-file_errors = find_xer_errors(xer_to_dict(file_contents))
+### Option 2 - `find_xer_errors` function
+```python
+xer_data = xer_to_dict(file_contents)
+file_errors = find_xer_errors(xer_data)
+for error in file_errors:
+    print(error)
 ```
 
 ### Errors

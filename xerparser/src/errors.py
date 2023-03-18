@@ -1,22 +1,16 @@
 from xerparser.src.parser import xer_to_dict
 
-REQUIRED_TABLES = {"CALENDAR", "PROJECT", "PROJWBS", "TASK", "TASKPRED"}
-
-REQUIRED_TABLE_PAIRS = {
-    ("TASKFIN", "FINDATES"),
-    ("TRSRCFIN", "FINDATES"),
-    ("TASKRSRC", "RSRC"),
-    ("TASKMEMO", "MEMOTYPE"),
-    ("ACTVCODE", "ACTVTYPE"),
-    ("TASKACTV", "ACTVCODE"),
-    ("PCATVAL", "PCATTYPE"),
-    ("PROJPCAT", "PCATVAL"),
-    ("UDFVALUE", "UDFTYPE"),
-}
-
 
 class CorruptXerFile(Exception):
-    pass
+    """Raised when xer contains missing data."""
+
+    def __init__(self, errors: list[str], message="XER file is corrupt") -> None:
+        self.errors = errors
+        self.message = message
+
+    def __str__(self) -> str:
+        error_list = "\n".join(self.errors)
+        return f"{self.message}\n{error_list}"
 
 
 def find_xer_errors(tables: dict) -> list[str]:
@@ -27,6 +21,19 @@ def find_xer_errors(tables: dict) -> list[str]:
     """
     # This list of required tables may be subjective
     # TODO: Add ability to pass in your own list of required tables.
+
+    REQUIRED_TABLES = {"CALENDAR", "PROJECT", "PROJWBS", "TASK", "TASKPRED"}
+    REQUIRED_TABLE_PAIRS = {
+        ("TASKFIN", "FINDATES"),
+        ("TRSRCFIN", "FINDATES"),
+        ("TASKRSRC", "RSRC"),
+        ("TASKMEMO", "MEMOTYPE"),
+        ("ACTVCODE", "ACTVTYPE"),
+        ("TASKACTV", "ACTVCODE"),
+        ("PCATVAL", "PCATTYPE"),
+        ("PROJPCAT", "PCATVAL"),
+        ("UDFVALUE", "UDFTYPE"),
+    }
 
     # tables: dict = xer_to_dict(xer_contents)
 
