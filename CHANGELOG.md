@@ -1,6 +1,21 @@
 
 # Changelog - xerparser 
 
+## 0.9.2 - 2023-03-19
+
+### Added
+
+* Added function `file_reader` which accepts a .xer file and reads it to a string object.
+    * Accepts str or Path objects for files stored locally or on a server.
+    * Accepts BinaryIO files from requests, Flask, FastAPI, etc...
+* Added classmethods `reader` to the `Xer` class. A .xer file can be passed directly to this method, which will read and decode the file, and return a `Xer` object. Uses the `file_reader` function above.
+
+### Changed
+
+* Changed name of function `xer_to_dict` to `parser`.
+
+---
+
 ## 0.9.1 - 2023-03-18
 
 Updated `CorruptXerFile` Exception to receive the list of errors and print them out when the exception is raised. The errors can now be accessed from the Exception when using `try` `except`.

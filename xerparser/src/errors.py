@@ -1,4 +1,4 @@
-from xerparser.src.parser import xer_to_dict
+from xerparser.src.parser import parser
 
 
 class CorruptXerFile(Exception):

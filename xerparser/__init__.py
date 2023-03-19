@@ -1,7 +1,7 @@
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 from xerparser.src.errors import find_xer_errors, CorruptXerFile
-from xerparser.src.parser import xer_to_dict
+from xerparser.src.parser import parser, file_reader
 from xerparser.src.xer import Xer
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE

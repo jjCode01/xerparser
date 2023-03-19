@@ -1,11 +1,41 @@
 # xerparser
 # xer.py
 
+from pathlib import Path
+from typing import BinaryIO
 
-def xer_to_dict(xer_contents: str) -> dict[str, list]:
-    """Reads contents of a P6 .xer file and converts it into a Python dictionary object.
+CODEC = "cp1252"
+
+
+def file_reader(file: str | Path | BinaryIO) -> str:
+    """Reads a P6 .xer file and returns it's contents as a string.
+
+    Args:
+        file (str | Path | BinaryIO): .xer file
+
+    Returns:
+        str: Contents of .xer file
+    """
+    file_contents = ""
+
+    # Path directory to file
+    if isinstance(file, (str, Path)):
+        with open(file, encoding=CODEC, errors="ignore") as f:
+            file_contents = f.read()
+        return file_contents
+
+    # Binary file from requests, Flask, FastAPI, etc...
+    file_contents = file.read().decode(CODEC, errors="ignore")
+
+    return file_contents
+
+
+def parser(xer_contents: str) -> dict[str, list]:
+    """Parses the contents of a P6 .xer file and converts it into a Python dictionary object.
+
     Args:
         file (str): .xer file contents
+
     Returns:
         dict: Dictionary of the xer information and data tables
     """

@@ -1,3 +1,19 @@
+"""
+Unittests for xerparser.
+
+1. Setup the config.py file - follow instructions in config_template.py
+
+2. Run the tests before making any code changes.
+    - On the first run, you will be prompted to create a `xer_data.json` file - select y.
+    - This will run through each .xer file in the specified directory, create a Xer object, 
+    and outputs the values of various attributes, properties, and methods to a json file.
+
+3. The subsequent tests will run through each .xer file in the specified directory, create a Xer object, 
+and compare it's attribute/property/method return values against the values stored in the json file.
+    - The test will fail if any values differ between the Xer object and the json file.
+    - The test will also fail if any Exceptions (other than CorruptXerFile) are raised during initialzation of the Xer object.
+"""
+
 import json
 import os
 import sys
@@ -21,11 +37,8 @@ MAX_TEST_FILES = 250  # maximum number of files to test
 
 
 def process_xer(file: Path) -> dict | None:
-    with open(file, encoding=Xer.CODEC, errors="ignore") as f:
-        file_contents = f.read()
-
     try:
-        xer = Xer(file_contents)
+        xer = Xer.reader(file)
     except CorruptXerFile as e:
         return {"file": str(file.absolute()), "errors": e.errors}
 
@@ -168,11 +181,8 @@ class TestParser(unittest.TestCase):
         )
 
         for file in tqdm(self.valid_data):
-            with open(file["file"], encoding=Xer.CODEC, errors="ignore") as f:
-                file_contents = f.read()
-
             try:
-                xer = Xer(file_contents)
+                xer = Xer.reader(file["file"])
             except CorruptXerFile as e:
                 self.assertEqual(e.errors, file["errors"])
             else:

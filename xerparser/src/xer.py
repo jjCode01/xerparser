@@ -2,10 +2,11 @@
 # xer.py
 
 from itertools import groupby
-from typing import Any
+from pathlib import Path
+from typing import Any, BinaryIO
 
 from xerparser.src.errors import CorruptXerFile, find_xer_errors
-from xerparser.src.parser import xer_to_dict
+from xerparser.src.parser import file_reader, parser, CODEC
 
 from xerparser.schemas import TABLE_UID_MAP
 from xerparser.schemas.account import ACCOUNT
@@ -36,13 +37,13 @@ class Xer:
     """
 
     # class variables
-    CODEC = "cp1252"
+    CODEC = CODEC
 
     def __init__(self, xer_file_contents: str) -> None:
-        self.data = xer_to_dict(xer_file_contents)
-        if errors := find_xer_errors(self.data):
+        self.tables: dict[str, list] = parser(xer_file_contents)
+        if errors := find_xer_errors(self.tables):
             raise CorruptXerFile(errors)
-        self.export_info = ERMHDR(*self.data["ERMHDR"])
+        self.export_info = ERMHDR(*self.tables["ERMHDR"])
         self.accounts: dict[str, ACCOUNT] = self._get_accounts()
         self.activity_code_types: dict[str, ACTVTYPE] = self._get_attr("ACTVTYPE")
         self.activity_code_values = self._get_activity_code_values()
@@ -73,6 +74,19 @@ class Xer:
         self._set_financial_periods()
         self._set_udf_values()
 
+    @classmethod
+    def reader(cls, file: Path | str | BinaryIO) -> "Xer":
+        """
+        Create an Xer object directly from a .XER file.
+
+        Files can be passed as a:
+            * Path directory (str or pathlib.Path)
+            * Binary file (from requests, Flask, FastAPI, etc...)
+
+        """
+        file_contents = file_reader(file)
+        return cls(file_contents)
+
     def _get_accounts(self) -> dict[str, ACCOUNT]:
         accounts: dict[str, ACCOUNT] = self._get_attr("ACCOUNT")
         for account in accounts.values():
@@ -86,14 +100,14 @@ class Xer:
                 code_type=self.activity_code_types[code_val["actv_code_type_id"]],
                 **code_val,
             )
-            for code_val in self.data.get("ACTVCODE", [])
+            for code_val in self.tables.get("ACTVCODE", [])
         }
         for act_code in activity_code_values.values():
             act_code.parent = activity_code_values.get(act_code.parent_actv_code_id)
         return activity_code_values
 
     def _get_attr(self, table_name: str) -> dict:
-        if table := self.data.get(table_name):
+        if table := self.tables.get(table_name):
             row_id = TABLE_UID_MAP[table_name]
             return {row[row_id]: eval(table_name)(**row) for row in table}
         return {}
@@ -105,7 +119,7 @@ class Xer:
                 self.calendars.get(proj["clndr_id"]),
                 **proj,
             )
-            for proj in self.data.get("PROJECT", [])
+            for proj in self.tables.get("PROJECT", [])
             if proj["export_flag"] == "Y"
         }
         return projects
@@ -116,7 +130,7 @@ class Xer:
                 code_type=self.project_code_types[code_val["proj_catg_type_id"]],
                 **code_val,
             )
-            for code_val in self.data.get("PCATVAL", [])
+            for code_val in self.tables.get("PCATVAL", [])
         }
         for proj_code in project_code_values.values():
             proj_code.parent = project_code_values.get(proj_code.parent_proj_catg_id)
@@ -126,13 +140,13 @@ class Xer:
     def _get_relationships(self) -> dict[str, TASKPRED]:
         return {
             rel["task_pred_id"]: self._set_taskpred(**rel)
-            for rel in self.data.get("TASKPRED", [])
+            for rel in self.tables.get("TASKPRED", [])
         }
 
     def _get_tasks(self) -> dict[str, TASK]:
         return {
             task["task_id"]: self._set_task(**task)
-            for task in self.data.get("TASK", [])
+            for task in self.tables.get("TASK", [])
         }
 
     def _get_wbs_nodes(self) -> dict[str, PROJWBS]:
@@ -160,29 +174,29 @@ class Xer:
                 proj.calendars = list(clndrs)
 
     def _set_proj_codes(self) -> None:
-        for proj_code in self.data.get("PROJPCAT", []):
+        for proj_code in self.tables.get("PROJPCAT", []):
             proj = self.projects.get(proj_code["proj_id"])
             code = self.project_code_values.get(proj_code["proj_catg_id"])
             if proj and code:
                 proj.project_codes.update({code.code_type: code})
 
     def _set_task_actv_codes(self) -> None:
-        for act_code in self.data.get("TASKACTV", []):
+        for act_code in self.tables.get("TASKACTV", []):
             task = self.tasks.get(act_code["task_id"])
             code_value = self.activity_code_values.get(act_code["actv_code_id"])
             if task and code_value:
                 task.activity_codes.update({code_value.code_type: code_value})
 
     def _set_task_memos(self) -> None:
-        for memo in self.data.get("TASKMEMO", []):
+        for memo in self.tables.get("TASKMEMO", []):
             self._set_memo(**memo)
 
     def _set_task_resources(self) -> None:
-        for res in self.data.get("TASKRSRC", []):
+        for res in self.tables.get("TASKRSRC", []):
             self._set_taskrsrc(**res)
 
     def _set_udf_values(self) -> None:
-        for udf in self.data.get("UDFVALUE", []):
+        for udf in self.tables.get("UDFVALUE", []):
             udf_type = self.udf_types[udf["udf_type_id"]]
             udf_value = UDFTYPE.get_udf_value(udf_type, **udf)
             if udf_type.table == "TASK":
@@ -195,10 +209,10 @@ class Xer:
                 self.resources[udf["fk_id"]].user_defined_fields[udf_type] = udf_value
 
     def _set_financial_periods(self) -> None:
-        for task_fin in self.data.get("TASKFIN", []):
+        for task_fin in self.tables.get("TASKFIN", []):
             self._set_taskfin(**task_fin)
 
-        for rsrc_fin in self.data.get("TRSRCFIN", []):
+        for rsrc_fin in self.tables.get("TRSRCFIN", []):
             self._set_taskrsrc_fin(**rsrc_fin)
 
     def _set_memo(self, **kwargs) -> None:

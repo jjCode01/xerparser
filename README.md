@@ -38,7 +38,17 @@ with open(file, encoding=Xer.CODEC, errors="ignore") as f:
 xer = Xer(file_contents)
 ```
 
-*Note: do not pass the the .xer file directly as an argument. The file must be decoded and read into a string, which can then be passed as an argument.*  
+Do not pass the the .xer file directly as an argument to the `Xer` class. The file must be decoded and read into a string, which can then be passed as an argument. Or, pass the .xer file into the `Xer.reader` classmethod, which accepts:
+
+* str or pathlib.Path objects for files stored locally or on a server.
+* Binary files from requests, Flask, FastAPI, etc...
+
+```python
+from xerparser import Xer
+
+file = r"/path/to/file.xer"
+xer = Xer.reader(file)
+```
 
 <br/>
 
@@ -109,17 +119,13 @@ resource.user_defined_fields  # dict of `UDFTYPE`: `UDF Value` pairs
 
 Sometimes the xer file is corrupted during the export process. If this is the case, a `CorruptXerFile` Exception will be raised during initialization.  A list of the errors can be accessed from the `CorruptXerFile` Exception, or by using the `find_xer_errors` function.
 
-```python
-from xerparser import Xer, xer_to_dict, find_xer_errors
-
-file = r"/path/to/file.xer"
-with open(file, encoding=Xer.CODEC, errors="ignore") as f:
-    file_contents = f.read()
-```  
 ### Option 1 - `errors` attribute of `CorruptXerFile` exception  (preferred)
 ```python
+from xerparser import Xer
+
+file = r"/path/to/file.xer"
 try:
-    xer = Xer(file_contents)
+    xer = Xer.reader(file)
 except CorruptXerFile as e:
     for error in e.errors:
         print(error)
@@ -127,7 +133,10 @@ except CorruptXerFile as e:
 
 ### Option 2 - `find_xer_errors` function
 ```python
-xer_data = xer_to_dict(file_contents)
+from xerparser import parser, file_reader, find_xer_errors
+
+file = r"/path/to/file.xer"
+xer_data = parser(file_reader(file))
 file_errors = find_xer_errors(xer_data)
 for error in file_errors:
     print(error)
