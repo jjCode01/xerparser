@@ -1,5 +1,5 @@
 # xerparser
-# xer.py
+# parser.py
 
 from pathlib import Path
 from typing import BinaryIO
@@ -78,6 +78,7 @@ def _clean_row(row: str) -> list[str]:
 
 
 def _clean_value(val: str) -> str:
+    """Strips white space from a value"""
     if val == "":
         return ""
     return val.strip()

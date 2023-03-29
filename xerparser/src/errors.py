@@ -1,5 +1,5 @@
-from xerparser.src.parser import parser
-
+# xerparser
+# errors.py
 
 class CorruptXerFile(Exception):
     """Raised when xer contains missing data."""
@@ -35,8 +35,6 @@ def find_xer_errors(tables: dict) -> list[str]:
         ("UDFVALUE", "UDFTYPE"),
     }
 
-    # tables: dict = xer_to_dict(xer_contents)
-
     errors = []
 
     # Check for minimum tables required to be in the XER
@@ -50,10 +48,10 @@ def find_xer_errors(tables: dict) -> list[str]:
             errors.append(f"Missing Table {t2} Required for Table {t1}")
 
     # check for tasks assigned to an invalid calendar (not included in CALENDAR TABLE)
-    clndr_ids = [c["clndr_id"] for c in tables.get("CALENDAR", [])]
-    export_projects = [
+    clndr_ids = {c["clndr_id"] for c in tables.get("CALENDAR", [])}
+    export_projects = {
         p["proj_id"] for p in tables.get("PROJECT", []) if p["export_flag"] == "Y"
-    ]
+    }
     tasks_with_invalid_calendar = [
         task
         for task in tables.get("TASK", [])
@@ -61,12 +59,14 @@ def find_xer_errors(tables: dict) -> list[str]:
     ]
     if tasks_with_invalid_calendar:
         invalid_cal_count = len(
-            set([t["clndr_id"] for t in tasks_with_invalid_calendar])
+            {t["clndr_id"] for t in tasks_with_invalid_calendar}
         )
         errors.append(
             f"XER is Missing {invalid_cal_count} Calendars Assigned to {len(tasks_with_invalid_calendar)} Tasks"
         )
-    rsrc_ids = [r["rsrc_id"] for r in tables.get("RSRC", [])]
+
+    # check for missing resources (not included in RSRC TABLE)
+    rsrc_ids = {r["rsrc_id"] for r in tables.get("RSRC", [])}
     task_rsrc_with_invalid_rsrc = [
         res
         for res in tables.get("TASKRSRC", [])
@@ -74,7 +74,7 @@ def find_xer_errors(tables: dict) -> list[str]:
     ]
     if task_rsrc_with_invalid_rsrc:
         invalid_rsrc_count = len(
-            set([r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc])
+            {r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc}
         )
         errors.append(
             f"XER is Missing {invalid_rsrc_count} Resources Assigned to {len(task_rsrc_with_invalid_rsrc)} Task Resources."

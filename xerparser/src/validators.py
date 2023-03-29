@@ -3,7 +3,6 @@
 # Functions to validate data during object initialization
 
 from datetime import datetime
-from xerparser.schemas.rsrc import RSRC
 
 date_format = "%Y-%m-%d %H:%M"
 
