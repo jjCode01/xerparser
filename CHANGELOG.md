@@ -1,6 +1,14 @@
 
 # Changelog - xerparser 
 
+## 0.9.3 - 2023-04-08
+
+### General
+
+Some code cleanup and corrections to the python code in the README file.
+
+---
+
 ## 0.9.2 - 2023-03-19
 
 ### Added
