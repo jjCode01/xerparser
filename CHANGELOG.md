@@ -1,6 +1,14 @@
 
 # Changelog - xerparser 
 
+## 0.9.4
+
+### Added
+
+* Added `actual_duartion` property to `PROJECT` class.
+
+---
+
 ## 0.9.3 - 2023-04-08
 
 ### General

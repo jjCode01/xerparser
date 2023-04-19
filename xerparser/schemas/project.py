@@ -73,7 +73,6 @@ class PROJECT:
         default_calendar: CALENDAR | None = None,
         **data,
     ) -> None:
-
         self.options: SCHEDOPTIONS = sched_options
 
         # table fields from .xer file
@@ -125,6 +124,11 @@ class PROJECT:
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
         return sum(task.actual_cost for task in self.tasks)
+
+    @property
+    def actual_duration(self) -> int:
+        """Project actual duration in calendar days from start date to data date"""
+        return max((0, (self.data_date - self.actual_start).days))
 
     @cached_property
     def actual_start(self) -> datetime:

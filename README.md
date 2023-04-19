@@ -1,6 +1,6 @@
 # xerparser
 
-A simple Python package that reads the contents of a P6 .xer file and converts it into a Python object.  
+Read the contents of a P6 .xer file and convert it into a Python object.  
 
 *Disclaimers:  
 It's helpfull if you are already familiar with the mapping and schemas used by P6 during the export process.
@@ -121,7 +121,7 @@ Sometimes the xer file is corrupted during the export process. If this is the ca
 
 ### Option 1 - `errors` attribute of `CorruptXerFile` exception  (preferred)
 ```python
-from xerparser import Xer
+from xerparser import Xer, CorruptXerFile
 
 file = r"/path/to/file.xer"
 try:
