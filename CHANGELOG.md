@@ -1,7 +1,7 @@
 
 # Changelog - xerparser 
 
-## 0.9.4
+## 0.9.4 - 2023-04-19
 
 ### Added
 
