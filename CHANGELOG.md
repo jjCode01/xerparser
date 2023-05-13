@@ -1,6 +1,14 @@
 
 # Changelog - xerparser 
 
+## 0.9.5 - 2023-05-13
+
+### General
+
+Both project specific and global calendars are now included in the `PROJECT` `calendars` attribute. Covers cases where project tasks are assigned to a gobal calendar.
+
+---
+
 ## 0.9.4 - 2023-04-19
 
 ### Added
