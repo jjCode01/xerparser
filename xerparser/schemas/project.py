@@ -179,7 +179,10 @@ class PROJECT:
 
     @property
     def original_duration(self) -> int:
-        "Project overall duration in calendar days from actual start date to finish date"
+        """
+        Project overall duration in calendar days
+        from actual start date to finish date
+        """
         return (self.finish_date - self.actual_start).days
 
     @cached_property

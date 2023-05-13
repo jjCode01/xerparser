@@ -168,10 +168,18 @@ class Xer:
                 proj.activity_codes = list(codes)
 
     def _set_proj_calendars(self) -> None:
-        clndr_group = groupby(sorted(self.calendars.values(), key=proj_key), proj_key)
-        for proj_id, clndrs in clndr_group:
-            if proj := self.projects.get(proj_id):
-                proj.calendars = list(clndrs)
+        for project in self.projects.values():
+            cal_list = []
+            for cal in self.calendars.values():
+                if not cal.proj_id or cal.proj_id == project.uid:
+                    cal_list.append(cal)
+            project.calendars = cal_list
+        # clndr_group = groupby(sorted(self.calendars.values(), key=proj_key), proj_key)
+        # for proj_id, clndrs in clndr_group:
+        #     if proj := self.projects.get(proj_id):
+        #         proj.calendars = list(clndrs)
+        #     for proje in self.projects.values():
+        #         proje.calendars = list
 
     def _set_proj_codes(self) -> None:
         for proj_code in self.tables.get("PROJPCAT", []):
