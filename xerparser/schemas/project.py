@@ -15,6 +15,7 @@ from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
+from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import datetime_or_none, str_or_none, date_format
@@ -103,6 +104,7 @@ class PROJECT:
         self.project_codes: dict[PCATTYPE, PCATVAL] = {}
         self.tasks: list[TASK] = []
         self.relationships: list[TASKPRED] = []
+        self.resources: list[TASKRSRC] = []
         self.wbs_nodes: list[PROJWBS] = []
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
@@ -123,7 +125,8 @@ class PROJECT:
     @rounded()
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
-        return sum(task.actual_cost for task in self.tasks)
+        return sum(res.act_total_cost for res in self.resources)
+        # return sum(task.actual_cost for task in self.tasks)
 
     @property
     def actual_duration(self) -> int:
@@ -141,7 +144,8 @@ class PROJECT:
     @rounded()
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
-        return sum(task.budgeted_cost for task in self.tasks)
+        return sum(res.target_cost for res in self.resources)
+        # return sum(task.budgeted_cost for task in self.tasks)
 
     @property
     @rounded(ndigits=4)
@@ -193,7 +197,8 @@ class PROJECT:
     @rounded()
     def remaining_cost(self) -> float:
         """Sum of task resource remaining costs"""
-        return sum(task.remaining_cost for task in self.tasks)
+        return sum(res.remain_cost for res in self.resources)
+        # return sum(task.remaining_cost for task in self.tasks)
 
     @property
     def remaining_duration(self) -> int:
@@ -227,7 +232,8 @@ class PROJECT:
     @rounded()
     def this_period_cost(self) -> float:
         """Sum of task resource this period costs"""
-        return sum(task.this_period_cost for task in self.tasks)
+        return sum(res.act_this_per_cost for res in self.resources)
+        # return sum(task.this_period_cost for task in self.tasks)
 
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:

@@ -174,12 +174,6 @@ class Xer:
                 if not cal.proj_id or cal.proj_id == project.uid:
                     cal_list.append(cal)
             project.calendars = cal_list
-        # clndr_group = groupby(sorted(self.calendars.values(), key=proj_key), proj_key)
-        # for proj_id, clndrs in clndr_group:
-        #     if proj := self.projects.get(proj_id):
-        #         proj.calendars = list(clndrs)
-        #     for proje in self.projects.values():
-        #         proje.calendars = list
 
     def _set_proj_codes(self) -> None:
         for proj_code in self.tables.get("PROJPCAT", []):
@@ -249,8 +243,10 @@ class Xer:
         rsrc = self.resources[kwargs["rsrc_id"]]
         account = self.accounts.get(kwargs["acct_id"])
         task = self.tasks[kwargs["task_id"]]
+        proj = self.projects[kwargs["proj_id"]]
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)
         task.resources.update({taskrsrc.uid: taskrsrc})
+        proj.resources.append(taskrsrc)
 
     def _set_taskfin(self, **kwargs) -> None:
         period = self.financial_periods[kwargs["fin_dates_id"]]

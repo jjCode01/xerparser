@@ -1,6 +1,14 @@
 
 # Changelog - xerparser 
 
+## 0.9.6 - 2023-05-14
+
+### Added
+
+* Added `resources` attribute containing a list of `TASKRSRC` objects to the `PROJECT` class. Previously, `TASKRSRC` objects were only accessible through a `TASK` object. 
+
+---
+
 ## 0.9.5 - 2023-05-13
 
 ### General
