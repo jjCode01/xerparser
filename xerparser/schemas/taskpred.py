@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from xerparser.schemas.task import TASK
-from xerparser.src.validators import int_or_none, datetime_or_none
+from xerparser.src.validators import int_or_none, datetime_or_none, int_or_zero
 
 
 class TASKPRED:
@@ -13,14 +13,13 @@ class TASKPRED:
     """
 
     def __init__(self, predecessor: TASK, successor: TASK, **data) -> None:
-
         self.uid: str = data["task_pred_id"]
         self.task_id: str = data["task_id"]
         self.pred_task_id: str = data["pred_task_id"]
         self.proj_id: str = data["proj_id"]
         self.pred_proj_id: str = data["pred_proj_id"]
         self.pred_type: str = data["pred_type"]
-        self.lag_hr_cnt: int = int(data["lag_hr_cnt"])
+        self.lag_hr_cnt: int = int_or_zero(data["lag_hr_cnt"])
         self.float_path: int | None = int_or_none(data["float_path"])
         self.aref: datetime | None = datetime_or_none(data["aref"])
         self.arls: datetime | None = datetime_or_none(data["arls"])

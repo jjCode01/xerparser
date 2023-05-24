@@ -31,5 +31,11 @@ def int_or_none(value: str) -> int | None:
     return int(value)
 
 
+def int_or_zero(value: str) -> int:
+    if value == "" or value is None:
+        return 0
+    return int(value)
+
+
 def str_or_none(value: str) -> str | None:
     return (value, None)[value == ""]

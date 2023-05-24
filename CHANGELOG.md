@@ -1,9 +1,17 @@
 
 # Changelog - xerparser 
 
+## 0.9.8 - 2023-05-24
+
+* Bug fixes with validating data types for `TASKPRED` objects.
+
+---
+
 ## 0.9.7 - 2023-05-24
 
-* Bug fixes.
+* Bug fixes with validating data types for `TASK` objects.
+
+---
 
 ## 0.9.6 - 2023-05-14
 
