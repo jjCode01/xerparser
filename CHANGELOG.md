@@ -1,6 +1,10 @@
 
 # Changelog - xerparser 
 
+## 0.9.7 - 2023-05-24
+
+* Bug fixes.
+
 ## 0.9.6 - 2023-05-14
 
 ### Added

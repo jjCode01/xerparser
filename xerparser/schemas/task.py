@@ -19,6 +19,7 @@ from xerparser.src.validators import (
     datetime_or_none,
     date_format,
     float_or_none,
+    float_or_zero,
     int_or_none,
     str_or_none,
 )
@@ -96,7 +97,6 @@ class TASK:
             return self is self.TT_Task
 
     def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data) -> None:
-
         self.uid: str = data["task_id"]
 
         # Foreign keys
@@ -164,10 +164,11 @@ class TASK:
         self.cstr_type2: str | None = str_or_none(data["cstr_type2"])
 
         # Unit quantities
-        self.target_work_qty: float = float(data["target_work_qty"])
-        self.act_work_qty: float = float(data["act_work_qty"])
-        self.target_equip_qty: float = float(data["target_equip_qty"])
-        self.act_equip_qty: float = float(data["act_equip_qty"])
+        # Have encoutered XER files where these qty's are stored as empty strings.
+        self.target_work_qty: float = float_or_zero(data["target_work_qty"])
+        self.act_work_qty: float = float_or_zero(data["act_work_qty"])
+        self.target_equip_qty: float = float_or_zero(data["target_equip_qty"])
+        self.act_equip_qty: float = float_or_zero(data["act_equip_qty"])
 
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
