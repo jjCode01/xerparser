@@ -81,11 +81,11 @@ class PCATVAL:
         else:
             if not isinstance(value, PCATVAL):
                 raise ValueError(
-                    f"ValueError: expected <class PCATVAL> for parent, got {type(value)}."
+                    f"ValueError: expected <class PCATVAL> for parent, got {type(value)}."  # noqa: E501
                 )
             if value.uid != self.parent_proj_catg_id:
                 raise ValueError(
-                    f"ValueError: Parent ID {value.uid} does not match parent_actv_code_id {self.parent_proj_catg_id}"
+                    f"ValueError: Parent ID {value.uid} does not match parent_actv_code_id {self.parent_proj_catg_id}"  # noqa: E501
                 )
 
             self._parent = value
@@ -98,6 +98,6 @@ class PCATVAL:
             )
         if value.uid != self.proj_catg_type_id:
             raise ValueError(
-                f"ValueError: Unique ID {value.uid} does not match proj_catg_type_id {self.proj_catg_type_id}"
+                f"ValueError: Unique ID {value.uid} does not match proj_catg_type_id {self.proj_catg_type_id}"  # noqa: E501
             )
         return value

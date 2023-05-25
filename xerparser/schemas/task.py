@@ -236,7 +236,8 @@ class TASK:
     @property
     def duration(self) -> int:
         """
-        Returns remaining duration if task is not started; otherwise, returns original duration.
+        Returns remaining duration if task is not started;
+        otherwise, returns original duration.
         """
         # This is usefull when the remaining duration is unlinked from the
         # original duration in the project settings
@@ -318,8 +319,12 @@ class TASK:
     def rem_hours_per_day(self, late_dates=False) -> dict[datetime, float]:
         """
         Calculate the remaining workhours per day for a task.
-        Will only return valid workdays in a list of tuples containing the date and workhour values.
+        Will only return valid workdays in a list of tuples containing
+        the date and workhour values.
         This is usefull for calculating projections like cash flow.
+
+        P6 calculates remaining duration based on hours rather than days,
+        So the start and/or finish date for an activity may be a partial day.
 
         Returns:
             dict[datetime, float]: date and workhour pairs

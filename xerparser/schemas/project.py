@@ -126,7 +126,6 @@ class PROJECT:
     def actual_cost(self) -> float:
         """Sum of task resource actual costs"""
         return sum(res.act_total_cost for res in self.resources)
-        # return sum(task.actual_cost for task in self.tasks)
 
     @property
     def actual_duration(self) -> int:
@@ -145,7 +144,6 @@ class PROJECT:
     def budgeted_cost(self) -> float:
         """Sum of task resource budgeted costs"""
         return sum(res.target_cost for res in self.resources)
-        # return sum(task.budgeted_cost for task in self.tasks)
 
     @property
     @rounded(ndigits=4)
@@ -198,7 +196,6 @@ class PROJECT:
     def remaining_cost(self) -> float:
         """Sum of task resource remaining costs"""
         return sum(res.remain_cost for res in self.resources)
-        # return sum(task.remaining_cost for task in self.tasks)
 
     @property
     def remaining_duration(self) -> int:
@@ -233,7 +230,6 @@ class PROJECT:
     def this_period_cost(self) -> float:
         """Sum of task resource this period costs"""
         return sum(res.act_this_per_cost for res in self.resources)
-        # return sum(task.this_period_cost for task in self.tasks)
 
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:
