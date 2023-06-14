@@ -355,9 +355,9 @@ class TASK:
         # Get a list of all workdays between the start and end dates
         date_range = list(self.calendar.iter_workdays(start_date, end_date))
 
-        # edge cases that only 1 valid workday between start date and end date
-        # these may never actually occur since the dates are pulled directly from the schedule
-        # did not find any case where these occur in testing, but leaving it just in case
+        # edge cases that only 1 valid workday between start date and end date these
+        # may never actually occur since the dates are pulled directly from the schedule
+        # did not find any case where these occur in testing, but leaving anyway
         if len(date_range) == 1 and end_date.date() > start_date.date():
             if start_date.date() == date_range[0].date():
                 work_day = self.calendar._get_workday(start_date)

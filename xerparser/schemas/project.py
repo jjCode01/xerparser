@@ -209,8 +209,12 @@ class PROJECT:
         if not self.tasks:
             return 0.0
 
-        orig_dur_sum = sum(task.original_duration for task in self.tasks)
-        rem_dur_sum = sum(task.remaining_duration for task in self.tasks)
+        orig_dur_sum = sum(
+            task.original_duration for task in self.tasks if not task.type.is_loe
+        )
+        rem_dur_sum = sum(
+            task.remaining_duration for task in self.tasks if not task.type.is_loe
+        )
         task_dur_percent = 1 - rem_dur_sum / orig_dur_sum if orig_dur_sum else 0.0
 
         status_cnt = Counter([t.status for t in self.tasks])

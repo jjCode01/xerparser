@@ -1,6 +1,14 @@
 
 # Changelog - xerparser 
 
+## 0.9.9 - 2023-06-14
+
+### Changes
+
+* The `task_percent` property of the `PROJECT` class now ignores Level of Effort activities when calculating percent complete. There were edge cases where the LOE activity had a remaining duration much greater than its original duration, which significantly reduced the calculated percent complete.
+
+---
+
 ## 0.9.8 - 2023-05-24
 
 * Bug fixes with validating data types for `TASKPRED` objects.
