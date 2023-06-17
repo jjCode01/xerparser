@@ -153,10 +153,12 @@ class Xer:
         nodes: dict[str, PROJWBS] = self._get_attr("PROJWBS")
         for node in nodes.values():
             node.parent = nodes.get(node.parent_wbs_id)
+            if node.parent:
+                node.parent.addChild(node)
             if proj := self.projects.get(node.proj_id):
                 proj.wbs_nodes.append(node)
                 if node.is_proj_node:
-                    proj.name = node.name
+                    proj.wbs_root = node
         return nodes
 
     def _set_proj_activity_codes(self) -> None:

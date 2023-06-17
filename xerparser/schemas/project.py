@@ -100,12 +100,12 @@ class PROJECT:
         # manually set from other tables
         self.activity_codes: list[ACTVTYPE] = []
         self.calendars: list[CALENDAR] = []
-        self.name: str = ""
         self.project_codes: dict[PCATTYPE, PCATVAL] = {}
         self.tasks: list[TASK] = []
         self.relationships: list[TASKPRED] = []
         self.resources: list[TASKRSRC] = []
         self.wbs_nodes: list[PROJWBS] = []
+        self.wbs_root: PROJWBS | None = None
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     def __str__(self) -> str:
@@ -178,6 +178,12 @@ class PROJECT:
         return min(
             (task.late_start_date for task in self.tasks if task.late_start_date)
         )
+
+    @property
+    def name(self) -> str:
+        if not self.wbs_root:
+            return ""
+        return self.wbs_root.name
 
     @property
     def original_duration(self) -> int:

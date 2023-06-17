@@ -51,6 +51,7 @@ class PROJWBS:
 
         self.assignments: int = 0
         self._parent: Optional["PROJWBS"] = None
+        self._children: list["PROJWBS"] = []
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     def __eq__(self, __o: "PROJWBS") -> bool:
@@ -67,6 +68,23 @@ class PROJWBS:
 
     def __str__(self) -> str:
         return f"{self.full_code} - {self.name}"
+
+    @property
+    def children(self) -> list["PROJWBS"]:
+        return self._children
+
+    def addChild(self, node) -> None:
+        if not isinstance(node, PROJWBS):
+            raise ValueError(
+                f"ValueError: expected <class PROJWBS> for child, got {type(node)}."
+            )
+
+        if node.parent_wbs_id != self.uid:
+            raise ValueError(
+                f"ValueError: Parent Unique ID {node.parent_wbs_id} does not match {self.uid}"
+            )
+
+        self._children.append(node)
 
     @property
     def lineage(self) -> list["PROJWBS"]:
