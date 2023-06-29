@@ -6,6 +6,8 @@
 * Added `wbs_root` attribute to the `PROJECT` class. This is the root WBS node.
 * Added `children` attribute to the `PROJWBS` class. Along with the `wbs_root` above, this forms a Tree Data Structure.
 * Changed the `PROJECT` `name` from an attribute to a property. The project name is stored in the `wbs_root` added above.
+* Added `children` attribute to the `ACCOUNT` class.
+* Added `children` attribute to the `ACTVCODE` class.
 
 ## 0.9.9 - 2023-06-14
 

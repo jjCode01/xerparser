@@ -1,6 +1,7 @@
 # xerparser
 # errors.py
 
+
 class CorruptXerFile(Exception):
     """Raised when xer contains missing data."""
 
@@ -58,9 +59,7 @@ def find_xer_errors(tables: dict) -> list[str]:
         if not task["clndr_id"] in clndr_ids and task["proj_id"] in export_projects
     ]
     if tasks_with_invalid_calendar:
-        invalid_cal_count = len(
-            {t["clndr_id"] for t in tasks_with_invalid_calendar}
-        )
+        invalid_cal_count = len({t["clndr_id"] for t in tasks_with_invalid_calendar})
         errors.append(
             f"XER is Missing {invalid_cal_count} Calendars Assigned to {len(tasks_with_invalid_calendar)} Tasks"
         )
@@ -73,9 +72,7 @@ def find_xer_errors(tables: dict) -> list[str]:
         if not res["rsrc_id"] in rsrc_ids and res["proj_id"] in export_projects
     ]
     if task_rsrc_with_invalid_rsrc:
-        invalid_rsrc_count = len(
-            {r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc}
-        )
+        invalid_rsrc_count = len({r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc})
         errors.append(
             f"XER is Missing {invalid_rsrc_count} Resources Assigned to {len(task_rsrc_with_invalid_rsrc)} Task Resources."
         )

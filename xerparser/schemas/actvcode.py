@@ -42,6 +42,7 @@ class ACTVCODE:
         self.seq_num: int = int(data["seq_num"])
         self.code_type: ACTVTYPE = self._valid_actvtype(code_type)
         self._parent: "ACTVCODE" | None = None
+        self._children: list["ACTVCODE"] = []
 
     def __eq__(self, __o: "ACTVCODE") -> bool:
         return self.full_code == __o.full_code and self.code_type == __o.code_type
@@ -55,19 +56,40 @@ class ACTVCODE:
     def __hash__(self) -> int:
         return hash((self.full_code, self.code_type))
 
+    def addChild(self, child: "ACTVCODE") -> None:
+        if not isinstance(child, ACTVCODE):
+            raise ValueError(
+                f"ValueError: expected <class ACTVCODE> for child; got {type(child)}"
+            )
+
+        self._children.append(child)
+
+    @property
+    def children(self) -> list["ACTVCODE"]:
+        return self._children
+
     @property
     def lineage(self) -> list["ACTVCODE"]:
-        path = []
-        actv_code = self
-        while actv_code:
-            path.append(actv_code)
-            actv_code = actv_code.parent
+        if not self.parent:
+            return [self]
 
-        return path
+        return self.parent.lineage + [self]
+
+        # path = []
+        # actv_code = self
+        # while actv_code:
+        #     path.append(actv_code)
+        #     actv_code = actv_code.parent
+
+        # return path
 
     @cached_property
     def full_code(self) -> str:
-        return ".".join(reversed([actv_code.code for actv_code in self.lineage]))
+        """Activity code including parent codes"""
+        if not self.parent:
+            return self.code
+
+        return f"{self.parent.full_code}.{self.code}"
 
     @property
     def parent(self) -> Optional["ACTVCODE"]:
@@ -85,7 +107,7 @@ class ACTVCODE:
                 )
             if value.uid != self.parent_actv_code_id:
                 raise ValueError(
-                    f"ValueError: Parent ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
+                    f"ValueError: ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
                 )
 
             self._parent = value
@@ -98,6 +120,6 @@ class ACTVCODE:
             )
         if value.uid != self.actv_code_type_id:
             raise ValueError(
-                f"ValueError: Unique ID {value.uid} does not match act_code_type_id {self.actv_code_type_id}"
+                f"ValueError: ID {value.uid} does not match act_code_type_id {self.actv_code_type_id}"
             )
         return value

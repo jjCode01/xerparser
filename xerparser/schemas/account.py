@@ -37,6 +37,7 @@ class ACCOUNT:
         self.parent_acct_id: str | None = str_or_none(data["parent_acct_id"])
         self.seq_num: int | None = int_or_none(data["acct_seq_num"])
         self._parent: Optional["ACCOUNT"] = None
+        self._children: list["ACCOUNT"] = []
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
         return self.name == __o.name and self.full_code == __o.full_code
@@ -53,15 +54,32 @@ class ACCOUNT:
     def __str__(self) -> str:
         return f"{self.full_code} - {self.name}"
 
+    def addChild(self, child: "ACCOUNT") -> None:
+        if not isinstance(child, ACCOUNT):
+            raise ValueError(
+                f"ValueError: expected <class ACCOUNT> for child; got {type(child)}"
+            )
+
+        self._children.append(child)
+
+    @property
+    def children(self) -> list["ACCOUNT"]:
+        return self._children
+
     @property
     def full_code(self) -> str:
         """Cost code including parent codes"""
-        acct = self
-        codes = []
-        while acct:
-            codes.append(acct.code)
-            acct = acct.parent
-        return ".".join(reversed(codes))
+        if not self.parent:
+            return self.code
+
+        return f"{self.parent.full_code}.{self.code}"
+
+        # acct = self
+        # codes = []
+        # while acct:
+        #     codes.append(acct.code)
+        #     acct = acct.parent
+        # return ".".join(reversed(codes))
 
     @property
     def parent(self) -> Optional["ACCOUNT"]:
@@ -77,7 +95,7 @@ class ACCOUNT:
         elif isinstance(value, ACCOUNT):
             if value.uid != self.parent_acct_id:
                 raise ValueError(
-                    f"ValueError: value ID {value.uid} does not match parent ID {self.parent_acct_id}"
+                    f"ValueError: ID {value.uid} does not match parent ID {self.parent_acct_id}"
                 )
             self._parent = value
 

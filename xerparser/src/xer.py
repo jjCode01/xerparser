@@ -91,7 +91,8 @@ class Xer:
         accounts: dict[str, ACCOUNT] = self._get_attr("ACCOUNT")
         for account in accounts.values():
             if account.parent_acct_id:
-                account.parent = accounts.get(account.parent_acct_id)
+                account.parent = accounts[account.parent_acct_id]
+                account.parent.addChild(account)
         return accounts
 
     def _get_activity_code_values(self) -> dict[str, ACTVCODE]:
@@ -104,6 +105,8 @@ class Xer:
         }
         for act_code in activity_code_values.values():
             act_code.parent = activity_code_values.get(act_code.parent_actv_code_id)
+            if act_code.parent:
+                act_code.parent.addChild(act_code)
         return activity_code_values
 
     def _get_attr(self, table_name: str) -> dict:
