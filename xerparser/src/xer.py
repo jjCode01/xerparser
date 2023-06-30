@@ -137,6 +137,8 @@ class Xer:
         }
         for proj_code in project_code_values.values():
             proj_code.parent = project_code_values.get(proj_code.parent_proj_catg_id)
+            if proj_code.parent:
+                proj_code.parent.addChild(proj_code)
 
         return project_code_values
 

@@ -42,6 +42,7 @@ class PCATVAL:
         self.seq_num: int = int(data["seq_num"])
         self.code_type: PCATTYPE = self._valid_pcattype(code_type)
         self._parent: "PCATVAL" | None = None
+        self._children: list["PCATVAL"] = []
 
     def __eq__(self, __o: "PCATVAL") -> bool:
         return self.full_code == __o.full_code and self.code_type == __o.code_type
@@ -55,19 +56,38 @@ class PCATVAL:
     def __hash__(self) -> int:
         return hash((self.full_code, self.code_type))
 
+    def addChild(self, child: "PCATVAL") -> None:
+        if not isinstance(child, PCATVAL):
+            raise ValueError(
+                f"ValueError: expected <class PCATVAL> for child; got {type(child)}"
+            )
+
+        self._children.append(child)
+
+    @property
+    def children(self) -> list["PCATVAL"]:
+        return self._children
+
     @property
     def lineage(self) -> list["PCATVAL"]:
-        path = []
-        proj_code = self
-        while proj_code:
-            path.append(proj_code)
-            proj_code = proj_code.parent
+        if not self.parent:
+            return [self]
 
-        return path
+        return self.parent.lineage + [self]
+        # path = []
+        # proj_code = self
+        # while proj_code:
+        #     path.append(proj_code)
+        #     proj_code = proj_code.parent
+
+        # return path
 
     @cached_property
     def full_code(self) -> str:
-        return ".".join(reversed([proj_code.code for proj_code in self.lineage]))
+        if not self.parent:
+            return self.code
+
+        return f"{self.parent.full_code}.{self.code}"
 
     @property
     def parent(self) -> Optional["PCATVAL"]:

@@ -8,6 +8,7 @@
 * Changed the `PROJECT` `name` from an attribute to a property. The project name is stored in the `wbs_root` added above.
 * Added `children` attribute to the `ACCOUNT` class.
 * Added `children` attribute to the `ACTVCODE` class.
+* Added `children` attribute to the `PCATVAL` class.
 
 ## 0.9.9 - 2023-06-14
 

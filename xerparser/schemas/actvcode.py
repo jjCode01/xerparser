@@ -103,11 +103,11 @@ class ACTVCODE:
         else:
             if not isinstance(value, ACTVCODE):
                 raise ValueError(
-                    f"ValueError: expected <class ACTVCODE> for parent, got {type(value)}."
+                    f"Expected <class ACTVCODE> for parent, got {type(value)}."
                 )
             if value.uid != self.parent_actv_code_id:
                 raise ValueError(
-                    f"ValueError: ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
+                    f"ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
                 )
 
             self._parent = value

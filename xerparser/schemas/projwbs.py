@@ -81,7 +81,7 @@ class PROJWBS:
 
         if node.parent_wbs_id != self.uid:
             raise ValueError(
-                f"ValueError: Parent Unique ID {node.parent_wbs_id} does not match {self.uid}"
+                f"Parent Unique ID {node.parent_wbs_id} does not match {self.uid}"
             )
 
         self._children.append(node)
@@ -114,11 +114,11 @@ class PROJWBS:
         else:
             if not isinstance(value, PROJWBS):
                 raise ValueError(
-                    f"ValueError: expected <class PROJWBS> for parent, got {type(value)}."
+                    f"Expected <class PROJWBS> for parent, got {type(value)}."
                 )
             if value.uid != self.parent_wbs_id:
                 raise ValueError(
-                    f"ValueError: Parent Unique ID {value.uid} does not match {self.parent_wbs_id}"
+                    f"Parent Unique ID {value.uid} does not match {self.parent_wbs_id}"
                 )
 
             self._parent = value
