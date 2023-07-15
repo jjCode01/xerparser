@@ -75,14 +75,6 @@ class ACTVCODE:
 
         return self.parent.lineage + [self]
 
-        # path = []
-        # actv_code = self
-        # while actv_code:
-        #     path.append(actv_code)
-        #     actv_code = actv_code.parent
-
-        # return path
-
     @cached_property
     def full_code(self) -> str:
         """Activity code including parent codes"""

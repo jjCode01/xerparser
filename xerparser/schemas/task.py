@@ -431,10 +431,10 @@ class TASK:
 
     def _valid_projwbs(self, value: PROJWBS) -> PROJWBS:
         if not isinstance(value, PROJWBS):
-            raise ValueError(f"ValueError: expected <class PROJWBS>; got {type(value)}")
+            raise ValueError(f"Expected <class PROJWBS>; got {type(value)}")
         if value.uid != self.wbs_id:
             raise ValueError(
-                f"ValueError: WBS unique id {value.uid} does not match wbs_id {self.wbs_id}"
+                f"WBS unique id {value.uid} does not match wbs_id {self.wbs_id}"
             )
         return value
 

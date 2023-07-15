@@ -7,7 +7,16 @@ from typing import Any
 
 
 class UDFTYPE:
+    """
+    A class to represent a User Defined Field.
+    """
+
     class FieldType(Enum):
+        """
+        An enum class to represent the data type stored
+        in a User Defined Field.
+        """
+
         FT_END_DATE = "End Date"
         FT_FLOAT_2_DECIMALS = "Float"
         FT_INT = "Integer"
@@ -17,6 +26,11 @@ class UDFTYPE:
         FT_TEXT = "Text"
 
     class Indicators(Enum):
+        """
+        An enum class to store the indicator icons that may be
+        assigned to a UDF of type `FT_STATICTYPE` ("Indicator").
+        """
+
         UDF_G1 = "🛑"
         UDF_G2 = "⚠️"
         UDF_G3 = "✅"

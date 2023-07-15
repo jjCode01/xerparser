@@ -53,11 +53,9 @@ class TRSRCFIN:
     def _valid_findates(self, value: FINDATES) -> FINDATES:
         """Validate assignment of Financial Period"""
         if not isinstance(value, FINDATES):
-            raise ValueError(
-                f"ValueError: expected <class FINDATES>; got {type(value)}"
-            )
+            raise ValueError(f"Expected <class FINDATES>; got {type(value)}")
         if value.uid != self.fin_dates_id:
             raise ValueError(
-                f"ValueError: Financial Period ID {value.uid} does not equal fin_dates_id {self.fin_dates_id}"
+                f"FINDATES {value.uid} does not equal fin_dates_id {self.fin_dates_id}"
             )
         return value

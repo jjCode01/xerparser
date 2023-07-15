@@ -74,13 +74,6 @@ class ACCOUNT:
 
         return f"{self.parent.full_code}.{self.code}"
 
-        # acct = self
-        # codes = []
-        # while acct:
-        #     codes.append(acct.code)
-        #     acct = acct.parent
-        # return ".".join(reversed(codes))
-
     @property
     def parent(self) -> Optional["ACCOUNT"]:
         """Parent Cost Account"""
