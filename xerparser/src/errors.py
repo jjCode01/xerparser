@@ -14,6 +14,16 @@ class CorruptXerFile(Exception):
         return f"{self.message}\n{error_list}"
 
 
+class InvalidParent(Exception):
+    """Raised when Parent does not match parent id."""
+
+    def __init__(self, parent_id: str, expected_id: str | None) -> None:
+        self.message = f"Expcted parent with id {parent_id}, got {expected_id}"
+
+    def __str__(self) -> str:
+        return self.message
+
+
 def find_xer_errors(tables: dict) -> list[str]:
     """
     Find issues with the xer file, including
@@ -56,7 +66,7 @@ def find_xer_errors(tables: dict) -> list[str]:
     tasks_with_invalid_calendar = [
         task
         for task in tables.get("TASK", [])
-        if not task["clndr_id"] in clndr_ids and task["proj_id"] in export_projects
+        if task["clndr_id"] not in clndr_ids and task["proj_id"] in export_projects
     ]
     if tasks_with_invalid_calendar:
         invalid_cal_count = len({t["clndr_id"] for t in tasks_with_invalid_calendar})
@@ -69,7 +79,7 @@ def find_xer_errors(tables: dict) -> list[str]:
     task_rsrc_with_invalid_rsrc = [
         res
         for res in tables.get("TASKRSRC", [])
-        if not res["rsrc_id"] in rsrc_ids and res["proj_id"] in export_projects
+        if res["rsrc_id"] not in rsrc_ids and res["proj_id"] in export_projects
     ]
     if task_rsrc_with_invalid_rsrc:
         invalid_rsrc_count = len({r["rsrc_id"] for r in task_rsrc_with_invalid_rsrc})

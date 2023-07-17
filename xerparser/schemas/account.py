@@ -3,6 +3,7 @@
 
 from xerparser.src.validators import int_or_none, str_or_none
 from typing import Optional
+from xerparser.src.errors import InvalidParent
 
 
 class ACCOUNT:
@@ -56,9 +57,7 @@ class ACCOUNT:
 
     def addChild(self, child: "ACCOUNT") -> None:
         if not isinstance(child, ACCOUNT):
-            raise ValueError(
-                f"ValueError: expected <class ACCOUNT> for child; got {type(child)}"
-            )
+            raise TypeError(f"Expected <class ACCOUNT>; got {type(child)}")
 
         self._children.append(child)
 
@@ -87,15 +86,11 @@ class ACCOUNT:
 
         elif isinstance(value, ACCOUNT):
             if value.uid != self.parent_acct_id:
-                raise ValueError(
-                    f"ValueError: ID {value.uid} does not match parent ID {self.parent_acct_id}"
-                )
+                raise InvalidParent(value.uid, self.parent_acct_id)
             self._parent = value
 
         else:
-            raise ValueError(
-                f"ValueError: expected <class ACCOUNT> for parent; got {type(value)}"
-            )
+            raise TypeError(f"Expected <class ACCOUNT> for parent; got {type(value)}")
 
 
 def _check_description(value: str) -> str:

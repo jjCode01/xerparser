@@ -3,6 +3,7 @@
 
 from typing import Any, Optional
 from xerparser.schemas.udftype import UDFTYPE
+from xerparser.src.errors import InvalidParent
 from xerparser.src.validators import int_or_none
 
 
@@ -75,14 +76,10 @@ class PROJWBS:
 
     def addChild(self, node) -> None:
         if not isinstance(node, PROJWBS):
-            raise ValueError(
-                f"ValueError: expected <class PROJWBS> for child, got {type(node)}."
-            )
+            raise TypeError(f"Expected <class PROJWBS>; got {type(node)}.")
 
         if node.parent_wbs_id != self.uid:
-            raise ValueError(
-                f"Parent Unique ID {node.parent_wbs_id} does not match {self.uid}"
-            )
+            raise InvalidParent(self.uid, node.parent_wbs_id)
 
         self._children.append(node)
 
@@ -113,12 +110,8 @@ class PROJWBS:
             self._parent = None
         else:
             if not isinstance(value, PROJWBS):
-                raise ValueError(
-                    f"Expected <class PROJWBS> for parent, got {type(value)}."
-                )
+                raise ValueError(f"Expected <class PROJWBS>; got {type(value)}.")
             if value.uid != self.parent_wbs_id:
-                raise ValueError(
-                    f"Parent Unique ID {value.uid} does not match {self.parent_wbs_id}"
-                )
+                raise InvalidParent(value.uid, self.parent_wbs_id)
 
             self._parent = value

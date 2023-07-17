@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import Optional
 
 from xerparser.schemas.pcattype import PCATTYPE
+from xerparser.src.errors import InvalidParent
 
 
 class PCATVAL:
@@ -58,9 +59,7 @@ class PCATVAL:
 
     def addChild(self, child: "PCATVAL") -> None:
         if not isinstance(child, PCATVAL):
-            raise ValueError(
-                f"ValueError: expected <class PCATVAL> for child; got {type(child)}"
-            )
+            raise TypeError(f"Expected <class PCATVAL>; got {type(child)}")
 
         self._children.append(child)
 
@@ -74,13 +73,6 @@ class PCATVAL:
             return [self]
 
         return self.parent.lineage + [self]
-        # path = []
-        # proj_code = self
-        # while proj_code:
-        #     path.append(proj_code)
-        #     proj_code = proj_code.parent
-
-        # return path
 
     @cached_property
     def full_code(self) -> str:
@@ -100,13 +92,9 @@ class PCATVAL:
             self._parent = None
         else:
             if not isinstance(value, PCATVAL):
-                raise ValueError(
-                    f"ValueError: expected <class PCATVAL> for parent, got {type(value)}."  # noqa: E501
-                )
+                raise TypeError(f"Expected <class PCATVAL>; got {type(value)}.")
             if value.uid != self.parent_proj_catg_id:
-                raise ValueError(
-                    f"ValueError: Parent ID {value.uid} does not match parent_actv_code_id {self.parent_proj_catg_id}"  # noqa: E501
-                )
+                raise InvalidParent(value.uid, self.parent_proj_catg_id)
 
             self._parent = value
 

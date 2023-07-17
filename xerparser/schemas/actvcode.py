@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import Optional
 
 from xerparser.schemas.actvtype import ACTVTYPE
+from xerparser.src.errors import InvalidParent
 
 
 class ACTVCODE:
@@ -58,9 +59,7 @@ class ACTVCODE:
 
     def addChild(self, child: "ACTVCODE") -> None:
         if not isinstance(child, ACTVCODE):
-            raise ValueError(
-                f"ValueError: expected <class ACTVCODE> for child; got {type(child)}"
-            )
+            raise TypeError(f"Expected <class ACTVCODE>; got {type(child)}")
 
         self._children.append(child)
 
@@ -94,24 +93,20 @@ class ACTVCODE:
             self._parent = None
         else:
             if not isinstance(value, ACTVCODE):
-                raise ValueError(
+                raise TypeError(
                     f"Expected <class ACTVCODE> for parent, got {type(value)}."
                 )
             if value.uid != self.parent_actv_code_id:
-                raise ValueError(
-                    f"ID {value.uid} does not match parent_actv_code_id {self.parent_actv_code_id}"
-                )
+                raise InvalidParent(value.uid, self.parent_actv_code_id)
 
             self._parent = value
 
     def _valid_actvtype(self, value: ACTVTYPE) -> ACTVTYPE:
         """Validate Activity Code Type"""
         if not isinstance(value, ACTVTYPE):
-            raise ValueError(
-                f"ValueError: expected <class ACTVTYPE>; got {type(value)}"
-            )
+            raise ValueError(f"Expected <class ACTVTYPE>; got {type(value)}")
         if value.uid != self.actv_code_type_id:
             raise ValueError(
-                f"ValueError: ID {value.uid} does not match act_code_type_id {self.actv_code_type_id}"
+                f"{value.uid} does not match act_code_type_id {self.actv_code_type_id}"
             )
         return value
