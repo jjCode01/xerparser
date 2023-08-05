@@ -1,4 +1,4 @@
-__version__ = "0.10.0"
+__version__ = "0.10.1"
 
 from xerparser.src.errors import find_xer_errors, CorruptXerFile
 from xerparser.src.parser import parser, file_reader
