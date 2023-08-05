@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.10.2 - 2023-08-05
+
+Updated dependency `html-sanitizer` to the latest version `2.2.0`
+
+---
+
 ## 0.10.1 - 2023-08-05
 
 ### Added
