@@ -1,7 +1,7 @@
 # xerparser
 # account.py
 
-from xerparser.src.validators import int_or_none, str_or_none
+from xerparser.src.validators import optional_int, optional_str
 from typing import Optional
 from xerparser.src.errors import InvalidParent
 
@@ -35,8 +35,8 @@ class ACCOUNT:
         self.code: str = data["acct_short_name"]
         self.description: str = _check_description(data["acct_descr"])
         self.name: str = data["acct_name"]
-        self.parent_acct_id: str | None = str_or_none(data["parent_acct_id"])
-        self.seq_num: int | None = int_or_none(data["acct_seq_num"])
+        self.parent_acct_id: str | None = optional_str(data["parent_acct_id"])
+        self.seq_num: int | None = optional_int(data["acct_seq_num"])
         self._parent: Optional["ACCOUNT"] = None
         self._children: list["ACCOUNT"] = []
 

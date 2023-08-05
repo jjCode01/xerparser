@@ -16,12 +16,12 @@ from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
-    datetime_or_none,
+    optional_date,
     date_format,
-    float_or_none,
+    optional_float,
     float_or_zero,
-    int_or_none,
-    str_or_none,
+    optional_int,
+    optional_str,
 )
 from xerparser.scripts.dates import clean_date
 
@@ -95,6 +95,10 @@ class TASK:
         @property
         def is_task(self) -> bool:
             return self is self.TT_Task
+        
+        @property
+        def is_wbs(self) -> bool:
+            return self is self.TT_WBS
 
     def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data) -> None:
         self.uid: str = data["task_id"]
@@ -114,54 +118,54 @@ class TASK:
 
         # Durations and float
         self.duration_type: str = data["duration_type"]
-        self.total_float_hr_cnt: float | None = float_or_none(
+        self.total_float_hr_cnt: float | None = optional_float(
             data["total_float_hr_cnt"]
         )
-        self.free_float_hr_cnt: float | None = float_or_none(data["free_float_hr_cnt"])
+        self.free_float_hr_cnt: float | None = optional_float(data["free_float_hr_cnt"])
         self.remain_drtn_hr_cnt: float = float(data["remain_drtn_hr_cnt"])
         self.target_drtn_hr_cnt: float = float(data["target_drtn_hr_cnt"])
-        self.float_path: int | None = int_or_none(data["float_path"])
-        self.float_path_order: int | None = int_or_none(data["float_path_order"])
+        self.float_path: int | None = optional_int(data["float_path"])
+        self.float_path_order: int | None = optional_int(data["float_path_order"])
         self.is_longest_path: bool = data["driving_path_flag"] == "Y"
 
         # Dates
-        self.act_start_date: datetime | None = datetime_or_none(data["act_start_date"])
-        self.act_end_date: datetime | None = datetime_or_none(data["act_end_date"])
-        self.late_start_date: datetime | None = datetime_or_none(
+        self.act_start_date: datetime | None = optional_date(data["act_start_date"])
+        self.act_end_date: datetime | None = optional_date(data["act_end_date"])
+        self.late_start_date: datetime | None = optional_date(
             data["late_start_date"]
         )
-        self.late_end_date: datetime | None = datetime_or_none(data["late_end_date"])
-        self.expect_end_date: datetime | None = datetime_or_none(
+        self.late_end_date: datetime | None = optional_date(data["late_end_date"])
+        self.expect_end_date: datetime | None = optional_date(
             data["expect_end_date"]
         )
-        self.early_start_date: datetime | None = datetime_or_none(
+        self.early_start_date: datetime | None = optional_date(
             data["early_start_date"]
         )
-        self.early_end_date: datetime | None = datetime_or_none(data["early_end_date"])
-        self.rem_late_start_date: datetime | None = datetime_or_none(
+        self.early_end_date: datetime | None = optional_date(data["early_end_date"])
+        self.rem_late_start_date: datetime | None = optional_date(
             data["rem_late_start_date"]
         )
-        self.rem_late_end_date: datetime | None = datetime_or_none(
+        self.rem_late_end_date: datetime | None = optional_date(
             data["rem_late_end_date"]
         )
-        self.restart_date: datetime | None = datetime_or_none(data["restart_date"])
-        self.reend_date: datetime | None = datetime_or_none(data["reend_date"])
+        self.restart_date: datetime | None = optional_date(data["restart_date"])
+        self.reend_date: datetime | None = optional_date(data["reend_date"])
         self.target_start_date: datetime = datetime.strptime(
             data["target_start_date"], date_format
         )
         self.target_end_date: datetime = datetime.strptime(
             data["target_end_date"], date_format
         )
-        self.suspend_date: datetime | None = datetime_or_none(data["suspend_date"])
-        self.resume_date: datetime | None = datetime_or_none(data["resume_date"])
+        self.suspend_date: datetime | None = optional_date(data["suspend_date"])
+        self.resume_date: datetime | None = optional_date(data["resume_date"])
         self.create_date: datetime = datetime.strptime(data["create_date"], date_format)
         self.update_date: datetime = datetime.strptime(data["update_date"], date_format)
 
         # Constraints
-        self.cstr_date: datetime | None = datetime_or_none(data["cstr_date"])
-        self.cstr_type: str | None = str_or_none(data["cstr_type"])
-        self.cstr_date2: datetime | None = datetime_or_none(data["cstr_date2"])
-        self.cstr_type2: str | None = str_or_none(data["cstr_type2"])
+        self.cstr_date: datetime | None = optional_date(data["cstr_date"])
+        self.cstr_type: str | None = optional_str(data["cstr_type"])
+        self.cstr_date2: datetime | None = optional_date(data["cstr_date2"])
+        self.cstr_type2: str | None = optional_str(data["cstr_type2"])
 
         # Unit quantities
         # Have encoutered XER files where these qty's are stored as empty strings.
@@ -280,7 +284,7 @@ class TASK:
         if self.percent_type is TASK.PercentType.CP_Phys:
             return self.phys_complete_pct / 100
 
-        elif self.percent_type is TASK.PercentType.CP_Drtn:
+        if self.percent_type is TASK.PercentType.CP_Drtn:
             if self.remain_drtn_hr_cnt is None or self.status.is_completed:
                 return 1.0
             if self.status.is_not_started or self.original_duration == 0:
@@ -290,7 +294,7 @@ class TASK:
 
             return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
 
-        elif self.percent_type is TASK.PercentType.CP_Units:
+        if self.percent_type is TASK.PercentType.CP_Units:
             target_units = self.target_work_qty + self.target_equip_qty
             if target_units == 0:
                 return 0.0
@@ -431,7 +435,7 @@ class TASK:
 
     def _valid_projwbs(self, value: PROJWBS) -> PROJWBS:
         if not isinstance(value, PROJWBS):
-            raise ValueError(f"Expected <class PROJWBS>; got {type(value)}")
+            raise TypeError(f"Expected <class PROJWBS>; got {type(value)}")
         if value.uid != self.wbs_id:
             raise ValueError(
                 f"WBS unique id {value.uid} does not match wbs_id {self.wbs_id}"

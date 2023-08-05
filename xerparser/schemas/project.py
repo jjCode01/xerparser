@@ -18,7 +18,7 @@ from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
-from xerparser.src.validators import datetime_or_none, str_or_none, date_format
+from xerparser.src.validators import optional_date, optional_str, date_format
 
 
 class PROJECT:
@@ -87,11 +87,11 @@ class PROJECT:
         self.finish_date: datetime = datetime.strptime(
             data["scd_end_date"], date_format
         )
-        self.last_fin_dates_id: str | None = str_or_none(data["last_fin_dates_id"])
-        self.last_schedule_date: datetime | None = datetime_or_none(
+        self.last_fin_dates_id: str | None = optional_str(data["last_fin_dates_id"])
+        self.last_schedule_date: datetime | None = optional_date(
             data.get("last_schedule_date", "")
         )
-        self.must_finish_date: datetime | None = datetime_or_none(data["plan_end_date"])
+        self.must_finish_date: datetime | None = optional_date(data["plan_end_date"])
         self.plan_start_date: datetime = datetime.strptime(
             data["plan_start_date"], date_format
         )

@@ -10,8 +10,8 @@ from xerparser.schemas.trsrcfin import TRSRCFIN
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
     date_format,
-    datetime_or_none,
-    str_or_none,
+    optional_date,
+    optional_str,
 )
 
 
@@ -22,7 +22,7 @@ class TASKRSRC:
         self.uid: str = data["taskrsrc_id"]
         self.task_id: str = data["task_id"]
         self.proj_id: str = data["proj_id"]
-        self.acct_id: str | None = str_or_none(data["acct_id"])
+        self.acct_id: str | None = optional_str(data["acct_id"])
         self.rsrc_id: str = data["rsrc_id"]
         self.remain_qty: float = float(data["remain_qty"])
         self.target_qty: float = float(data["target_qty"])
@@ -32,10 +32,10 @@ class TASKRSRC:
         self.act_reg_cost: float = float(data["act_reg_cost"])
         self.act_ot_cost: float = float(data["act_ot_cost"])
         self.remain_cost: float = float(data["remain_cost"])
-        self.act_start_date: datetime | None = datetime_or_none(data["act_start_date"])
-        self.act_end_date: datetime | None = datetime_or_none(data["act_end_date"])
-        self.restart_date: datetime | None = datetime_or_none(data["restart_date"])
-        self.reend_date: datetime | None = datetime_or_none(data["reend_date"])
+        self.act_start_date: datetime | None = optional_date(data["act_start_date"])
+        self.act_end_date: datetime | None = optional_date(data["act_end_date"])
+        self.restart_date: datetime | None = optional_date(data["restart_date"])
+        self.reend_date: datetime | None = optional_date(data["reend_date"])
         self.target_start_date: datetime = datetime.strptime(
             data["target_start_date"], date_format
         )
@@ -43,10 +43,10 @@ class TASKRSRC:
             data["target_end_date"], date_format
         )
         self.target_lag_drtn_hr_cnt: int = int(data["target_lag_drtn_hr_cnt"])
-        self.rem_late_start_date: datetime | None = datetime_or_none(
+        self.rem_late_start_date: datetime | None = optional_date(
             data["rem_late_start_date"]
         )
-        self.rem_late_end_date: datetime | None = datetime_or_none(
+        self.rem_late_end_date: datetime | None = optional_date(
             data["rem_late_end_date"]
         )
         self.act_this_per_cost: float = float(data["act_this_per_cost"])

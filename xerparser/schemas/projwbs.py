@@ -4,7 +4,7 @@
 from typing import Any, Optional
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.src.errors import InvalidParent
-from xerparser.src.validators import int_or_none
+from xerparser.src.validators import optional_int
 
 
 class PROJWBS:
@@ -47,7 +47,7 @@ class PROJWBS:
         self.name: str = data["wbs_name"]
         self.parent_wbs_id: str = data["parent_wbs_id"]
         self.proj_id: str = data["proj_id"]
-        self.seq_num: int | None = int_or_none(data["seq_num"])
+        self.seq_num: int | None = optional_int(data["seq_num"])
         self.status_code: str = data["status_code"]
 
         self.assignments: int = 0

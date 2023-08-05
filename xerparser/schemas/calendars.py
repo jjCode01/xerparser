@@ -15,7 +15,7 @@ from xerparser.scripts.dates import (
     clean_dates,
     conv_time,
 )
-from xerparser.src.validators import datetime_or_none, str_or_none
+from xerparser.src.validators import optional_date, optional_str
 
 WEEKDAYS = (
     "Sunday",
@@ -122,12 +122,12 @@ class CALENDAR:
 
     def __init__(self, **data) -> None:
         self.uid: str = data["clndr_id"]
-        self.base_clndr_id: str | None = str_or_none(data["base_clndr_id"])
+        self.base_clndr_id: str | None = optional_str(data["base_clndr_id"])
         self.data: str = data["clndr_data"]
         self.is_default: bool = data["default_flag"] == "Y"
-        self.last_chng_date: datetime | None = datetime_or_none(data["last_chng_date"])
+        self.last_chng_date: datetime | None = optional_date(data["last_chng_date"])
         self.name: str = data["clndr_name"]
-        self.proj_id: str | None = str_or_none(data["proj_id"])
+        self.proj_id: str | None = optional_str(data["proj_id"])
         self.type: CALENDAR.CalendarType = CALENDAR.CalendarType[data["clndr_type"]]
         self.base_calendar: Optional["CALENDAR"] = None
 

@@ -1,5 +1,13 @@
 
-# Changelog - xerparser 
+# Changelog - xerparser
+
+## 0.10.1 - 2023-08-05
+
+### Added
+
+* Added `is_wbs` property to `TaskType` enum class. Checks if task is a wbs summary type.
+
+---
 
 ## 0.10.0 - 2023-07-17
 
