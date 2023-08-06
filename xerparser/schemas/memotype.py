@@ -5,15 +5,6 @@
 class MEMOTYPE:
     """
     A class to represent a notebook topic.
-
-    ...
-
-    Attributes
-    ----------
-    uid: str
-        Unique ID [memo_type_id]
-    topic: str
-        Notebook Topic [memo_type]
     """
 
     def __init__(self, **data) -> None:

@@ -25,6 +25,7 @@ class TASKMEMO:
 
 
 def _sanitize_html(value) -> str:
+    re_remove = re.compile(r"(\u007F+)|(ï»¿)")
     sanitzer = Sanitizer()
-    memo = re.sub(r"(\u007F+)|(ï»¿)", "", value)
+    memo = re.sub(re_remove, "", value)
     return sanitzer.sanitize(memo)

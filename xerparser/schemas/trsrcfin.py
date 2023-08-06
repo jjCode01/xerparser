@@ -8,25 +8,6 @@ from xerparser.src.validators import float_or_zero
 class TRSRCFIN:
     """
     A class to represent a Activity Resource Assignment Past Period Actuals
-
-    ...
-
-    Attributes
-    ----------
-    act_cost: float
-        Past Period Acutal Cost
-    act_qty: float
-        Past Period Actual Unit Quantity
-    fin_dates_id: str
-        Foreign Key for Financial Period
-    proj_id: str
-        Foreign Key for Project
-    task_id: str
-        Foreign Key for Task
-    taskrsrc_id: str
-        Foreign Key to Task Resource Assignment
-    period: FINDATES
-        Financial Period
     """
 
     def __init__(self, period: FINDATES, **data) -> None:

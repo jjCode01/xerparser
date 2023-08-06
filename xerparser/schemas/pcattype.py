@@ -5,19 +5,6 @@
 class PCATTYPE:
     """
     A class representing Project Code Types
-
-    ...
-
-    Attributes
-    ----------
-    uid: str
-        Unique ID [proj_catg_type_id]
-    max_length: int
-        Max Code Length [proj_catg_short_len]
-    name: str
-        Activity Code [proj_catg_type]
-    seq_num: int | None
-        Sort Order
     """
 
     def __init__(self, **data) -> None:

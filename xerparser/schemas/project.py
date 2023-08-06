@@ -24,48 +24,6 @@ from xerparser.src.validators import optional_date, optional_str, date_format
 class PROJECT:
     """
     A class representing a schedule.
-
-    ...
-
-    Attributes
-    ----------
-    uid: str
-        Unique ID [proj_id]
-    actual_cost: float
-        Actual Cost to Date
-    add_date: datetime
-        Date Added
-    budgeted_cost: float
-        Budgeted Cost
-    data_date: datetime
-        Schedule data date [last_recalc_date]
-    export_flag: bool
-        Project Export Flag
-    finish_date: datetime
-        Scheduled Finish [scd_end_date]
-    last_fin_dates_id: str | None
-        Last Financial Period
-    last_schedule_date: datetime | None
-        Date Last Scheduled
-    must_finish_date: datetime | None
-        Must Finish By [plan_end_date]
-    name: str
-        Project Name
-    plan_start_date: datetime
-        Planned Start
-    remaining_cost: float
-        Remaining Cost
-    short_name: str
-        Project ID [proj_short_name]
-    this_period_cost: float
-        Actual Cost this Period
-    relationships: list[TASKPRED]
-        List of Project Relationships
-    tasks: list[TASK]
-        List of Project Activities
-    wbs: list[PROJWBS]
-        List of Project WBS Nodes
-
     """
 
     def __init__(
@@ -211,15 +169,27 @@ class PROJECT:
     @cached_property
     @rounded(ndigits=4)
     def task_percent(self) -> float:
-        """Calculated Project percent complete based on task updates"""
+        """
+        Project percent complete based on task updates.
+        Calculated using the median of the following 2 ratios:
+
+        * Ratio between Actual Dates and Activity Count.
+        `(Actual Start Count + Actual Finish Count) ÷ (Activity Count * 2)`
+        * Ratio between Sum of Task Remaining Durations and Task Original Durations.
+        `1 - (sum of task remaining duration ÷ sum of task original duration)`
+        """
         if not self.tasks:
             return 0.0
 
         orig_dur_sum = sum(
-            task.original_duration for task in self.tasks if not task.type.is_loe
+            task.original_duration
+            for task in self.tasks
+            if not any([task.type.is_loe, task.type.is_wbs])
         )
         rem_dur_sum = sum(
-            task.remaining_duration for task in self.tasks if not task.type.is_loe
+            task.remaining_duration
+            for task in self.tasks
+            if not any([task.type.is_loe, task.type.is_wbs])
         )
         task_dur_percent = 1 - rem_dur_sum / orig_dur_sum if orig_dur_sum else 0.0
 

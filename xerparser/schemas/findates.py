@@ -8,19 +8,6 @@ from xerparser.src.validators import date_format
 class FINDATES:
     """
     A class representing a Financial Period
-
-    ...
-
-    Attributes
-    ----------
-    uid: str
-        Unique ID [fin_dates_id]
-    name: str
-        Financial Period Name [fin_dates_name]
-    start_date: datetime
-        Start Date of Financial Period
-    end_date: datetime
-        End Date of Financial Period
     """
 
     def __init__(self, **data) -> None:

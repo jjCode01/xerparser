@@ -31,6 +31,7 @@ class UDFTYPE:
         assigned to a UDF of type `FT_STATICTYPE` ("Indicator").
         """
 
+        # Emoji's don't match perfectly with icons used by P6 but are close.
         UDF_G1 = "🛑"
         UDF_G2 = "⚠️"
         UDF_G3 = "✅"

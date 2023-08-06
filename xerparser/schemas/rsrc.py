@@ -8,19 +8,6 @@ from xerparser.schemas.udftype import UDFTYPE
 class RSRC:
     """
     A class to represent a Resource.
-    ...
-    Attributes
-    ----------
-    uid: str
-        Unique ID [rsrc_id]
-    clndr_id:
-        Unique ID of Calendar assigned to the resource
-    name:
-        Resource Name [rsrc_name]
-    short_name:
-        Resource ID [rsrc_short_name]
-    type: str
-        Resource Type [rsrc_type]
     """
 
     def __init__(self, **data) -> None:

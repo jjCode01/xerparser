@@ -93,26 +93,6 @@ class WeekDay:
 class CALENDAR:
     """
     A class to represent a schedule Calendar.
-
-    ...
-
-    Attributes
-    ----------
-    uid: str
-        Unique ID [clndr_id]
-    data: str
-        Calendar Data; Weekday and Exception Information
-    is_default: bool
-        Default Calendar [default_flag]
-    last_chng_date: datetime | None
-        Date Last Modified
-    name: str
-        Calendar Name [clndr_name]
-    proj_id: str | None
-        Unique Project ID for Project Level Calendars
-    type: str
-        Calendar Type (Global, Resource, or Project)
-
     """
 
     class CalendarType(Enum):

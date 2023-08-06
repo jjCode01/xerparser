@@ -6,8 +6,11 @@ from xerparser.src.validators import float_or_zero
 
 
 class TASKFIN:
-    def __init__(self, period: FINDATES, **data) -> None:
+    """
+    A class to represent a past Finacial Period for an activity
+    """
 
+    def __init__(self, period: FINDATES, **data) -> None:
         self.act_equip_cost: float = float_or_zero(data["act_equip_cost"])
         self.act_equip_qty: float = float_or_zero(data["act_equip_qty"])
         self.act_expense_cost: float = float_or_zero(data["act_expense_cost"])
