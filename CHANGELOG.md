@@ -1,9 +1,13 @@
 
 # Changelog - xerparser
 
-## 0.10.2 - 2023-08-05
+## 0.10.2 - 2023-08-11
 
-Updated dependency `html-sanitizer` to the latest version `2.2.0`
+### Changes
+
+* Updated dependency `html-sanitizer` to the latest version `2.2.0`
+* Added `Node` class to represent a Tree data structure - can have one parent and multiple children.
+* `ACCOUNT`, `ACTVCODE`, `PCATVAL`, and `PROJWBS` classes now inherit from `Node` class.
 
 ---
 
