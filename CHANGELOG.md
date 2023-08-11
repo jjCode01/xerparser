@@ -1,7 +1,15 @@
 
 # Changelog - xerparser
 
-## 0.10.2 - 2023-08-11
+## 0.10.3 - 2023-08-11
+
+### Changes
+
+* Added `Node` class to represent a Tree data structure - can have one parent and multiple children. `ACCOUNT`, `ACTVCODE`, `PCATVAL`, and `PROJWBS` classes now inherit from `Node` class.
+
+---
+
+## 0.10.2 - 2023-08-05
 
 ### Changes
 
