@@ -5,10 +5,10 @@ Unittests for xerparser.
 
 2. Run the tests before making any code changes.
     - On the first run, you will be prompted to create a `xer_data.json` file - select y.
-    - This will run through each .xer file in the specified directory, create a Xer object, 
+    - This will run through each .xer file in the specified directory, create a Xer object,
     and outputs the values of various attributes, properties, and methods to a json file.
 
-3. The subsequent tests will run through each .xer file in the specified directory, create a Xer object, 
+3. The subsequent tests will run through each .xer file in the specified directory, create a Xer object,
 and compare it's attribute/property/method return values against the values stored in the json file.
     - The test will fail if any values differ between the Xer object and the json file.
     - The test will also fail if any Exceptions (other than CorruptXerFile) are raised during initialzation of the Xer object.
@@ -41,6 +41,8 @@ def process_xer(file: Path) -> dict | None:
         xer = Xer.reader(file)
     except CorruptXerFile as e:
         return {"file": str(file.absolute()), "errors": e.errors}
+    except KeyError as e:
+        return {"file": str(file.absolute()), "errors": str(e)}
 
     xer_data = {
         project.short_name: process_project(project)
@@ -185,6 +187,8 @@ class TestParser(unittest.TestCase):
                 xer = Xer.reader(file["file"])
             except CorruptXerFile as e:
                 self.assertEqual(e.errors, file["errors"])
+            except KeyError as e:
+                self.assertEqual(str(e), file["errors"])
             else:
                 self.assertEqual(len(xer.accounts), file["accounts"])
 
@@ -346,6 +350,8 @@ class TestParser(unittest.TestCase):
             try:
                 xer = Xer(file_contents)
             except CorruptXerFile:
+                continue
+            except KeyError:
                 continue
 
             for project in xer.projects.values():
