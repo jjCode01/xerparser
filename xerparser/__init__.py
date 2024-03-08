@@ -1,22 +1,22 @@
-__version__ = "0.10.3"
+__version__ = "0.10.4"
 
-from xerparser.src.errors import find_xer_errors, CorruptXerFile
-from xerparser.src.parser import parser, file_reader
-from xerparser.src.xer import Xer
-from xerparser.schemas.actvcode import ACTVCODE
-from xerparser.schemas.actvtype import ACTVTYPE
-from xerparser.schemas.calendars import CALENDAR
-from xerparser.schemas.ermhdr import ERMHDR
-from xerparser.schemas.findates import FINDATES
-from xerparser.schemas.pcattype import PCATTYPE
-from xerparser.schemas.pcatval import PCATVAL
-from xerparser.schemas.project import PROJECT
-from xerparser.schemas.projwbs import PROJWBS
-from xerparser.schemas.rsrc import RSRC
-from xerparser.schemas.task import TASK
-from xerparser.schemas.taskfin import TASKFIN
-from xerparser.schemas.taskmemo import TASKMEMO
-from xerparser.schemas.taskpred import TASKPRED
-from xerparser.schemas.taskrsrc import TASKRSRC
-from xerparser.schemas.trsrcfin import TRSRCFIN
-from xerparser.schemas.udftype import UDFTYPE
+from xerparser.schemas.actvcode import ACTVCODE  # noqa: F401
+from xerparser.schemas.actvtype import ACTVTYPE  # noqa: F401
+from xerparser.schemas.calendars import CALENDAR  # noqa: F401
+from xerparser.schemas.ermhdr import ERMHDR  # noqa: F401
+from xerparser.schemas.findates import FINDATES  # noqa: F401
+from xerparser.schemas.pcattype import PCATTYPE  # noqa: F401
+from xerparser.schemas.pcatval import PCATVAL  # noqa: F401
+from xerparser.schemas.project import PROJECT  # noqa: F401
+from xerparser.schemas.projwbs import PROJWBS  # noqa: F401
+from xerparser.schemas.rsrc import RSRC  # noqa: F401
+from xerparser.schemas.task import TASK  # noqa: F401
+from xerparser.schemas.taskfin import TASKFIN  # noqa: F401
+from xerparser.schemas.taskmemo import TASKMEMO  # noqa: F401
+from xerparser.schemas.taskpred import TASKPRED  # noqa: F401
+from xerparser.schemas.taskrsrc import TASKRSRC  # noqa: F401
+from xerparser.schemas.trsrcfin import TRSRCFIN  # noqa: F401
+from xerparser.schemas.udftype import UDFTYPE  # noqa: F401
+from xerparser.src.errors import CorruptXerFile, find_xer_errors  # noqa: F401
+from xerparser.src.parser import file_reader, parser  # noqa: F401
+from xerparser.src.xer import Xer  # noqa: F401
