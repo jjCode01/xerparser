@@ -20,6 +20,8 @@ class ACCOUNT(Node):
         self.seq_num: int | None = optional_int(data["acct_seq_num"])
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
+        if __o is None:
+            return False
         return self.name == __o.name and self.full_code == __o.full_code
 
     def __hash__(self) -> int:
