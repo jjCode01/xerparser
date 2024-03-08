@@ -5,14 +5,12 @@ from itertools import groupby
 from pathlib import Path
 from typing import Any, BinaryIO
 
-from xerparser.src.errors import CorruptXerFile, find_xer_errors
-from xerparser.src.parser import file_reader, parser, CODEC
-
 from xerparser.schemas import TABLE_UID_MAP
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
+from xerparser.schemas.ermhdr import ERMHDR
 from xerparser.schemas.findates import FINDATES
 from xerparser.schemas.memotype import MEMOTYPE
 from xerparser.schemas.pcattype import PCATTYPE
@@ -27,8 +25,9 @@ from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.trsrcfin import TRSRCFIN
-from xerparser.schemas.ermhdr import ERMHDR
 from xerparser.schemas.udftype import UDFTYPE
+from xerparser.src.errors import CorruptXerFile, find_xer_errors
+from xerparser.src.parser import CODEC, file_reader, parser
 
 
 class Xer:
