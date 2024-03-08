@@ -1,13 +1,17 @@
 # xerparser
 # schedoptions.py
 
+from xerparser.src.validators import optional_int
+
 
 class SCHEDOPTIONS:
     def __init__(self, **data) -> None:
         """
         A class to represent the Schedule Options.
         """
-        self.max_multiple_longest_path: int = int(data["max_multiple_longest_path"])
+        self.max_multiple_longest_path: int | None = optional_int(
+            data["max_multiple_longest_path"]
+        )
         self.proj_id: str = data["proj_id"]
         self.calendar_on_relationship_lag: str = data[
             "sched_calendar_on_relationship_lag"
