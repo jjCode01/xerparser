@@ -12,15 +12,22 @@ class PCATVAL(Node):
     A class to represent an Project Code Value
     """
 
-    def __init__(self, code_type: PCATTYPE, **data) -> None:
+    def __init__(self, code_type: PCATTYPE, **data: str) -> None:
         super().__init__()
         self.uid: str = data["proj_catg_id"]
+        """Unique Table ID"""
         self.proj_catg_type_id: str = data["proj_catg_type_id"]
+        """Foreign Key for Project Code Type `PCATTYPE`"""
         self.code: str = data["proj_catg_short_name"]
+        """Project Code / Short Name"""
         self.description: str = data["proj_catg_name"]
+        """Project Code Description"""
         self.parent_proj_catg_id: str = data["parent_proj_catg_id"]
+        """Unique Table ID for Parent Code"""
         self.seq_num: int = int(data["seq_num"])
+        """Sort Order"""
         self.code_type: PCATTYPE = self._valid_pcattype(code_type)
+        """Project Code Type"""
 
     def __eq__(self, __o: "PCATVAL") -> bool:
         return self.full_code == __o.full_code and self.code_type == __o.code_type
@@ -36,6 +43,7 @@ class PCATVAL(Node):
 
     @cached_property
     def full_code(self) -> str:
+        """Project code including parent codes"""
         if not self.parent:
             return self.code
 

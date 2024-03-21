@@ -10,14 +10,20 @@ class ACCOUNT(Node):
     A class to represent a cost account.
     """
 
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: str) -> None:
         super().__init__()
         self.uid: str = data["acct_id"]
+        """Unique Table ID"""
         self.code: str = data["acct_short_name"]
+        """Cost Code / Account ID"""
         self.description: str = _check_description(data["acct_descr"])
+        """Cost Account Description"""
         self.name: str = data["acct_name"]
+        """Cost Account Name"""
         self.parent_acct_id: str | None = optional_str(data["parent_acct_id"])
+        """Parent Unique Table ID"""
         self.seq_num: int | None = optional_int(data["acct_seq_num"])
+        """Sort Order"""
 
     def __eq__(self, __o: "ACCOUNT") -> bool:
         if __o is None:

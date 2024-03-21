@@ -9,16 +9,16 @@ from typing import Any
 
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
-from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.pcattype import PCATTYPE
 from xerparser.schemas.pcatval import PCATVAL
+from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK
 from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
-from xerparser.src.validators import optional_date, optional_str, date_format
+from xerparser.src.validators import date_format, optional_date, optional_str
 
 
 class PROJECT:
@@ -26,44 +26,64 @@ class PROJECT:
     A class representing a schedule.
     """
 
+    _wbs_root: PROJWBS
+
     def __init__(
         self,
         sched_options: SCHEDOPTIONS,
         default_calendar: CALENDAR | None = None,
-        **data,
+        **data: str,
     ) -> None:
         self.options: SCHEDOPTIONS = sched_options
 
         # table fields from .xer file
         self.uid: str = data["proj_id"]
+        """Unique Table ID"""
         self.add_date: datetime = datetime.strptime(data["add_date"], date_format)
+        """Date Project was Created"""
         self.default_calendar: CALENDAR | None = default_calendar
+        """Default Calendar Assigned to Project"""
         self.data_date: datetime = datetime.strptime(
             data["last_recalc_date"], date_format
         )
+        """Date Project is Updated To"""
         self.export_flag: bool = data["export_flag"] == "Y"
+        """Project Export Flag"""
         self.finish_date: datetime = datetime.strptime(
             data["scd_end_date"], date_format
         )
+        """Projected Completion Date"""
         self.last_fin_dates_id: str | None = optional_str(data["last_fin_dates_id"])
+        """Last Stored Financial Period"""
         self.last_schedule_date: datetime | None = optional_date(
             data.get("last_schedule_date", "")
         )
+        """Last Date Schedule was Calculated"""
         self.must_finish_date: datetime | None = optional_date(data["plan_end_date"])
+        """Must Finish by Date Assigned to Project"""
         self.plan_start_date: datetime = datetime.strptime(
             data["plan_start_date"], date_format
         )
+        """Planned Start Date Assigned to Project"""
         self.short_name: str = data["proj_short_name"]
+        """Project Code"""
 
         # manually set from other tables
         self.activity_codes: list[ACTVTYPE] = []
+        """Project Level Activity Codes"""
         self.calendars: list[CALENDAR] = []
+        """Project Calendars"""
         self.project_codes: dict[PCATTYPE, PCATVAL] = {}
+        """Project Codes Assigned to Project"""
         self.tasks: list[TASK] = []
+        """Project Activities"""
         self.relationships: list[TASKPRED] = []
+        """Project Relationships"""
         self.resources: list[TASKRSRC] = []
+        """Activity Resources"""
         self.wbs_nodes: list[PROJWBS] = []
-        self.wbs_root: PROJWBS | None = None
+        """Project Work Breakdown Structure"""
+        # self.wbs_root: PROJWBS | None = None
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     def __str__(self) -> str:
@@ -214,6 +234,25 @@ class PROJECT:
     @cached_property
     def wbs_by_path(self) -> dict[str, PROJWBS]:
         return {node.full_code: node for node in self.wbs_nodes}
+
+    @property
+    def wbs_root(self) -> PROJWBS:
+        if not self._wbs_root:
+            raise UnboundLocalError("WBS Root is not assigned")
+
+        return self._wbs_root
+
+    @wbs_root.setter
+    def wbs_root(self, value: PROJWBS) -> None:
+        if not isinstance(value, PROJWBS):
+            raise TypeError(f"wbs_root must be type `PROJWBS`; got {type(value)}")
+
+        if value.code != self.short_name:
+            raise ValueError(
+                f"WBS Code ({value.code}) does not match project ({self.short_name})"
+            )
+
+        self._wbs_root = value
 
     def planned_progress(self, before_date: datetime) -> dict[str, list[TASK]]:
         """All planned progress through a given date.

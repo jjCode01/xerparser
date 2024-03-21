@@ -100,7 +100,7 @@ class CALENDAR:
         CA_Rsrc = "Resource"
         CA_Project = "Project"
 
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: str) -> None:
         self.uid: str = data["clndr_id"]
         self.base_clndr_id: str | None = optional_str(data["base_clndr_id"])
         self.data: str = data["clndr_data"]

@@ -21,7 +21,7 @@ class ERMHDR:
 
     """
 
-    def __init__(self, *args) -> None:
+    def __init__(self, *args: str) -> None:
         self.version: str = args[0]
         self.date: datetime = datetime.strptime(args[1], "%Y-%m-%d")
         self.user: str = args[4]

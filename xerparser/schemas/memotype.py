@@ -7,9 +7,11 @@ class MEMOTYPE:
     A class to represent a notebook topic.
     """
 
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: str) -> None:
         self.uid: str = data["memo_type_id"]
+        """Unique Table ID"""
         self.topic: str = data["memo_type"]
+        """Notebook Topic"""
 
     def __eq__(self, __o: "MEMOTYPE") -> bool:
         return self.topic == __o.topic

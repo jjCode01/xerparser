@@ -7,13 +7,19 @@ class ACTVTYPE:
     A class representing Activity Codes Types
     """
 
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: str) -> None:
         self.uid: str = data["actv_code_type_id"]
+        """Unique Table ID"""
         self.max_length: int = int(data["actv_short_len"])
+        """Max Character Length of Acticity Code"""
         self.name: str = data["actv_code_type"]
+        """Name of Activity Code Type"""
         self.proj_id: str = data["proj_id"]
+        """Foreign Key for Project (Project Level Activity Codes)"""
         self.scope: str = _check_scope(data["actv_code_type_scope"])
+        """Activity Code Scope - Global, Enterpise, or Project"""
         self.seq_num: int | None = None if (seq := data["seq_num"]) == "" else int(seq)
+        """Sort Order"""
 
     def __eq__(self, __o: "ACTVTYPE") -> bool:
         return all(

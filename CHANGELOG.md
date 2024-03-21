@@ -1,6 +1,20 @@
 
 # Changelog - xerparser
 
+## 0.11.0 - 2024-03-20
+
+* Updated type hints, which now requires a minimum of Python 3.11.
+
+---
+
+## 0.10.4 - 2024-03-08
+
+* Updated dependencies to new versions.
+* `ACCOUNT` class equal overide now checks if other object is None type.
+* The `max_multiple_longest_path` attribute of the `SCHEDOPTIONS` class can be type int or None.
+
+---
+
 ## 0.10.3 - 2023-08-11
 
 ### Changes

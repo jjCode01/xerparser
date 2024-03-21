@@ -2,6 +2,7 @@
 # projwbs.py
 
 from typing import Any
+
 from xerparser.schemas._node import Node
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.src.validators import optional_int
