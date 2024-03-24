@@ -56,7 +56,7 @@ class Xer:
         self.notebook_topics: dict[str, MEMOTYPE] = self._get_attr("MEMOTYPE")
         self.project_code_types: dict[str, PCATTYPE] = self._get_attr("PCATTYPE")
         self.project_code_values: dict[str, PCATVAL] = self._get_proj_code_values()
-        self.resources: dict[str, RSRC] = self._get_attr("RSRC")
+        self.resources: dict[str, RSRC] = self._get_rsrcs()
         self.sched_options: dict[str, SCHEDOPTIONS] = self._get_attr("SCHEDOPTIONS")
         self.udf_types: dict[str, UDFTYPE] = self._get_attr("UDFTYPE")
         self.projects = self._get_projects()
@@ -146,6 +146,14 @@ class Xer:
             rel["task_pred_id"]: self._set_taskpred(**rel)
             for rel in self.tables.get("TASKPRED", [])
         }
+
+    def _get_rsrcs(self) -> dict[str, RSRC]:
+        rsrcs: dict[str, RSRC] = self._get_attr("RSRC")
+        for rsrc in rsrcs.values():
+            if rsrc.parent_rsrc_id:
+                rsrc.parent = rsrcs[rsrc.parent_rsrc_id]
+                rsrc.parent.addChild(rsrc)
+        return rsrcs
 
     def _get_tasks(self) -> dict[str, TASK]:
         return {
