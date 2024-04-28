@@ -347,6 +347,7 @@ class TestParser(unittest.TestCase):
         for file in tqdm(self.valid_data):
             with open(file["file"], encoding=Xer.CODEC, errors="ignore") as f:
                 file_contents = f.read()
+                file_name = f.name
             try:
                 xer = Xer(file_contents)
             except CorruptXerFile:
@@ -367,7 +368,7 @@ class TestParser(unittest.TestCase):
                     self.assertEqual(
                         round(sum(day for day in rem_hours.values()), 2),
                         round(task.remain_drtn_hr_cnt, 2),
-                        f"{project.short_name} - {project.name}\n{task}\nCalendar{task.calendar}\nStart: {task.restart_date}\nFinish: {task.reend_date}\nRem Hours: {task.remain_drtn_hr_cnt}\n{rem_hours}",
+                        f"File: {file_name}\n{project.short_name} - {project.name}\n{task}\nCalendar: {task.calendar} {task.calendar.uid}\nStart: {task.restart_date}\nFinish: {task.reend_date}\nRem Hours: {task.remain_drtn_hr_cnt}\n{rem_hours}",
                     )
 
 

@@ -5,7 +5,7 @@ from xerparser.src.validators import optional_int
 
 
 class SCHEDOPTIONS:
-    def __init__(self, **data) -> None:
+    def __init__(self, **data: str) -> None:
         """
         A class to represent the Schedule Options.
         """

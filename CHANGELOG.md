@@ -1,9 +1,11 @@
 
 # Changelog - xerparser
 
-## 0.11.0 - 2024-03-20
+## 0.11.0 - 2024-04-28
 
 * Updated type hints, which now requires a minimum of Python 3.11.
+* `RSRC` class now inherits from `Node`.
+* Updating / filling in docstrings.
 
 ---
 

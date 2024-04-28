@@ -14,16 +14,16 @@ from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
+from xerparser.scripts.dates import clean_date
 from xerparser.scripts.decorators import rounded
 from xerparser.src.validators import (
-    optional_date,
     date_format,
-    optional_float,
     float_or_zero,
+    optional_date,
+    optional_float,
     optional_int,
     optional_str,
 )
-from xerparser.scripts.dates import clean_date
 
 
 class TASK:
@@ -95,26 +95,38 @@ class TASK:
         @property
         def is_task(self) -> bool:
             return self is self.TT_Task
-        
+
         @property
         def is_wbs(self) -> bool:
             return self is self.TT_WBS
 
-    def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data) -> None:
+    def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data: str) -> None:
         self.uid: str = data["task_id"]
+        """Unique Table ID"""
 
         # Foreign keys
         self.proj_id: str = data["proj_id"]
+        """Foreign Key for Project"""
         self.wbs_id: str = data["wbs_id"]
+        """Foreign Key for WBS Node"""
         self.clndr_id: str = data["clndr_id"]
+        """Foreign Key for Calendar"""
 
         # General Task info
         self.phys_complete_pct: float = float(data["phys_complete_pct"])
+        """Activity physical percent complete"""
         self.complete_pct_type: str = data["complete_pct_type"]
+        """Activity percent complete type: duration, physical, or units"""
         self.type: TASK.TaskType = TASK.TaskType[data["task_type"]]
+        """
+        Activity type:
+            Task, Start Milestone, Finish Milestone, Level of Effort, 
+            WBS Summary, or Resource Dependent"""
         self.status: TASK.TaskStatus = TASK.TaskStatus[data["status_code"]]
         self.task_code: str = data["task_code"]
+        """Activity ID"""
         self.name: str = data["task_name"]
+        """Activity Name"""
 
         # Durations and float
         self.duration_type: str = data["duration_type"]
@@ -131,16 +143,10 @@ class TASK:
         # Dates
         self.act_start_date: datetime | None = optional_date(data["act_start_date"])
         self.act_end_date: datetime | None = optional_date(data["act_end_date"])
-        self.late_start_date: datetime | None = optional_date(
-            data["late_start_date"]
-        )
+        self.late_start_date: datetime | None = optional_date(data["late_start_date"])
         self.late_end_date: datetime | None = optional_date(data["late_end_date"])
-        self.expect_end_date: datetime | None = optional_date(
-            data["expect_end_date"]
-        )
-        self.early_start_date: datetime | None = optional_date(
-            data["early_start_date"]
-        )
+        self.expect_end_date: datetime | None = optional_date(data["expect_end_date"])
+        self.early_start_date: datetime | None = optional_date(data["early_start_date"])
         self.early_end_date: datetime | None = optional_date(data["early_end_date"])
         self.rem_late_start_date: datetime | None = optional_date(
             data["rem_late_start_date"]
@@ -276,6 +282,7 @@ class TASK:
 
     @property
     def original_duration(self) -> int:
+        """Original Duration in Days"""
         return int(self.target_drtn_hr_cnt / 8)
 
     @cached_property

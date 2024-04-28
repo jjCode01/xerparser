@@ -159,6 +159,7 @@ class PROJECT:
 
     @property
     def name(self) -> str:
+        """Project Name"""
         if not self.wbs_root:
             return ""
         return self.wbs_root.name
