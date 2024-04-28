@@ -1,7 +1,11 @@
 
 # Changelog - xerparser
 
-## DEVELOPMENT BRANCH
+## 0.11.1
+
+* Moved `code` attribute and `full_code` property to `Node` class.
+
+---
 
 ## 0.11.0 - 2024-04-28
 
