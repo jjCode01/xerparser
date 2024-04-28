@@ -11,11 +11,9 @@ class ACCOUNT(Node):
     """
 
     def __init__(self, **data: str) -> None:
-        super().__init__()
+        super().__init__(data["acct_short_name"])
         self.uid: str = data["acct_id"]
         """Unique Table ID"""
-        self.code: str = data["acct_short_name"]
-        """Cost Code / Account ID"""
         self.description: str = _check_description(data["acct_descr"])
         """Cost Account Description"""
         self.name: str = data["acct_name"]
@@ -41,14 +39,6 @@ class ACCOUNT(Node):
 
     def __str__(self) -> str:
         return f"{self.full_code} - {self.name}"
-
-    @property
-    def full_code(self) -> str:
-        """Cost code including parent codes"""
-        if not self.parent:
-            return self.code
-
-        return f"{self.parent.full_code}.{self.code}"
 
 
 def _check_description(value: str) -> str:

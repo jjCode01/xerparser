@@ -14,11 +14,9 @@ class PROJWBS(Node):
     """
 
     def __init__(self, **data: str) -> None:
-        super().__init__()
+        super().__init__(data["wbs_short_name"])
         self.uid: str = data["wbs_id"]
         """Unique Table ID"""
-        self.code: str = data["wbs_short_name"]
-        """WBS Code"""
         self.is_proj_node: bool = data["proj_node_flag"] == "Y"
         """Project Level Code Flag"""
         self.name: str = data["wbs_name"]
@@ -62,4 +60,4 @@ class PROJWBS(Node):
 
     @property
     def full_code(self) -> str:
-        return ".".join(reversed([node.code for node in self.lineage]))
+        return ".".join([node.code for node in self.lineage])

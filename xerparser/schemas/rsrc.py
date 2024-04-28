@@ -13,7 +13,7 @@ class RSRC(Node):
     """
 
     def __init__(self, **data: str) -> None:
-        super().__init__()
+        super().__init__(data["rsrc_short_name"])
         self.uid: str = data["rsrc_id"]
         self.clndr_id: str = data["clndr_id"]
         self.name: str = data["rsrc_name"]
@@ -27,7 +27,3 @@ class RSRC(Node):
 
     def __hash__(self) -> int:
         return hash(self.full_code)
-
-    @property
-    def full_code(self) -> str:
-        return ".".join(reversed([node.short_name for node in self.lineage]))

@@ -1,7 +1,6 @@
 # xerparser
 # actvcode.py
 
-from functools import cached_property
 
 from xerparser.schemas._node import Node
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -13,13 +12,11 @@ class ACTVCODE(Node):
     """
 
     def __init__(self, code_type: ACTVTYPE, **data: str) -> None:
-        super().__init__()
+        super().__init__(data["short_name"])
         self.uid: str = data["actv_code_id"]
         """Unique Table ID"""
         self.actv_code_type_id: str = data["actv_code_type_id"]
         """Foreign Key to Activity Code Type"""
-        self.code: str = data["short_name"]
-        """Activity Code ID"""
         self.description: str = data["actv_code_name"]
         """Activity Code Description"""
         self.parent_actv_code_id: str = data["parent_actv_code_id"]
@@ -40,14 +37,6 @@ class ACTVCODE(Node):
 
     def __hash__(self) -> int:
         return hash((self.full_code, self.code_type))
-
-    @cached_property
-    def full_code(self) -> str:
-        """Activity code including parent codes"""
-        if not self.parent:
-            return self.code
-
-        return f"{self.parent.full_code}.{self.code}"
 
     def _valid_actvtype(self, value: ACTVTYPE) -> ACTVTYPE:
         """Validate Activity Code Type"""
