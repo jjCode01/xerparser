@@ -57,12 +57,13 @@ class TASKRSRC:
         self.periods: list[TRSRCFIN] = []
 
     def __eq__(self, __o: "TASKRSRC") -> bool:
-        return (
-            self.resource == __o.resource
-            and self.account == __o.account
-            and self.target_qty == __o.target_qty
-            and self.target_lag_drtn_hr_cnt == __o.target_lag_drtn_hr_cnt
-            and self.target_cost == __o.target_cost
+        return all(
+            (
+                self.resource == __o.resource,
+                self.account == __o.account,
+                self.target_qty == __o.target_qty,
+                self.target_cost == __o.target_cost,
+            )
         )
 
     def __hash__(self) -> int:
@@ -71,7 +72,6 @@ class TASKRSRC:
                 self.resource,
                 self.account,
                 self.target_qty,
-                self.target_lag_drtn_hr_cnt,
                 self.target_cost,
             )
         )
