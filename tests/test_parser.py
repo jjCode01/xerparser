@@ -18,6 +18,7 @@ import json
 import os
 import sys
 import unittest
+from collections import Counter, defaultdict
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any
@@ -29,7 +30,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import tests.config as config
 from xerparser.src.errors import CorruptXerFile
-from xerparser.src.xer import CALENDAR, PROJECT, Xer
+from xerparser.src.xer import CALENDAR, PROJECT, TASKRSRC, Xer
 
 DATE_FORMAT = "%Y-%m-%d %M:%S"  # format datetime objects to strings
 PLANNED_DAYS = 14  # planned days ahead of data date for planned_progress testing
@@ -141,6 +142,16 @@ def create_test_data(file_directory: Path) -> None:
         outfile.write(json_data)
 
 
+def _taskrsrc_shallow_compare(res_1: TASKRSRC, res_2: TASKRSRC) -> bool:
+    if (
+        res_1.resource != res_2.resource
+        or res_1.account != res_2.account
+        or res_1.lag != res_2.lag
+    ):
+        return False
+    return True
+
+
 class TestParser(unittest.TestCase):
     def setUp(self) -> None:
         xer_data_file = Path(r"./tests/fixtures/xer_data.json")
@@ -174,6 +185,85 @@ class TestParser(unittest.TestCase):
             if re_create_data.lower() == "y":
                 print("Re-creating test data....")
                 create_test_data(Path(config.directory))
+
+    def test_task_rsrc_compare(self):
+        print("Running task rsrc comparison...")
+        file1 = "/home/jesse/Documents/Projects/BBC/MSJC MVC STEM/MSJC-STEM-230401.xer"
+        file2 = "/home/jesse/Documents/Projects/BBC/MSJC MVC STEM/MSJC-STEM-230501.xer"
+
+        previous = list(Xer.reader(file1).projects.values())[0]
+        current = list(Xer.reader(file2).projects.values())[0]
+
+        resources = defaultdict(list[tuple])
+
+        for task in sorted(
+            filter(lambda t: t.task_code in previous.tasks_by_code, current.tasks),
+            key=lambda t: t.task_code,
+        ):
+            prev_task = previous.tasks_by_code[task.task_code]
+
+            res_counter = Counter(task.resources.values())
+            res_counter.subtract(Counter(prev_task.resources.values()))
+
+            print(res_counter)
+
+            task_rsrc_added: list[TASKRSRC] = []
+            task_rsrc_deleted: list[TASKRSRC] = []
+
+            for _r in task.resources.values():
+                print(f"{_r}: {hash(_r)}")
+                if _r not in list(prev_task.resources.values()):
+                    print("Not Found")
+
+            for _pr in prev_task.resources.values():
+                print(f"{_pr}: {hash(_pr)}")
+
+            if task.resources and prev_task.resources:
+                print(
+                    list(task.resources.values())[0].resource
+                    == list(prev_task.resources.values())[0].resource
+                )
+
+            if task.resources or prev_task.resources:
+                input("Press Enter for Next")
+
+            for res, count in res_counter.items():
+                if count > 0:
+                    task_rsrc_added.extend([res] * count)
+                    # resources["added"].extend([(task, res)] * count)
+                elif count < 0:
+                    task_rsrc_deleted.extend([res] * abs(count))
+
+            for res in task_rsrc_added[:]:
+                for old_res in task_rsrc_deleted[:]:
+                    if _taskrsrc_shallow_compare(res, old_res):
+                        budget_change_flag = False
+                        if res.target_cost != old_res.target_cost:
+                            resources["revised_cost"].append(
+                                (task, res, old_res.target_cost)
+                            )
+                            budget_change_flag = True
+
+                        if res.target_qty != old_res.target_qty:
+                            resources["revised_qty"].append(
+                                (task, res, old_res.target_qty)
+                            )
+                            budget_change_flag = True
+
+                        if budget_change_flag:
+                            task_rsrc_added.remove(res)
+                            task_rsrc_deleted.remove(old_res)
+                        else:
+                            self.assertEqual(
+                                len(task_rsrc_added),
+                                0,
+                                f"NEW: {task.resources} --- OLD: {prev_task.resources}",
+                            )
+
+                        break
+
+            resources["added"].extend([(task, res) for res in task_rsrc_added])
+            resources["deleted"].extend([(task, res) for res in task_rsrc_deleted])
 
     def test_create_xer(self):
         """Tests creation of Xer objects"""

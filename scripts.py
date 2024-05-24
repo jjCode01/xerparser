@@ -15,6 +15,17 @@ def parse_test():
     )
 
 
+def test_task_rsrc_compare():
+    subprocess.run(
+        [
+            "python",
+            "-m",
+            "unittest",
+            "tests.test_parser.TestParser.test_task_rsrc_compare",
+        ]
+    )
+
+
 def rem_hours_per_day_test():
     subprocess.run(
         ["python", "-m", "unittest", "tests.test_parser.TestParser.test_rem_hour_calc"]
