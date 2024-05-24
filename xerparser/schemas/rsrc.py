@@ -23,11 +23,14 @@ class RSRC(Node):
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
 
     def __eq__(self, __o: "RSRC") -> bool:
-        self.full_code == __o.full_code
+        return self.full_code == __o.full_code
 
     def __hash__(self) -> int:
         return hash(self.full_code)
 
     @property
     def full_code(self) -> str:
-        return ".".join(reversed([node.short_name for node in self.lineage]))
+        """Activity code including parent codes"""
+        if not self.parent:
+            return self.short_name
+        return f"{self.parent.full_code}.{self.short_name}"
