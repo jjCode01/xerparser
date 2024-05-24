@@ -224,6 +224,10 @@ class PROJECT:
 
     @cached_property
     def tasks_by_code(self) -> dict[str, TASK]:
+        """
+        Returns a dictionary of the Activities using the
+        Activity ID as the key and the TASK object as the value.
+        """
         return {task.task_code: task for task in self.tasks}
 
     @cached_property
