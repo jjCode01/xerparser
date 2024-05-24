@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.11.1 - 2024-05-28
+
+* Fixed bug in the equal override function for the `RSRC` object; missing a return.
+
+---
+
 ## 0.11.0 - 2024-04-28
 
 * Updated type hints, which now requires a minimum of Python 3.11.

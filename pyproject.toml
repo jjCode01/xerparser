@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xerparser"
-version = "0.11.0"
+version = "0.11.1"
 description = "Parse a P6 .xer file to a Python object."
 authors = ["Jesse <code@seqmanagement.com>"]
 license = "GPL-3.0-only"
@@ -20,6 +20,8 @@ python-dateutil = "^2.8.2"
 test = 'scripts:test'
 parse_test = 'scripts:parse_test'
 calc_rem_hours_test = 'scripts:rem_hours_per_day_test'
+test_task_rsrc_compare = 'scripts:test_task_rsrc_compare'
+
 
 [build-system]
 requires = ["poetry-core"]
