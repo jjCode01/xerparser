@@ -18,7 +18,7 @@ import json
 import os
 import sys
 import unittest
-from collections import Counter, defaultdict
+from collections import Counter
 from multiprocessing import Pool
 from pathlib import Path
 from typing import Any
@@ -199,8 +199,6 @@ class TestParser(unittest.TestCase):
         previous = list(Xer.reader(config.file1).projects.values())[0]
         current = list(Xer.reader(config.file2).projects.values())[0]
 
-        resources = defaultdict(list[tuple])
-
         for task in sorted(
             filter(lambda t: t.task_code in previous.tasks_by_code, current.tasks),
             key=lambda t: t.task_code,
@@ -210,62 +208,8 @@ class TestParser(unittest.TestCase):
             res_counter = Counter(task.resources.values())
             res_counter.subtract(Counter(prev_task.resources.values()))
 
-            print(res_counter)
-
-            task_rsrc_added: list[TASKRSRC] = []
-            task_rsrc_deleted: list[TASKRSRC] = []
-
-            for _r in task.resources.values():
-                print(f"{_r}: {hash(_r)}")
-                if _r not in list(prev_task.resources.values()):
-                    print("Not Found")
-
-            for _pr in prev_task.resources.values():
-                print(f"{_pr}: {hash(_pr)}")
-
-            if task.resources and prev_task.resources:
-                print(
-                    list(task.resources.values())[0].resource
-                    == list(prev_task.resources.values())[0].resource
-                )
-
-            if task.resources or prev_task.resources:
-                input("Press Enter for Next")
-
-            for res, count in res_counter.items():
-                if count > 0:
-                    task_rsrc_added.extend([res] * count)
-                    # resources["added"].extend([(task, res)] * count)
-                elif count < 0:
-                    task_rsrc_deleted.extend([res] * abs(count))
-
-            for res in task_rsrc_added[:]:
-                for old_res in task_rsrc_deleted[:]:
-                    if _taskrsrc_shallow_compare(res, old_res):
-                        budget_change_flag = False
-                        if res.target_cost != old_res.target_cost:
-                            resources["revised_cost"].append(
-                                (task, res, old_res.target_cost)
-                            )
-                            budget_change_flag = True
-
-                        if res.target_qty != old_res.target_qty:
-                            resources["revised_qty"].append(
-                                (task, res, old_res.target_qty)
-                            )
-                            budget_change_flag = True
-
-                        if budget_change_flag:
-                            task_rsrc_added.remove(res)
-                            task_rsrc_deleted.remove(old_res)
-                        else:
-                            self.assertEqual(
-                                len(task_rsrc_added),
-                                0,
-                                f"NEW: {task.resources} --- OLD: {prev_task.resources}",
-                            )
-
-                        break
+            for r, c in res_counter.items():
+                self.assertEqual(c, 0, "Found variance in Resource Assignments")
 
     def test_create_xer(self):
         """Tests creation of Xer objects"""
