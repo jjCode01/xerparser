@@ -187,12 +187,17 @@ class TestParser(unittest.TestCase):
                 create_test_data(Path(config.directory))
 
     def test_task_rsrc_compare(self):
-        print("Running task rsrc comparison...")
-        file1 = "/home/jesse/Documents/Projects/BBC/MSJC MVC STEM/MSJC-STEM-230401.xer"
-        file2 = "/home/jesse/Documents/Projects/BBC/MSJC MVC STEM/MSJC-STEM-230501.xer"
+        """
+        Compares resources for two xer files that should have no differences in the task resource assignments.
 
-        previous = list(Xer.reader(file1).projects.values())[0]
-        current = list(Xer.reader(file2).projects.values())[0]
+        TODO:
+        This test is just thrown together for now and needs to be reworked.
+
+        """
+        print("Running task rsrc comparison...")
+
+        previous = list(Xer.reader(config.file1).projects.values())[0]
+        current = list(Xer.reader(config.file2).projects.values())[0]
 
         resources = defaultdict(list[tuple])
 
@@ -261,9 +266,6 @@ class TestParser(unittest.TestCase):
                             )
 
                         break
-
-            resources["added"].extend([(task, res) for res in task_rsrc_added])
-            resources["deleted"].extend([(task, res) for res in task_rsrc_deleted])
 
     def test_create_xer(self):
         """Tests creation of Xer objects"""
