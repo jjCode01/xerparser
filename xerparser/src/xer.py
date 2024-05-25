@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, BinaryIO
 
 from xerparser.schemas import TABLE_UID_MAP
+from xerparser.schemas._node import build_tree
 from xerparser.schemas.account import ACCOUNT
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -43,9 +44,11 @@ class Xer:
         if errors := find_xer_errors(self.tables):
             raise CorruptXerFile(errors)
         self.export_info = ERMHDR(*self.tables["ERMHDR"])
-        self.accounts: dict[str, ACCOUNT] = self._get_accounts()
+        self.accounts: dict[str, ACCOUNT] = build_tree(self._get_attr("ACCOUNT"))
         self.activity_code_types: dict[str, ACTVTYPE] = self._get_attr("ACTVTYPE")
-        self.activity_code_values = self._get_activity_code_values()
+        self.activity_code_values: dict[str, ACTVCODE] = build_tree(
+            self._get_activity_codes()
+        )
         self.calendars: dict[str, CALENDAR] = self._get_attr("CALENDAR")
 
         for cal in self.calendars.values():
@@ -55,8 +58,10 @@ class Xer:
         self.financial_periods: dict[str, FINDATES] = self._get_attr("FINDATES")
         self.notebook_topics: dict[str, MEMOTYPE] = self._get_attr("MEMOTYPE")
         self.project_code_types: dict[str, PCATTYPE] = self._get_attr("PCATTYPE")
-        self.project_code_values: dict[str, PCATVAL] = self._get_proj_code_values()
-        self.resources: dict[str, RSRC] = self._get_rsrcs()
+        self.project_code_values: dict[str, PCATVAL] = build_tree(
+            self._get_proj_codes()
+        )
+        self.resources: dict[str, RSRC] = build_tree(self._get_attr("RSRC"))
         self.sched_options: dict[str, SCHEDOPTIONS] = self._get_attr("SCHEDOPTIONS")
         self.udf_types: dict[str, UDFTYPE] = self._get_attr("UDFTYPE")
         self.projects = self._get_projects()
@@ -86,15 +91,7 @@ class Xer:
         file_contents = file_reader(file)
         return cls(file_contents)
 
-    def _get_accounts(self) -> dict[str, ACCOUNT]:
-        accounts: dict[str, ACCOUNT] = self._get_attr("ACCOUNT")
-        for account in accounts.values():
-            if account.parent_acct_id:
-                account.parent = accounts[account.parent_acct_id]
-                account.parent.addChild(account)
-        return accounts
-
-    def _get_activity_code_values(self) -> dict[str, ACTVCODE]:
+    def _get_activity_codes(self) -> dict[str, ACTVCODE]:
         activity_code_values = {
             code_val["actv_code_id"]: ACTVCODE(
                 code_type=self.activity_code_types[code_val["actv_code_type_id"]],
@@ -102,10 +99,6 @@ class Xer:
             )
             for code_val in self.tables.get("ACTVCODE", [])
         }
-        for act_code in activity_code_values.values():
-            act_code.parent = activity_code_values.get(act_code.parent_actv_code_id)
-            if act_code.parent:
-                act_code.parent.addChild(act_code)
         return activity_code_values
 
     def _get_attr(self, table_name: str) -> dict:
@@ -126,7 +119,7 @@ class Xer:
         }
         return projects
 
-    def _get_proj_code_values(self) -> dict[str, PCATVAL]:
+    def _get_proj_codes(self) -> dict[str, PCATVAL]:
         project_code_values = {
             code_val["proj_catg_id"]: PCATVAL(
                 code_type=self.project_code_types[code_val["proj_catg_type_id"]],
@@ -134,10 +127,6 @@ class Xer:
             )
             for code_val in self.tables.get("PCATVAL", [])
         }
-        for proj_code in project_code_values.values():
-            proj_code.parent = project_code_values.get(proj_code.parent_proj_catg_id)
-            if proj_code.parent:
-                proj_code.parent.addChild(proj_code)
 
         return project_code_values
 
@@ -146,14 +135,6 @@ class Xer:
             rel["task_pred_id"]: self._set_taskpred(**rel)
             for rel in self.tables.get("TASKPRED", [])
         }
-
-    def _get_rsrcs(self) -> dict[str, RSRC]:
-        rsrcs: dict[str, RSRC] = self._get_attr("RSRC")
-        for rsrc in rsrcs.values():
-            if rsrc.parent_rsrc_id:
-                rsrc.parent = rsrcs[rsrc.parent_rsrc_id]
-                rsrc.parent.addChild(rsrc)
-        return rsrcs
 
     def _get_tasks(self) -> dict[str, TASK]:
         return {
@@ -164,7 +145,7 @@ class Xer:
     def _get_wbs_nodes(self) -> dict[str, PROJWBS]:
         nodes: dict[str, PROJWBS] = self._get_attr("PROJWBS")
         for node in nodes.values():
-            node.parent = nodes.get(node.parent_wbs_id)
+            node.parent = nodes.get(node.parent_id)
             if node.parent:
                 node.parent.addChild(node)
             if proj := self.projects.get(node.proj_id):

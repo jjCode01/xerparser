@@ -1,7 +1,14 @@
 
 # Changelog - xerparser
 
-## 0.11.1 - 2024-05-28
+## 0.11.2 - 2024-05-25
+
+* Refactored inheritance for `Node` objects.
+    * The `description` attribute of the `ACTVCODE` and `PCATVAL` classes has been changed to `name`.
+
+---
+
+## 0.11.1 - 2024-05-24
 
 * Fixed bug in the equal override function for the `RSRC` object; missing a return.
 
