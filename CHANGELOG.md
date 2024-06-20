@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.12.0 - 2024-06-19
+
+* Added class `RSRCRATE` which represents a Resource Rate. This can be accessed from the `resource_rate` (dict) attribute of the `Xer` object. [Issue #6](https://github.com/jjCode01/xerparser/issues/6)  
+
+---  
+
 ## 0.11.2 - 2024-05-25
 
 * Refactored inheritance for `Node` objects.

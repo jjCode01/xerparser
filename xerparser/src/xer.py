@@ -19,6 +19,7 @@ from xerparser.schemas.pcatval import PCATVAL
 from xerparser.schemas.project import PROJECT
 from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.rsrc import RSRC
+from xerparser.schemas.rsrcrate import RSRCRATE
 from xerparser.schemas.schedoptions import SCHEDOPTIONS
 from xerparser.schemas.task import TASK, LinkToTask
 from xerparser.schemas.taskfin import TASKFIN
@@ -62,6 +63,7 @@ class Xer:
             self._get_proj_codes()
         )
         self.resources: dict[str, RSRC] = build_tree(self._get_attr("RSRC"))
+        self.resource_rates: dict[str, RSRCRATE] = self._get_rsrc_rates()
         self.sched_options: dict[str, SCHEDOPTIONS] = self._get_attr("SCHEDOPTIONS")
         self.udf_types: dict[str, UDFTYPE] = self._get_attr("UDFTYPE")
         self.projects = self._get_projects()
@@ -134,6 +136,12 @@ class Xer:
         return {
             rel["task_pred_id"]: self._set_taskpred(**rel)
             for rel in self.tables.get("TASKPRED", [])
+        }
+
+    def _get_rsrc_rates(self) -> dict[str, RSRCRATE]:
+        return {
+            rr["rsrc_rate_id"]: self._set_rsrc_rates(**rr)
+            for rr in self.tables.get("RSRCRATE", [])
         }
 
     def _get_tasks(self) -> dict[str, TASK]:
@@ -216,6 +224,11 @@ class Xer:
         topic = self.notebook_topics[kwargs["memo_type_id"]].topic
         task = self.tasks[kwargs["task_id"]]
         task.memos.append(TASKMEMO(topic=topic, **kwargs))
+
+    def _set_rsrc_rates(self, **kwargs) -> RSRCRATE:
+        rsrc = self.resources[kwargs["rsrc_id"]]
+        rsrc_rate = RSRCRATE(rsrc, **kwargs)
+        return rsrc_rate
 
     def _set_task(self, **kwargs) -> TASK:
         calendar = self.calendars[kwargs["clndr_id"]]

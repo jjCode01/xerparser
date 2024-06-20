@@ -1,4 +1,4 @@
-__version__ = "0.11.1"
+__version__ = "0.12.0"
 
 from xerparser.schemas.actvcode import ACTVCODE  # noqa: F401
 from xerparser.schemas.actvtype import ACTVTYPE  # noqa: F401
@@ -10,6 +10,7 @@ from xerparser.schemas.pcatval import PCATVAL  # noqa: F401
 from xerparser.schemas.project import PROJECT  # noqa: F401
 from xerparser.schemas.projwbs import PROJWBS  # noqa: F401
 from xerparser.schemas.rsrc import RSRC  # noqa: F401
+from xerparser.schemas.rsrcrate import RSRCRATE  # noqa: F401
 from xerparser.schemas.task import TASK  # noqa: F401
 from xerparser.schemas.taskfin import TASKFIN  # noqa: F401
 from xerparser.schemas.taskmemo import TASKMEMO  # noqa: F401
