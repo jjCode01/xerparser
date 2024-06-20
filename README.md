@@ -71,6 +71,7 @@ The tables stored in the .xer file are accessable as either Global, Project spec
   xer.tasks                 # dict of all TASK objects
   xer.relationships         # dict of all TASKPRED objects
   xer.resources             # dict of RSRC objects
+  xer.resource_rates        # dict of RSRCRATE objects
   xer.udf_types             # dict of UDFTYPE objects
   xer.wbs_nodes             # dict of all PROJWBS objects
   ```  
