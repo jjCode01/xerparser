@@ -14,6 +14,8 @@ class PROJWBS(Node):
     """
 
     def __init__(self, **data: str) -> None:
+        from xerparser.schemas.task import TASK
+
         super().__init__(
             data["wbs_id"],
             data["wbs_short_name"],
@@ -28,9 +30,13 @@ class PROJWBS(Node):
         """Sort Order"""
         self.status_code: str = data["status_code"]
 
-        self.assignments: int = 0
-        """Activity Assignment Count"""
+        self.tasks: list[TASK] = []
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
+
+    @property
+    def assignments(self) -> int:
+        """Activity Assignment Count"""
+        return len(self.tasks)
 
     @property
     def lineage(self) -> list["PROJWBS"]:

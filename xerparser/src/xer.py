@@ -235,6 +235,7 @@ class Xer:
         wbs = self.wbs_nodes[kwargs["wbs_id"]]
         wbs.assignments += 1
         task = TASK(calendar=calendar, wbs=wbs, **kwargs)
+        wbs.tasks.append(task)
         self.projects[task.proj_id].tasks.append(task)
         return task
 

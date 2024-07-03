@@ -43,7 +43,7 @@ class Node:
 
     @property
     def full_code(self) -> str:
-        """Cost code including parent codes"""
+        """Node code/ID including parent codes/IDs"""
         if not self.parent:
             return self.code
         return f"{self.parent.full_code}.{self.code}"

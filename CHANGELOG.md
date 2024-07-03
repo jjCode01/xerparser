@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.12.2
+
+* Added `tasks` (list[`TASK`]) attribute to `PROJWBS` class.
+
+---
+
 ## 0.12.1 - 2024-07-02
 
 Patched potential errors when transformming from a string to a float. Some languages use a comma rather than a period in floating point numbers.
