@@ -18,20 +18,20 @@ from xerparser.src.validators import (
 class TASKRSRC:
     """A class to represent a resource assigned to an activity."""
 
-    def __init__(self, account: ACCOUNT | None, resource: RSRC, **data) -> None:
+    def __init__(self, account: ACCOUNT | None, resource: RSRC, **data: str) -> None:
         self.uid: str = data["taskrsrc_id"]
         self.task_id: str = data["task_id"]
         self.proj_id: str = data["proj_id"]
         self.acct_id: str | None = optional_str(data["acct_id"])
         self.rsrc_id: str = data["rsrc_id"]
-        self.remain_qty: float = float(data["remain_qty"])
-        self.target_qty: float = float(data["target_qty"])
-        self.act_ot_qty: float = float(data["act_ot_qty"])
-        self.act_reg_qty: float = float(data["act_reg_qty"])
-        self.target_cost: float = float(data["target_cost"])
-        self.act_reg_cost: float = float(data["act_reg_cost"])
-        self.act_ot_cost: float = float(data["act_ot_cost"])
-        self.remain_cost: float = float(data["remain_cost"])
+        self.remain_qty: float = float(data["remain_qty"].replace(",", "."))
+        self.target_qty: float = float(data["target_qty"].replace(",", "."))
+        self.act_ot_qty: float = float(data["act_ot_qty"].replace(",", "."))
+        self.act_reg_qty: float = float(data["act_reg_qty"].replace(",", "."))
+        self.target_cost: float = float(data["target_cost"].replace(",", "."))
+        self.act_reg_cost: float = float(data["act_reg_cost"].replace(",", "."))
+        self.act_ot_cost: float = float(data["act_ot_cost"].replace(",", "."))
+        self.remain_cost: float = float(data["remain_cost"].replace(",", "."))
         self.act_start_date: datetime | None = optional_date(data["act_start_date"])
         self.act_end_date: datetime | None = optional_date(data["act_end_date"])
         self.restart_date: datetime | None = optional_date(data["restart_date"])
@@ -49,8 +49,10 @@ class TASKRSRC:
         self.rem_late_end_date: datetime | None = optional_date(
             data["rem_late_end_date"]
         )
-        self.act_this_per_cost: float = float(data["act_this_per_cost"])
-        self.act_this_per_qty: float = float(data["act_this_per_qty"])
+        self.act_this_per_cost: float = float(
+            data["act_this_per_cost"].replace(",", ".")
+        )
+        self.act_this_per_qty: float = float(data["act_this_per_qty"].replace(",", "."))
         self.rsrc_type: str = data["rsrc_type"]
         self.account: ACCOUNT | None = account_or_none(account)
         self.resource: RSRC = resource

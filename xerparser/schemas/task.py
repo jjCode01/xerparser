@@ -113,7 +113,9 @@ class TASK:
         """Foreign Key for Calendar"""
 
         # General Task info
-        self.phys_complete_pct: float = float(data["phys_complete_pct"])
+        self.phys_complete_pct: float = float(
+            data["phys_complete_pct"].replace(",", ".")
+        )
         """Activity physical percent complete"""
         self.complete_pct_type: str = data["complete_pct_type"]
         """Activity percent complete type: duration, physical, or units"""
@@ -134,8 +136,12 @@ class TASK:
             data["total_float_hr_cnt"]
         )
         self.free_float_hr_cnt: float | None = optional_float(data["free_float_hr_cnt"])
-        self.remain_drtn_hr_cnt: float = float(data["remain_drtn_hr_cnt"])
-        self.target_drtn_hr_cnt: float = float(data["target_drtn_hr_cnt"])
+        self.remain_drtn_hr_cnt: float = float(
+            data["remain_drtn_hr_cnt"].replace(",", ".")
+        )
+        self.target_drtn_hr_cnt: float = float(
+            data["target_drtn_hr_cnt"].replace(",", ".")
+        )
         self.float_path: int | None = optional_int(data["float_path"])
         self.float_path_order: int | None = optional_int(data["float_path_order"])
         self.is_longest_path: bool = data["driving_path_flag"] == "Y"

@@ -45,7 +45,7 @@ class UDFTYPE:
         self.type: UDFTYPE.FieldType = UDFTYPE.FieldType[data["logical_data_type"]]
 
     @staticmethod
-    def get_udf_value(udf_type: "UDFTYPE", **data) -> Any:
+    def get_udf_value(udf_type: "UDFTYPE", **data: str) -> Any:
         if udf_type.type in (
             UDFTYPE.FieldType.FT_END_DATE,
             UDFTYPE.FieldType.FT_START_DATE,
@@ -56,7 +56,7 @@ class UDFTYPE:
             UDFTYPE.FieldType.FT_FLOAT_2_DECIMALS,
             UDFTYPE.FieldType.FT_MONEY,
         ):
-            return float(data["udf_number"])
+            return float(data["udf_number"].replace(",", "."))
 
         if udf_type.type is UDFTYPE.FieldType.FT_INT:
             return int(data["udf_number"])

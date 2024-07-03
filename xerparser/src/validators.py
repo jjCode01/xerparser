@@ -6,6 +6,7 @@ from datetime import datetime
 
 date_format = "%Y-%m-%d %H:%M"
 
+
 def optional_date(value: str) -> datetime | None:
     if value == "" or value is None:
         return None
@@ -15,13 +16,13 @@ def optional_date(value: str) -> datetime | None:
 def optional_float(value: str) -> float | None:
     if value == "" or value is None:
         return None
-    return float(value)
+    return float(value.replace(",", "."))
 
 
 def float_or_zero(value: str) -> float:
     if value == "" or value is None:
         return 0.0
-    return float(value)
+    return float(value.replace(",", "."))
 
 
 def optional_int(value: str) -> int | None:

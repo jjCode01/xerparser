@@ -17,7 +17,7 @@ class Rate:
         """Price per Unit 4"""
         self.cost_per_qty5: float = float_or_zero(data["cost_per_qty5"])
         """Price per Unit 5"""
-        self.max_qty_per_hr: float = float(data["max_qty_per_hr"])
+        self.max_qty_per_hr: float = float(data["max_qty_per_hr"].replace(",", "."))
         """Max Units per Time"""
         self.start_date: datetime = datetime.strptime(data["start_date"], date_format)
         """Effective Date"""

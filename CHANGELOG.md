@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.12.1 - 2024-07-02
+
+Patched potential errors when transformming from a string to a float. Some languages use a comma rather than a period in floating point numbers.
+
+---
+
 ## 0.12.0 - 2024-06-19
 
 * Added class `RSRCRATE` which represents a Resource Rate. This can be accessed from the `resource_rate` (dict) attribute of the `Xer` object. [Issue #6](https://github.com/jjCode01/xerparser/issues/6)  
