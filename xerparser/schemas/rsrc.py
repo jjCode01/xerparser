@@ -13,6 +13,8 @@ class RSRC(Node):
     """
 
     def __init__(self, **data: str) -> None:
+        from xerparser.schemas.taskrsrc import TASKRSRC
+
         super().__init__(
             data["rsrc_id"],
             data["rsrc_short_name"],
@@ -22,3 +24,4 @@ class RSRC(Node):
         self.clndr_id: str = data["clndr_id"]
         self.type: str = data["rsrc_type"]
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
+        self.task_rsrcs: list[TASKRSRC] = []
