@@ -1,9 +1,10 @@
 
 # Changelog - xerparser
 
-## 0.12.2
+## 0.12.2 - 2024-07-04
 
 * Added `tasks` (list[`TASK`]) attribute to `PROJWBS` class.
+* Added `task_rsrcs` (list[`TASKRSRC`]) attribute to `RSRC` class.
 
 ---
 

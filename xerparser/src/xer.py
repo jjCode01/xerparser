@@ -233,7 +233,6 @@ class Xer:
     def _set_task(self, **kwargs) -> TASK:
         calendar = self.calendars[kwargs["clndr_id"]]
         wbs = self.wbs_nodes[kwargs["wbs_id"]]
-        wbs.assignments += 1
         task = TASK(calendar=calendar, wbs=wbs, **kwargs)
         wbs.tasks.append(task)
         self.projects[task.proj_id].tasks.append(task)
@@ -254,6 +253,7 @@ class Xer:
         task = self.tasks[kwargs["task_id"]]
         proj = self.projects[kwargs["proj_id"]]
         taskrsrc = TASKRSRC(resource=rsrc, account=account, **kwargs)
+        rsrc.task_rsrcs.append(taskrsrc)
         task.resources.update({taskrsrc.uid: taskrsrc})
         proj.resources.append(taskrsrc)
 
