@@ -170,8 +170,8 @@ class TASK:
         )
         self.suspend_date: datetime | None = optional_date(data["suspend_date"])
         self.resume_date: datetime | None = optional_date(data["resume_date"])
-        self.create_date: datetime = datetime.strptime(data["create_date"], date_format)
-        self.update_date: datetime = datetime.strptime(data["update_date"], date_format)
+        self.create_date: datetime | None = optional_date(data["create_date"])
+        self.update_date: datetime | None = optional_date(data["update_date"])
 
         # Constraints
         self.cstr_date: datetime | None = optional_date(data["cstr_date"])

@@ -66,7 +66,7 @@ class Node:
         self._parent = self._validate(value)
 
     def _validate(self, _o2) -> Self:
-        if type(self) != type(_o2):
+        if type(self) is not type(_o2):
             raise TypeError(f"Expected {type(self)}; got {type(_o2)}")
         return _o2
 

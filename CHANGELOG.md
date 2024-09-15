@@ -1,6 +1,13 @@
 
 # Changelog - xerparser
 
+## 0.12.3 - 2024-09-14
+
+* Fixed potential KeyErrors in the `SCHEDOPTIONS` class due to missing attributes in files exported from older versions of P6. [Issue #7](https://github.com/jjCode01/xerparser/issues/7)
+* Fixed bug where `create_date` and `update_date` attributes of the `TASK` class may be empty. [Issue #8](https://github.com/jjCode01/xerparser/issues/8)
+
+---
+
 ## 0.12.2 - 2024-07-04
 
 * Added `tasks` (list[`TASK`]) attribute to `PROJWBS` class.

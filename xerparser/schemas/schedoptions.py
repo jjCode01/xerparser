@@ -10,12 +10,12 @@ class SCHEDOPTIONS:
         A class to represent the Schedule Options.
         """
         self.max_multiple_longest_path: int | None = optional_int(
-            data["max_multiple_longest_path"]
+            data.get("max_multiple_longest_path")
         )
         self.proj_id: str = data["proj_id"]
-        self.calendar_on_relationship_lag: str = data[
-            "sched_calendar_on_relationship_lag"
-        ]
+        self.calendar_on_relationship_lag: str = data.get(
+            "sched_calendar_on_relationship_lag", ""
+        )
         self.float_type: str = data["sched_float_type"]
         self.lag_early_start_flag: bool = data["sched_lag_early_start_flag"] == "Y"
         self.open_critical_flag: bool = data["sched_open_critical_flag"] == "Y"
@@ -25,11 +25,11 @@ class SCHEDOPTIONS:
         self.setplantoforecast: bool = data["sched_setplantoforecast"] == "Y"
         self.use_expect_end_flag: bool = data["sched_use_expect_end_flag"] == "Y"
         self.use_project_end_date_for_float = (
-            data["sched_use_project_end_date_for_float"] == "Y"
+            data.get("sched_use_project_end_date_for_float", "N") == "Y"
         )
         self.schedoptions_id: str = data["schedoptions_id"]
         self.use_total_float_multiple_longest_paths: bool = (
-            data["use_total_float_multiple_longest_paths"] == "Y"
+            data.get("use_total_float_multiple_longest_paths", "N") == "Y"
         )
 
     def __eq__(self, __o: "SCHEDOPTIONS") -> bool:
