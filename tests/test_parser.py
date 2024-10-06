@@ -95,6 +95,7 @@ def process_project(project: PROJECT) -> dict[str, Any]:
         "task_udf_count": sum(len(task.user_defined_fields) for task in project.tasks),
         "this_period_cost": project.this_period_cost,
         "wbs_count": len(project.wbs_nodes),
+        "wbs_depth": project.wbs_root.height,
     }
 
 
@@ -288,7 +289,7 @@ class TestParser(unittest.TestCase):
                     self.assertEqual(
                         project.original_duration,
                         file[project.short_name]["original_duration"],
-                        f"{project.short_name} Project Duration Percent",
+                        f"{project.short_name} Project Original Duration",
                     )
                     planned_progress = project.planned_progress(
                         project.data_date + relativedelta(days=PLANNED_DAYS)
@@ -343,6 +344,11 @@ class TestParser(unittest.TestCase):
                         file[project.short_name]["relationship_count"],
                         f"{project.short_name} Project Task Successor Count",
                     )
+                    self.assertEqual(
+                        project.wbs_root.height,
+                        file[project.short_name]["wbs_depth"],
+                        f"{project.short_name} Project WBS Depth",
+                    )
                     for calendar in project.calendars:
                         self.assertEqual(
                             [day for day, work in calendar.work_week.items() if work],
@@ -356,7 +362,7 @@ class TestParser(unittest.TestCase):
                             file[project.short_name]["calendars"][calendar.uid][
                                 "workweek_hours"
                             ],
-                            f"{project.short_name} - Calendar {calendar.uid} work week hoursr",
+                            f"{project.short_name} - Calendar {calendar.uid} work week hours",
                         )
                         self.assertEqual(
                             len(calendar.holidays),

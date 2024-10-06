@@ -1,4 +1,4 @@
-__version__ = "0.12.3"
+__version__ = "0.13.0"
 
 from xerparser.schemas.actvcode import ACTVCODE  # noqa: F401
 from xerparser.schemas.actvtype import ACTVTYPE  # noqa: F401

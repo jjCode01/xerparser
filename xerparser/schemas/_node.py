@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Iterator, Self
 
 
 class Node:
@@ -42,6 +42,22 @@ class Node:
         return self._children
 
     @property
+    def depth(self) -> int:
+        """
+        Length of the path to the root node (i.e., root path).
+        Root node with have a depth of 0.
+        """
+        return len(self.lineage) - 1
+
+    @property
+    def height(self) -> int:
+        """
+        Length of the longest downward path to a leaf.
+        Leaves with have a height of 0.
+        """
+        return max([child.depth for child in self.traverse_children()]) - self.depth
+
+    @property
     def full_code(self) -> str:
         """Node code/ID including parent codes/IDs"""
         if not self.parent:
@@ -64,6 +80,18 @@ class Node:
         if value is None:
             return
         self._parent = self._validate(value)
+
+    def traverse_parents(self) -> Iterator[Self]:
+        """Iterate through parents to root."""
+        yield self
+        if self.parent:
+            yield from self.parent.traverse_parents()
+
+    def traverse_children(self) -> Iterator[Self]:
+        """Iterate through children to leaves."""
+        yield self
+        for child in self.children:
+            yield from child.traverse_children()
 
     def _validate(self, _o2) -> Self:
         if type(self) is not type(_o2):

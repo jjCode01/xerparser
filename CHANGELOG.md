@@ -1,6 +1,18 @@
 
 # Changelog - xerparser
 
+## 0.13.0 - 2024-10-06  
+
+NOTE: If you have tests setup, this change will require you to delete the existing `xer_data.json` fixture and recreate it in the test process.
+
+* Added functionality for traversing `Node` objects:
+    * `traverse_parents` method iterates through parents to root node.
+    * `traverse_children` method iterates through all children to leaves.
+    * `height` property is the length of the longest downward path to a leaf from a given node (leaf nodes with have a height of 0).
+    * `depth` property is the length of the path to the root node from a given node (root node will have a depth of 0).  
+
+---
+
 ## 0.12.3 - 2024-09-14
 
 * Fixed potential KeyErrors in the `SCHEDOPTIONS` class due to missing attributes in files exported from older versions of P6. [Issue #7](https://github.com/jjCode01/xerparser/issues/7)
