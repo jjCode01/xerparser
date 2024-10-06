@@ -4,7 +4,7 @@
 from datetime import datetime
 from enum import Enum
 from functools import cached_property
-from typing import Any
+from typing import Any, Self
 
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
@@ -470,7 +470,7 @@ class LinkToTask:
         self.link: str = link
         self.lag: int = lag_days
 
-    def __eq__(self, __o: "LinkToTask") -> bool:
+    def __eq__(self, __o: Self) -> bool:
         return all((self.task == __o.task, self.link == __o.link))
 
     def __hash__(self) -> int:
