@@ -17,7 +17,7 @@ class Node:
         """Parent Unique Table ID"""
         self.seq_num = seq_num
         self._parent: Self | None = None
-        self._children: list[Self] = []
+        self._children: dict[str, Self] = {}
 
     def __eq__(self, __o: Self) -> bool:
         self._validate(__o)
@@ -45,12 +45,13 @@ class Node:
 
     def addChild(self, child: Self) -> None:
         """Add child node"""
-        self._children.append(self._validate(child))
+        self._validate(child)
+        self._children[child.uid] = child
 
     @property
     def children(self) -> list[Self]:
         """List of children nodes"""
-        return self._children
+        return list(self._children.values())
 
     @property
     def depth(self) -> int:
