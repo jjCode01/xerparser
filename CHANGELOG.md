@@ -1,6 +1,13 @@
 
 # Changelog - xerparser
 
+## 0.13.1 - 2024-10-09
+
+* `Node` object now use `seq_num` attribute for comparison and sorting.
+* Fixed potential bug in how children are stored in the `Node` class; switched from a list to a dict to avoid having multiple of the same child.
+
+---
+
 ## 0.13.0 - 2024-10-06  
 
 NOTE: If you have tests setup, this change will require you to delete the existing `xer_data.json` fixture and recreate it in the test process.
