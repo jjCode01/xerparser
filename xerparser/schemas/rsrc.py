@@ -5,6 +5,7 @@ from typing import Any
 
 from xerparser.schemas._node import Node
 from xerparser.schemas.udftype import UDFTYPE
+from xerparser.src.validators import int_or_zero
 
 
 class RSRC(Node):
@@ -20,6 +21,7 @@ class RSRC(Node):
             data["rsrc_short_name"],
             data["rsrc_name"],
             data["parent_rsrc_id"],
+            int_or_zero(data["rsrc_seq_num"]),
         )
         self.clndr_id: str = data["clndr_id"]
         self.type: str = data["rsrc_type"]

@@ -345,6 +345,11 @@ class TestParser(unittest.TestCase):
                         f"{project.short_name} Project Task Successor Count",
                     )
                     self.assertEqual(
+                        project.wbs_root.size,
+                        file[project.short_name]["wbs_count"] - 1,
+                        f"{project.short_name} Project WBS count / size",
+                    )
+                    self.assertEqual(
                         project.wbs_root.height,
                         file[project.short_name]["wbs_depth"],
                         f"{project.short_name} Project WBS Depth",

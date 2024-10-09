@@ -4,6 +4,7 @@
 
 from xerparser.schemas._node import Node
 from xerparser.schemas.pcattype import PCATTYPE
+from xerparser.src.validators import int_or_zero
 
 
 class PCATVAL(Node):
@@ -17,11 +18,10 @@ class PCATVAL(Node):
             data["proj_catg_short_name"],
             data["proj_catg_name"],
             data["parent_proj_catg_id"],
+            int_or_zero(data["seq_num"]),
         )
         self.proj_catg_type_id: str = data["proj_catg_type_id"]
         """Foreign Key for Project Code Type `PCATTYPE`"""
-        self.seq_num: int = int(data["seq_num"])
-        """Sort Order"""
         self.code_type: PCATTYPE = self._valid_pcattype(code_type)
         """Project Code Type"""
 

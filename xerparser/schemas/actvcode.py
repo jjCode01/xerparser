@@ -4,6 +4,7 @@
 
 from xerparser.schemas._node import Node
 from xerparser.schemas.actvtype import ACTVTYPE
+from xerparser.src.validators import int_or_zero
 
 
 class ACTVCODE(Node):
@@ -17,11 +18,10 @@ class ACTVCODE(Node):
             data["short_name"],
             data["actv_code_name"],
             data["parent_actv_code_id"],
+            int_or_zero(data["seq_num"]),
         )
         self.actv_code_type_id: str = data["actv_code_type_id"]
         """Foreign Key to Activity Code Type"""
-        self.seq_num: int = int(data["seq_num"])
-        """Sort Order"""
         self.code_type: ACTVTYPE = self._valid_actvtype(code_type)
         """Activity Code Type"""
 

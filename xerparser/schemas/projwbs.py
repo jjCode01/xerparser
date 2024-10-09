@@ -5,7 +5,7 @@ from typing import Any
 
 from xerparser.schemas._node import Node
 from xerparser.schemas.udftype import UDFTYPE
-from xerparser.src.validators import optional_int
+from xerparser.src.validators import int_or_zero, optional_int
 
 
 class PROJWBS(Node):
@@ -21,6 +21,7 @@ class PROJWBS(Node):
             data["wbs_short_name"],
             data["wbs_name"],
             data["parent_wbs_id"],
+            int_or_zero(data["seq_num"]),
         )
         self.is_proj_node: bool = data["proj_node_flag"] == "Y"
         """Project Level Code Flag"""
