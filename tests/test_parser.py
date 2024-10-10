@@ -354,6 +354,11 @@ class TestParser(unittest.TestCase):
                         file[project.short_name]["wbs_depth"],
                         f"{project.short_name} Project WBS Depth",
                     )
+                    self.assertEqual(
+                        len(project.wbs_root.all_tasks),
+                        file[project.short_name]["task_count"],
+                        f"{project.short_name} Project WBS all_tasks",
+                    )
                     for calendar in project.calendars:
                         self.assertEqual(
                             [day for day, work in calendar.work_week.items() if work],

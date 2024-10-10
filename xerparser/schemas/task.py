@@ -9,7 +9,6 @@ from typing import Any, Self
 from xerparser.schemas.actvcode import ACTVCODE
 from xerparser.schemas.actvtype import ACTVTYPE
 from xerparser.schemas.calendars import CALENDAR
-from xerparser.schemas.projwbs import PROJWBS
 from xerparser.schemas.taskfin import TASKFIN
 from xerparser.schemas.taskmemo import TASKMEMO
 from xerparser.schemas.taskrsrc import TASKRSRC
@@ -100,10 +99,11 @@ class TASK:
         def is_wbs(self) -> bool:
             return self is self.TT_WBS
 
-    def __init__(self, calendar: CALENDAR, wbs: PROJWBS, **data: str) -> None:
+    def __init__(self, calendar: CALENDAR, wbs, **data: str) -> None:
+        from xerparser.schemas.projwbs import PROJWBS
+
         self.uid: str = data["task_id"]
         """Unique Table ID"""
-
         # Foreign keys
         self.proj_id: str = data["proj_id"]
         """Foreign Key for Project"""
@@ -189,7 +189,7 @@ class TASK:
         self.activity_codes: dict[ACTVTYPE, ACTVCODE] = {}
         self.user_defined_fields: dict[UDFTYPE, Any] = {}
         self.calendar: CALENDAR = calendar
-        self.wbs: PROJWBS = self._valid_projwbs(wbs)
+        self.wbs: PROJWBS = wbs
         self.memos: list[TASKMEMO] = []
         self.resources: dict[str, TASKRSRC] = {}
         self.predecessors: list["LinkToTask"] = []
@@ -445,15 +445,6 @@ class TASK:
         if self.total_float_hr_cnt is None:
             return
         return int(self.total_float_hr_cnt / 8)
-
-    def _valid_projwbs(self, value: PROJWBS) -> PROJWBS:
-        if not isinstance(value, PROJWBS):
-            raise TypeError(f"Expected <class PROJWBS>; got {type(value)}")
-        if value.uid != self.wbs_id:
-            raise ValueError(
-                f"WBS unique id {value.uid} does not match wbs_id {self.wbs_id}"
-            )
-        return value
 
 
 class LinkToTask:

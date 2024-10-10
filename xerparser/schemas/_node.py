@@ -59,7 +59,7 @@ class Node:
         Length of the path to the root node (i.e., root path).
         Root node will have a depth of 0.
         """
-        return len(self.lineage) - 1
+        return len(list(self.traverse_parents())) - 1
 
     @property
     def height(self) -> int:
@@ -117,7 +117,7 @@ class Node:
 
 
 def build_tree(nodes: dict[str, Node]) -> dict[str, Node]:
-    for node in nodes.values():
+    for node in sorted(list(nodes.values())):
         if parent := nodes.get(node.parent_id):
             node.parent = parent
             parent.addChild(node)

@@ -1,6 +1,15 @@
 
 # Changelog - xerparser
 
+## 0.13.2 - 2024-10-09
+
+* Added `all_task` property to `PROJWBS` class, which returns all tasks assigned to a node and all it's children nodes.
+* Added `actual_cost`, `budgeted_cost`, `remaining_cost`, and `this_period_cost` properties to `PROJWBS` class. These are sums of the costs for all activities under a WBS node.
+* Added `start` and `finish` properties to `PROJWBS` class.
+* `PROJWBS` objects are now sorted by seq_num to match the order reflected in P6.
+
+---
+
 ## 0.13.1 - 2024-10-09
 
 * `Node` object now use `seq_num` attribute for comparison and sorting.

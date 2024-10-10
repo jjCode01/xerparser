@@ -152,7 +152,7 @@ class Xer:
 
     def _get_wbs_nodes(self) -> dict[str, PROJWBS]:
         nodes: dict[str, PROJWBS] = self._get_attr("PROJWBS")
-        for node in nodes.values():
+        for node in sorted(list(nodes.values())):
             node.parent = nodes.get(node.parent_id)
             if node.parent:
                 node.parent.addChild(node)
@@ -234,7 +234,7 @@ class Xer:
         calendar = self.calendars[kwargs["clndr_id"]]
         wbs = self.wbs_nodes[kwargs["wbs_id"]]
         task = TASK(calendar=calendar, wbs=wbs, **kwargs)
-        wbs.tasks.append(task)
+        wbs.add_task(task)
         self.projects[task.proj_id].tasks.append(task)
         return task
 
