@@ -389,6 +389,25 @@ class TestParser(unittest.TestCase):
                             f"{project.short_name} - Calendar {calendar.uid} exception count",
                         )
 
+                    for node in project.wbs_nodes:
+                        self.assertAlmostEqual(
+                            node.budgeted_cost,
+                            round(
+                                node.actual_cost
+                                + node.remaining_cost
+                                - node.cost_variance,
+                                2,
+                            ),
+                            None,
+                            f"{project.short_name} - WBS {node.name} Cost Variance",
+                            0.011,
+                        )
+                        self.assertEqual(
+                            node.original_duration,
+                            node.actual_duration + node.remaining_duration,
+                            f"{project.short_name} - WBS {node.name} Duration Variance",
+                        )
+
     def test_rem_hour_calc(self):
         """Tests calculation of task rem work hours"""
 

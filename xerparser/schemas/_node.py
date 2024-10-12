@@ -116,7 +116,7 @@ class Node:
         return _o2
 
 
-def build_tree(nodes: dict[str, Node]) -> dict[str, Node]:
+def build_tree(nodes: dict[str, Node]) -> dict:
     for node in sorted(list(nodes.values())):
         if parent := nodes.get(node.parent_id):
             node.parent = parent

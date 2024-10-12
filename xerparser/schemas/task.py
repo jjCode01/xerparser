@@ -250,6 +250,11 @@ class TASK:
         }
 
     @property
+    @rounded()
+    def cost_variance(self) -> float:
+        return sum(res.cost_variance for res in self.resources.values())
+
+    @property
     def duration(self) -> int:
         """
         Returns remaining duration if task is not started;

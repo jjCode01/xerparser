@@ -67,7 +67,7 @@ class Xer:
         self.sched_options: dict[str, SCHEDOPTIONS] = self._get_attr("SCHEDOPTIONS")
         self.udf_types: dict[str, UDFTYPE] = self._get_attr("UDFTYPE")
         self.projects = self._get_projects()
-        self.wbs_nodes: dict[str, PROJWBS] = self._get_wbs_nodes()
+        self.wbs_nodes: dict[str, PROJWBS] = build_tree(self._get_wbs_nodes())
         self.tasks: dict[str, TASK] = self._get_tasks()
         self.relationships: dict[str, TASKPRED] = self._get_relationships()
 
@@ -93,7 +93,7 @@ class Xer:
         file_contents = file_reader(file)
         return cls(file_contents)
 
-    def _get_activity_codes(self) -> dict[str, ACTVCODE]:
+    def _get_activity_codes(self) -> dict:
         activity_code_values = {
             code_val["actv_code_id"]: ACTVCODE(
                 code_type=self.activity_code_types[code_val["actv_code_type_id"]],
@@ -121,7 +121,7 @@ class Xer:
         }
         return projects
 
-    def _get_proj_codes(self) -> dict[str, PCATVAL]:
+    def _get_proj_codes(self) -> dict:
         project_code_values = {
             code_val["proj_catg_id"]: PCATVAL(
                 code_type=self.project_code_types[code_val["proj_catg_type_id"]],
@@ -150,16 +150,11 @@ class Xer:
             for task in self.tables.get("TASK", [])
         }
 
-    def _get_wbs_nodes(self) -> dict[str, PROJWBS]:
-        nodes: dict[str, PROJWBS] = self._get_attr("PROJWBS")
-        for node in sorted(list(nodes.values())):
-            node.parent = nodes.get(node.parent_id)
-            if node.parent:
-                node.parent.addChild(node)
-            if proj := self.projects.get(node.proj_id):
-                proj.wbs_nodes.append(node)
-                if node.is_proj_node:
-                    proj.wbs_root = node
+    def _get_wbs_nodes(self) -> dict:
+        nodes: dict[str, PROJWBS] = {
+            node["wbs_id"]: self._set_proj_wbs(**node)
+            for node in self.tables.get("PROJWBS", [])
+        }
         return nodes
 
     def _set_proj_activity_codes(self) -> None:
@@ -224,6 +219,11 @@ class Xer:
         topic = self.notebook_topics[kwargs["memo_type_id"]].topic
         task = self.tasks[kwargs["task_id"]]
         task.memos.append(TASKMEMO(topic=topic, **kwargs))
+
+    def _set_proj_wbs(self, **kwargs) -> PROJWBS:
+        proj = self.projects[kwargs["proj_id"]]
+        wbs = PROJWBS(proj, **kwargs)
+        return wbs
 
     def _set_rsrc_rates(self, **kwargs) -> RSRCRATE:
         rsrc = self.resources[kwargs["rsrc_id"]]
