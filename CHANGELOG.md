@@ -1,6 +1,16 @@
 
 # Changelog - xerparser
 
+## 0.13.3
+
+* Added properties to `PROJWBS` class:
+    * `project` gives PROJWBS objects access to the project and its properties.
+    * `original_duration` calendar days between start and finish dates.
+    * `actual_duration` calendar days between the project data date the wbs start date.
+    * `remaining_duration` calendar days between the wbd finish date and the project data date.
+
+---
+
 ## 0.13.2 - 2024-10-09
 
 * Added `all_task` property to `PROJWBS` class, which returns all tasks assigned to a node and all it's children nodes.

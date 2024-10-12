@@ -87,8 +87,21 @@ project.calendars             # list of project specific CALENDAR objects
 project.project_codes         # dict of PCATTYPE: PCATVAL objects
 project.tasks                 # list of project specific TASK objects
 project.relationships         # list of project specific TASKPRED objects
+project.resources             # lest of project specific TASKRSRC objects
 project.user_defined_fields   # dict of `UDFTYPE`: `UDF Value` pairs  
 project.wbs_nodes             # list of project specific PROJWBS objects
+```
+
+### WBS Specific
+```python
+# Get projects root wbs node
+wbs_node = project.wbs_root
+
+wbs_node.children              # list of child PROJWBS objects
+wbs_node.project               # PROJECT the WBS node belongs to
+wbs_node.tasks                 # list of TASK objects assigned directly to WBS node
+wbs_node.all_tasks             # list of TASK objects under the WBS node
+wbs_node.user_defined_fields   # dict of `UDFTYPE`: `UDF Value` pairs  
 ```
 
 ### Task Specific
