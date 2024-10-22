@@ -471,3 +471,9 @@ class LinkToTask:
 
     def __hash__(self) -> int:
         return hash((self.task, self.link))
+
+    def __repr__(self) -> str:
+        return f"<{self.task.task_code}[{self.link}:{self.lag}]>"
+
+    def __str__(self) -> str:
+        return f"{self.task.task_code}[{self.link}:{self.lag}]"
