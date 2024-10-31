@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 from xerparser.schemas.task import TASK, LinkToTask
 
 
@@ -7,8 +5,10 @@ def find_redundant_logic(task: TASK) -> list[list[LinkToTask]]:
     redundant_paths = []
 
     for pred in task.predecessors:
-        if pred_paths := _search_redundant_paths(pred, task, [pred], set()):
-            redundant_paths.extend(pred_paths)
+        path = [pred]
+        mem = set()
+        if paths := _search_redundant_paths(pred, task, path, mem):
+            redundant_paths.extend(paths)
 
     return redundant_paths
 
@@ -20,27 +20,33 @@ def _search_redundant_paths(
     mem: set[TASK],
 ):
     paths = []
-    # Work in progress - group paths by redundant predecessor
-    dict_paths = defaultdict(list)
+
     for pred in task_pred.task.predecessors:
         if pred.task.type.is_loe:
             continue
 
-        if pred in epoch_task.predecessors:
-            if (
-                all(
-                    (p.link[0] == pred.link[0]) or (p.link[1] == pred.link[1])
-                    for p in [pred] + path
-                )
-                and pred.link[1] == path[-1].link[1]
-            ):
-                paths.append([pred] + path)
-                index = epoch_task.predecessors.index(pred)
-                dict_paths[epoch_task.predecessors[index]].append([pred] + path)
+        if _is_valid_path(epoch_task.predecessors, pred, path):
+            paths.append([pred] + path)
 
         if pred.task in mem:
             continue
+
         if new_paths := _search_redundant_paths(pred, epoch_task, [pred] + path, mem):
             paths.extend(new_paths)
+
         mem.add(pred.task)
     return paths
+
+
+def _is_valid_path(
+    epoch_preds: list[LinkToTask], pred: LinkToTask, path: list[LinkToTask]
+) -> bool:
+    if pred not in epoch_preds:
+        return False
+    if not all(
+        (p.link[0] == pred.link[0]) or (p.link[1] == pred.link[1])
+        for p in [pred] + path
+    ):
+        return False
+
+    return pred.link[1] == path[-1].link[1]
