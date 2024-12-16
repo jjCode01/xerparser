@@ -42,7 +42,7 @@ class TASKRSRC:
         self.target_end_date: datetime = datetime.strptime(
             data["target_end_date"], date_format
         )
-        self.target_lag_drtn_hr_cnt: float = float(data["target_lag_drtn_hr_cnt"])
+        self.target_lag_drtn_hr_cnt: float = float(data["target_lag_drtn_hr_cnt"].replace(",", "."))
         self.rem_late_start_date: datetime | None = optional_date(
             data["rem_late_start_date"]
         )
