@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.13.4 - 2024-12-18
+
+In `TASKRSRC` class, changed data type of `target_lag_drtn_hr_cnt` property from int to float. Reference [Issue #10](https://github.com/jjCode01/xerparser/issues/10)  
+
+---
+
 ## 0.13.3
 
 * Added properties to `PROJWBS` class:
