@@ -15,7 +15,7 @@ from xerparser.scripts.dates import (
     clean_dates,
     conv_time,
 )
-from xerparser.src.validators import optional_date, optional_str
+from xerparser.src.validators import optional_date, optional_str, optional_float
 
 WEEKDAYS = (
     "Sunday",
@@ -110,6 +110,9 @@ class CALENDAR:
         self.proj_id: str | None = optional_str(data["proj_id"])
         self.type: CALENDAR.CalendarType = CALENDAR.CalendarType[data["clndr_type"]]
         self.base_calendar: Optional["CALENDAR"] = None
+        self.day_hr_cnt: float = optional_float(data["day_hr_cnt"])
+        self.week_hr_cnt: float = optional_float(data["week_hr_cnt"])
+        self.year_hr_cnt: float = optional_float(data["year_hr_cnt"])
 
     def __eq__(self, __o: "CALENDAR") -> bool:
         return self.name == __o.name and self.type == __o.type
