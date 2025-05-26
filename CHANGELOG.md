@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.13.5 - 2025-05-26
+
+Adding `day_hr_cnt`, `week_hr_cnt`, `year_hr_cnt` as optional_float to calendar object.
+
+---
+
 ## 0.13.4 - 2024-12-18
 
 In `TASKRSRC` class, changed data type of `target_lag_drtn_hr_cnt` property from int to float. Reference [Issue #10](https://github.com/jjCode01/xerparser/issues/10)  
