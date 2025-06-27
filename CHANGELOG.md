@@ -1,6 +1,13 @@
 
 # Changelog - xerparser
 
+## 0.13.6 - 205-06-27
+
+* Added `duration_percent_complete` and `units_percent_complete` properties to the `TASK` class.
+* Updated the `phys_complete_pct` attribute to be a decimal from 0 to 1.
+
+---
+
 ## 0.13.5 - 2025-05-26
 
 Adding `day_hr_cnt`, `week_hr_cnt`, `year_hr_cnt` as optional_float to calendar object.
