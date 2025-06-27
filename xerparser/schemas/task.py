@@ -113,8 +113,8 @@ class TASK:
         """Foreign Key for Calendar"""
 
         # General Task info
-        self.phys_complete_pct: float = float(
-            data["phys_complete_pct"].replace(",", ".")
+        self.phys_complete_pct: float = (
+            float(data["phys_complete_pct"].replace(",", ".")) / 100
         )
         """Activity physical percent complete"""
         self.complete_pct_type: str = data["complete_pct_type"]
@@ -270,6 +270,18 @@ class TASK:
         return self.original_duration
 
     @property
+    @rounded(ndigits=4)
+    def duration_percent_complete(self) -> float:
+        """Duration percent complete calculated as a remaining duration / original duration"""
+        if self.remain_drtn_hr_cnt is None or self.status.is_completed:
+            return 1.0
+        if self.status.is_not_started or self.original_duration == 0:
+            return 0.0
+        if self.remain_drtn_hr_cnt >= self.target_drtn_hr_cnt:
+            return 0.0
+        return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
+
+    @property
     def finish(self) -> datetime:
         """Calculated activity finish date (Actual Finish or Early Finish)"""
         if self.act_end_date:
@@ -299,25 +311,15 @@ class TASK:
     @cached_property
     @rounded(ndigits=4)
     def percent_complete(self) -> float:
+        """Activity percent complete based on the type of percent complete"""
         if self.percent_type is TASK.PercentType.CP_Phys:
-            return self.phys_complete_pct / 100
+            return self.phys_complete_pct
 
         if self.percent_type is TASK.PercentType.CP_Drtn:
-            if self.remain_drtn_hr_cnt is None or self.status.is_completed:
-                return 1.0
-            if self.status.is_not_started or self.original_duration == 0:
-                return 0.0
-            if self.remain_drtn_hr_cnt >= self.target_drtn_hr_cnt:
-                return 0.0
-
-            return 1 - self.remain_drtn_hr_cnt / self.target_drtn_hr_cnt
+            return self.duration_percent_complete
 
         if self.percent_type is TASK.PercentType.CP_Units:
-            target_units = self.target_work_qty + self.target_equip_qty
-            if target_units == 0:
-                return 0.0
-            actual_units = self.act_work_qty + self.act_equip_qty
-            return 1 - actual_units / target_units
+            return self.units_percent_complete
 
         raise ValueError(
             f"Could not calculate percent compelete for task {self.task_code}"
@@ -450,6 +452,15 @@ class TASK:
         if self.total_float_hr_cnt is None:
             return
         return int(self.total_float_hr_cnt / 8)
+
+    @property
+    @rounded(ndigits=4)
+    def units_percent_complete(self) -> float:
+        """Units percent complete calculated as a remaining units / original units"""
+        if (target_units := self.target_work_qty + self.target_equip_qty) == 0:
+            return 0.0
+        actual_units = self.act_work_qty + self.act_equip_qty
+        return 1 - actual_units / target_units
 
 
 class LinkToTask:
