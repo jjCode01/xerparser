@@ -51,6 +51,7 @@ class PROJWBS(Node):
 
     @property
     def actual_duration(self) -> int:
+        """Actual duration in calendar days"""
         if not (_start := self.start) or not (_finish := self.finish):
             return 0
         if _finish < self.project.data_date:
@@ -59,6 +60,7 @@ class PROJWBS(Node):
 
     @property
     def all_tasks(self) -> list[TASK]:
+        """All tasks in this WBS node and its children"""
         return list(
             itertools.chain.from_iterable(
                 [node.tasks for node in self.traverse_children()]
@@ -79,6 +81,7 @@ class PROJWBS(Node):
     @property
     @rounded()
     def cost_variance(self) -> float:
+        """Sum of task resource cost variances"""
         return sum(task.cost_variance for task in self.all_tasks)
 
     @property
@@ -93,6 +96,7 @@ class PROJWBS(Node):
 
     @property
     def finish(self) -> datetime | None:
+        """Latest finish date of all tasks in this WBS node and its children"""
         return max((task.finish for task in self.all_tasks), default=None)
 
     @property
@@ -101,6 +105,7 @@ class PROJWBS(Node):
 
     @property
     def late_finish(self) -> datetime | None:
+        """Latest late finish date of all tasks in this WBS node and its children"""
         return max(
             (task.late_end_date for task in self.all_tasks if task.late_end_date),
             default=self.finish,
@@ -108,6 +113,7 @@ class PROJWBS(Node):
 
     @property
     def late_start(self) -> datetime | None:
+        """Earliest late start date of all tasks in this WBS node and its children"""
         return min(
             (task.late_start_date for task in self.all_tasks if task.late_start_date),
             default=self.start,
@@ -115,6 +121,7 @@ class PROJWBS(Node):
 
     @property
     def original_duration(self) -> int:
+        """Original duration in calendar days"""
         if not (_start := self.start) or not (_finish := self.finish):
             return 0
         return (_finish.date() - _start.date()).days
@@ -127,6 +134,7 @@ class PROJWBS(Node):
 
     @property
     def remaining_duration(self) -> int:
+        """Remaining duration in calendar days"""
         if not (_start := self.start) or not (_finish := self.finish):
             return 0
         if _start >= self.project.data_date:
@@ -135,10 +143,12 @@ class PROJWBS(Node):
 
     @property
     def start(self) -> datetime | None:
+        """Earliest start date of all tasks in this WBS node and its children"""
         return min((task.start for task in self.all_tasks), default=None)
 
     @property
     def tasks(self) -> list[TASK]:
+        """Tasks assigned to this WBS node"""
         return list(self._tasks.values())
 
     @property
