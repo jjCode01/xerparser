@@ -1,6 +1,8 @@
 # xerparser
 # pcattype.py
 
+from xerparser.src.validators import optional_int
+
 
 class PCATTYPE:
     """
@@ -14,7 +16,7 @@ class PCATTYPE:
         """Max Character Length"""
         self.name: str = data["proj_catg_type"]
         """Project Code Name"""
-        self.seq_num: int | None = None if (seq := data["seq_num"]) == "" else int(seq)
+        self.seq_num: int | None = optional_int(data["seq_num"])
         """Sort Order"""
 
     def __eq__(self, __o: "PCATTYPE") -> bool:

@@ -284,7 +284,7 @@ class TestParser(unittest.TestCase):
                     self.assertEqual(
                         project.duration_percent,
                         file[project.short_name]["duration_percent"],
-                        f"{project.short_name} Project Duration Percent",
+                        f"{project.short_name} Project Duration Percent | Remaining Duration is {project.remaining_duration} days | Original Duration is {project.original_duration} days",
                     )
                     self.assertEqual(
                         project.original_duration,

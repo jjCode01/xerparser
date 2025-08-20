@@ -43,8 +43,9 @@ class PROJECT:
         """Date Project was Created"""
         self.default_calendar: CALENDAR | None = default_calendar
         """Default Calendar Assigned to Project"""
-        self.data_date: datetime = datetime.strptime(
-            data["last_recalc_date"], date_format
+        self.data_date: datetime = max(
+            datetime.strptime(data["last_recalc_date"], date_format),
+            datetime.strptime(data["plan_start_date"], date_format),
         )
         """Date Project is Updated To"""
         self.export_flag: bool = data["export_flag"] == "Y"
@@ -185,7 +186,9 @@ class PROJECT:
     @property
     def remaining_duration(self) -> int:
         """Project remaining duration in calendar days from data date to finish date"""
-        return max((0, (self.finish_date - self.data_date).days))
+        return max(
+            (0, (self.finish_date - max(self.data_date, self.actual_start)).days)
+        )
 
     @cached_property
     @rounded(ndigits=4)

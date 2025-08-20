@@ -1,7 +1,13 @@
 
 # Changelog - xerparser
 
-## 0.13.6 - 205-06-27
+## 0.13.7 - 2025-08-20
+
+* Handle edge case where incorrect data date is recorded in the XER file; revert to planned start date in these cases. May need to re-create the the xer_data.json file when running the tests.
+
+---
+
+## 0.13.6 - 2025-06-27
 
 * Added `duration_percent_complete` and `units_percent_complete` properties to the `TASK` class.
 * Updated the `phys_complete_pct` attribute to be a decimal from 0 to 1.
