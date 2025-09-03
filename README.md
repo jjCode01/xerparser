@@ -162,8 +162,7 @@ for error in file_errors:
   - CALENDAR
   - PROJECT
   - PROJWBS
-  - TASK
-  - TASKPRED  
+  - TASK 
 - Required table pairs - an error is recorded if Table 1 is included but not Table 2:  
   
   | Table 1       | Table 2       | Notes    |
