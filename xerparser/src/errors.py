@@ -33,7 +33,7 @@ def find_xer_errors(tables: dict) -> list[str]:
     # This list of required tables may be subjective
     # TODO: Add ability to pass in your own list of required tables.
 
-    REQUIRED_TABLES = {"CALENDAR", "PROJECT", "PROJWBS", "TASK", "TASKPRED"}
+    REQUIRED_TABLES = {"CALENDAR", "PROJECT", "PROJWBS", "TASK"}
     REQUIRED_TABLE_PAIRS = {
         ("TASKFIN", "FINDATES"),
         ("TRSRCFIN", "FINDATES"),
