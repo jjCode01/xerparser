@@ -110,16 +110,46 @@ class Xer:
         return {}
 
     def _get_projects(self) -> dict[str, PROJECT]:
-        projects = {
-            proj["proj_id"]: PROJECT(
-                self.sched_options[proj["proj_id"]],
+        projects = {}
+        for proj in self.tables.get("PROJECT", []):
+            if proj["export_flag"] != "Y":
+                continue
+
+            # Use project-specific schedule options if available; otherwise fall back to safe defaults
+            sched_opts = self.sched_options.get(proj["proj_id"]) or self._default_sched_options(
+                proj["proj_id"]
+            )
+
+            projects[proj["proj_id"]] = PROJECT(
+                sched_opts,
                 self.calendars.get(proj["clndr_id"]),
                 **proj,
             )
-            for proj in self.tables.get("PROJECT", [])
-            if proj["export_flag"] == "Y"
-        }
         return projects
+
+    def _default_sched_options(self, proj_id: str) -> SCHEDOPTIONS:
+        """
+        Create a minimal, safe SCHEDOPTIONS instance when the SCHEDOPTIONS table
+        is missing or doesn't contain an entry for the given project.
+
+        This avoids KeyErrors during project construction while keeping neutral defaults.
+        """
+        data = {
+            "proj_id": proj_id,
+            "sched_calendar_on_relationship_lag": "",
+            "sched_float_type": "",
+            "sched_lag_early_start_flag": "N",
+            "sched_open_critical_flag": "N",
+            "sched_outer_depend_type": "",
+            "sched_progress_override": "N",
+            "sched_retained_logic": "N",
+            "sched_setplantoforecast": "N",
+            "sched_use_expect_end_flag": "N",
+            "sched_use_project_end_date_for_float": "N",
+            "schedoptions_id": f"default-{proj_id}",
+            "use_total_float_multiple_longest_paths": "N",
+        }
+        return SCHEDOPTIONS(**data)
 
     def _get_proj_codes(self) -> dict:
         project_code_values = {
