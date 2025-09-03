@@ -18,7 +18,7 @@ from xerparser.schemas.taskpred import TASKPRED
 from xerparser.schemas.taskrsrc import TASKRSRC
 from xerparser.schemas.udftype import UDFTYPE
 from xerparser.scripts.decorators import rounded
-from xerparser.src.validators import date_format, optional_date, optional_str
+from xerparser.src.validators import optional_date, optional_str
 
 
 class PROJECT:
@@ -39,35 +39,34 @@ class PROJECT:
         # table fields from .xer file
         self.uid: str = data["proj_id"]
         """Unique Table ID"""
-        self.add_date: datetime = datetime.strptime(data["add_date"], date_format)
-        """Date Project was Created"""
-        self.default_calendar: CALENDAR | None = default_calendar
-        """Default Calendar Assigned to Project"""
-        self.data_date: datetime = max(
-            datetime.strptime(data["last_recalc_date"], date_format),
-            datetime.strptime(data["plan_start_date"], date_format),
-        )
-        """Date Project is Updated To"""
-        self.export_flag: bool = data["export_flag"] == "Y"
-        """Project Export Flag"""
-        self.finish_date: datetime = datetime.strptime(
-            data["scd_end_date"], date_format
-        )
-        """Projected Completion Date"""
-        self.last_fin_dates_id: str | None = optional_str(data["last_fin_dates_id"])
-        """Last Stored Financial Period"""
+        # Parse dates safely (some exports may have blank fields)
+        _plan_start_dt = optional_date(data.get("plan_start_date", ""))
+        _last_recalc_dt = optional_date(data.get("last_recalc_date", ""))
+        _plan_end_dt = optional_date(data.get("plan_end_date", ""))
+        _scd_end_dt = optional_date(data.get("scd_end_date", ""))
+        _add_dt = optional_date(data.get("add_date", ""))
+
+        self.add_date: datetime = _add_dt or _plan_start_dt or datetime(1970, 1, 1)  # Date Project was Created
+        self.default_calendar: CALENDAR | None = default_calendar  # Default Calendar Assigned to Project
+        if _last_recalc_dt or _plan_start_dt:
+            self.data_date: datetime = max(
+                dt for dt in (_last_recalc_dt, _plan_start_dt) if dt is not None
+            )
+        else:
+            self.data_date = self.add_date  # Date Project is Updated To
+        self.export_flag: bool = data["export_flag"] == "Y"  # Project Export Flag
+        self.finish_date: datetime = _scd_end_dt or _plan_end_dt or (
+            _plan_start_dt or self.add_date
+        )  # Projected Completion Date
+        self.last_fin_dates_id: str | None = optional_str(data["last_fin_dates_id"])  # Last Stored Financial Period
         self.last_schedule_date: datetime | None = optional_date(
             data.get("last_schedule_date", "")
-        )
-        """Last Date Schedule was Calculated"""
-        self.must_finish_date: datetime | None = optional_date(data["plan_end_date"])
-        """Must Finish by Date Assigned to Project"""
-        self.plan_start_date: datetime = datetime.strptime(
-            data["plan_start_date"], date_format
-        )
-        """Planned Start Date Assigned to Project"""
-        self.short_name: str = data["proj_short_name"]
-        """Project Code"""
+        )  # Last Date Schedule was Calculated
+        self.must_finish_date: datetime | None = optional_date(
+            data.get("plan_end_date", "")
+        )  # Must Finish by Date Assigned to Project
+        self.plan_start_date: datetime = _plan_start_dt or self.add_date  # Planned Start Date Assigned to Project
+        self.short_name: str = data["proj_short_name"]  # Project Code
 
         # manually set from other tables
         self.activity_codes: list[ACTVTYPE] = []
