@@ -290,6 +290,12 @@ class TASK:
             return self.reend_date
         if self.early_end_date:
             return self.early_end_date
+        # Fallback to target end date if available
+        if self.target_end_date:
+            return self.target_end_date
+        # Last resort: use late end date if set
+        if self.late_end_date:
+            return self.late_end_date
         raise ValueError(f"Could not find finish date for task {self.task_code}")
 
     @property
@@ -438,8 +444,17 @@ class TASK:
         """Calculated activity start date (Actual Start or Early Start)"""
         if self.act_start_date:
             return self.act_start_date
+        # Prefer remaining start before early start if present
+        if self.restart_date:
+            return self.restart_date
         if self.early_start_date:
             return self.early_start_date
+        # Fallback to target start date if available
+        if self.target_start_date:
+            return self.target_start_date
+        # Last resort: use late start date if set
+        if self.late_start_date:
+            return self.late_start_date
         raise ValueError(f"Could not find start date for task {self.task_code}")
 
     @property
