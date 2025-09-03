@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.13.8 - 2025-09-03
+
+Removed `TASKPRED` as a required table for error checking. Reference [Issue #12](https://github.com/jjCode01/xerparser/issues/12)
+
+---
+
 ## 0.13.7 - 2025-08-20
 
 * Handle edge case where incorrect data date is recorded in the XER file; revert to planned start date in these cases. May need to re-create the the xer_data.json file when running the tests.
