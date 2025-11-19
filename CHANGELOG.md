@@ -1,6 +1,12 @@
 
 # Changelog - xerparser
 
+## 0.13.9 - 2025-11-19
+
+Fixed case where optional `PROJECT` variable `last_fin_dates_id` data does not exist in the XER file. Reference [Issue #15](https://github.com/jjCode01/xerparser/issues/15)
+
+---
+
 ## 0.13.8 - 2025-09-03
 
 Removed `TASKPRED` as a required table for error checking. Reference [Issue #12](https://github.com/jjCode01/xerparser/issues/12)

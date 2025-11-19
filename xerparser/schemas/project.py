@@ -54,7 +54,9 @@ class PROJECT:
             data["scd_end_date"], date_format
         )
         """Projected Completion Date"""
-        self.last_fin_dates_id: str | None = optional_str(data["last_fin_dates_id"])
+        self.last_fin_dates_id: str | None = optional_str(
+            data.get("last_fin_dates_id", "")
+        )
         """Last Stored Financial Period"""
         self.last_schedule_date: datetime | None = optional_date(
             data.get("last_schedule_date", "")
